@@ -83,7 +83,7 @@
       let height = Math.random() < 0.5 ? 30 : 40;
       let obstacle = {
         x: canvas.width,
-        y: 150 - height,
+        y: 150 - height,  // Ensure obstacles are on the ground
         width: 20 + Math.random() * 20,
         height: height
       };
@@ -122,7 +122,10 @@
       drawObstacles();  // Call the drawObstacles function here
       drawScore();
       detectCollision();
-      if (Math.random() < 0.02) createObstacle();
+
+      // Reduce the frequency of obstacle creation
+      if (Math.random() < 0.01) createObstacle();  // Reduced frequency to 1%
+
       requestAnimationFrame(gameLoop);
     }
 
