@@ -62,9 +62,11 @@
       }
     }
 
-    function drawObstacle() {
-      ctx.fillStyle = "red";
-      ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+    function drawObstacles() {
+      for (let i = 0; i < obstacles.length; i++) {
+        ctx.fillStyle = "red";
+        ctx.fillRect(obstacles[i].x, obstacles[i].y, obstacles[i].width, obstacles[i].height);
+      }
     }
 
     function updateObstacles() {
@@ -117,6 +119,7 @@
       drawDino();
       updateDino();
       updateObstacles();
+      drawObstacles();  // Call the drawObstacles function here
       drawScore();
       detectCollision();
       if (Math.random() < 0.02) createObstacle();
