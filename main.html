@@ -156,10 +156,10 @@
     // Arrow keys for vertical movement
     window.addEventListener("keydown", (e) => {
       if (e.code === "ArrowUp" && dino.y > 50) {  // Move up but not off the canvas
-        dino.y -= 10;
+        dino.y -= 30;
       }
       if (e.code === "ArrowDown" && dino.y < canvas.height - dino.height) {  // Move down but stay within the canvas
-        dino.y += 10;
+        dino.y += 30;
       }
     });
 
