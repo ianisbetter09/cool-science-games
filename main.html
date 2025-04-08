@@ -1,4 +1,36 @@
-let dino = {
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dinosaur Game</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f0f0f0;
+      overflow: hidden;
+    }
+
+    #gameCanvas {
+      background-color: #808080;
+      display: block;
+      border: 1px solid #000;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas" width="800" height="400"></canvas>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    let dino = {
   x: 50,
   y: 150,  // Set Dino's Y position to 150, the ground level
   width: 40,
@@ -9,7 +41,45 @@ let dino = {
   jumping: false
 };
 
-function createObstacle() {
+    let obstacles = [];
+    let score = 0;
+    let gameSpeed = 6;
+
+    function drawDino() {
+      ctx.fillStyle = "green";
+      ctx.fillRect(dino.x, dino.y, dino.width, dino.height);
+    }
+
+    function updateDino() {
+      if (dino.jumping) {
+        dino.speedY += dino.gravity;
+        dino.y += dino.speedY;
+        if (dino.y >= 150) {
+          dino.y = 150;
+          dino.jumping = false;
+          dino.speedY = 0;
+        }
+      }
+    }
+
+    function drawObstacles() {
+      for (let i = 0; i < obstacles.length; i++) {
+        ctx.fillStyle = "red";
+        ctx.fillRect(obstacles[i].x, obstacles[i].y, obstacles[i].width, obstacles[i].height);
+      }
+    }
+
+    function updateObstacles() {
+      for (let i = 0; i < obstacles.length; i++) {
+        obstacles[i].x -= gameSpeed;
+        if (obstacles[i].x + obstacles[i].width < 0) {
+          obstacles.splice(i, 1);
+          score++;
+        }
+      }
+    }
+
+    function createObstacle() {
   let height = Math.random() < 0.5 ? 30 : 40;
   let obstacle = {
     x: canvas.width,
@@ -19,3 +89,54 @@ function createObstacle() {
   };
   obstacles.push(obstacle);
 }
+
+    function drawScore() {
+      ctx.fillStyle = "black";
+      ctx.font = "20px Arial";
+      ctx.fillText("Score: " + score, 10, 20);
+    }
+
+    function detectCollision() {
+      for (let obstacle of obstacles) {
+        if (
+          dino.x + dino.width > obstacle.x &&
+          dino.x < obstacle.x + obstacle.width &&
+          dino.y + dino.height > obstacle.y
+        ) {
+          resetGame();
+        }
+      }
+    }
+
+    function resetGame() {
+      score = 0;
+      obstacles = [];
+      gameSpeed = 6;
+    }
+
+    function gameLoop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawDino();
+      updateDino();
+      updateObstacles();
+      drawObstacles();  // Call the drawObstacles function here
+      drawScore();
+      detectCollision();
+
+      // Reduce the frequency of obstacle creation
+      if (Math.random() < 0.01) createObstacle();  // Reduced frequency to 1%
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    window.addEventListener("keydown", (e) => {
+      if (e.code === "Space" && !dino.jumping) {
+        dino.jumping = true;
+        dino.speedY = dino.jumpPower;
+      }
+    });
+
+    gameLoop();
+  </script>
+</body>
+</html>
