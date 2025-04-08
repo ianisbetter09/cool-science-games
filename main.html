@@ -31,19 +31,20 @@
     const ctx = canvas.getContext("2d");
 
     let dino = {
-  x: 50,
-  y: 150,  // Set Dino's Y position to 150, the ground level
-  width: 40,
-  height: 50,
-  speedY: 0,
-  gravity: 1,
-  jumpPower: -20,
-  jumping: false
-};
+      x: 50,
+      y: 150,  // Set Dino's Y position to 150, ground level
+      width: 40,
+      height: 50,
+      speedY: 0,
+      gravity: 1,
+      jumpPower: -20,
+      jumping: false
+    };
 
     let obstacles = [];
     let score = 0;
     let gameSpeed = 6;
+    let obstacleFrequency = 0.01;  // Lower this value to make obstacles less frequent
 
     function drawDino() {
       ctx.fillStyle = "green";
@@ -55,7 +56,7 @@
         dino.speedY += dino.gravity;
         dino.y += dino.speedY;
         if (dino.y >= 150) {
-          dino.y = 150;
+          dino.y = 150; // Set dino's y to the ground level when landing
           dino.jumping = false;
           dino.speedY = 0;
         }
@@ -80,15 +81,15 @@
     }
 
     function createObstacle() {
-  let height = Math.random() < 0.5 ? 30 : 40;
-  let obstacle = {
-    x: canvas.width,
-    y: 150 - height,  // Obstacles should be at ground level
-    width: 20 + Math.random() * 20,
-    height: height
-  };
-  obstacles.push(obstacle);
-}
+      let height = Math.random() < 0.5 ? 30 : 40;
+      let obstacle = {
+        x: canvas.width,
+        y: 150 - height,  // Ensure obstacles are on the ground level
+        width: 20 + Math.random() * 20,
+        height: height
+      };
+      obstacles.push(obstacle);
+    }
 
     function drawScore() {
       ctx.fillStyle = "black";
@@ -119,17 +120,24 @@
       drawDino();
       updateDino();
       updateObstacles();
-      drawObstacles();  // Call the drawObstacles function here
+      drawObstacles();
       drawScore();
       detectCollision();
 
       // Reduce the frequency of obstacle creation
-      if (Math.random() < 0.01) createObstacle();  // Reduced frequency to 1%
+      if (Math.random() < obstacleFrequency) createObstacle();  // Spread out obstacles
 
       requestAnimationFrame(gameLoop);
     }
 
+    // Arrow keys for vertical movement
     window.addEventListener("keydown", (e) => {
+      if (e.code === "ArrowUp" && dino.y > 50) {  // Move up but not off the canvas
+        dino.y -= 10;
+      }
+      if (e.code === "ArrowDown" && dino.y < canvas.height - dino.height) {  // Move down but stay within the canvas
+        dino.y += 10;
+      }
       if (e.code === "Space" && !dino.jumping) {
         dino.jumping = true;
         dino.speedY = dino.jumpPower;
