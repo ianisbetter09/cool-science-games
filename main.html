@@ -52,7 +52,7 @@
       x: 50,
       y: 150,  // Fixed Y position (ground level)
       width: 40,
-      height: 50,
+      height: 30,
     };
 
     let obstacles = [];
@@ -85,7 +85,7 @@
     }
 
     function createObstacle() {
-      let height = Math.random() < 0.5 ? 30 : 40;  // Random height for obstacle
+      let height = 15;  // Random height for obstacle
       let obstacleY = Math.random() * (canvas.height - height); // Random Y position within canvas height
       let obstacle = {
         x: canvas.width,
