@@ -161,9 +161,7 @@
   dino.y += dino.speedY;
 
   // Apply gravity (pull dino down) when no key is pressed
-  if (dino.speedY === 0 && dino.y < dino.hoverY) {
-    dino.speedY = dino.gravity;
-  }
+  
 
   // Prevent the dino from going out of the canvas vertically
   if (dino.y < 0) {
