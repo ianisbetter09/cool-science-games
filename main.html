@@ -53,13 +53,16 @@
       y: 150,  // Fixed Y position (ground level)
       width: 40,
       height: 30,
+      speedY: 0,  // Vertical speed
+      acceleration: 0.2,  // Vertical acceleration (for smoother movement)
+      maxSpeed: 4,  // Maximum speed for the vertical movement
     };
 
     let obstacles = [];
     let score = 0;
-    let highScore = 0;  // Track the highest score
-    let gameSpeed = 10;  // Initial speed of obstacles
-    let obstacleFrequency = 0.05;  // Frequency of obstacles spawning
+    let highScore = 0;
+    let gameSpeed = 10;
+    let obstacleFrequency = 0.05;
 
     function drawDino() {
       ctx.fillStyle = "green";
@@ -75,21 +78,21 @@
 
     function updateObstacles() {
       for (let i = 0; i < obstacles.length; i++) {
-        obstacles[i].x -= gameSpeed;  // Move obstacles faster
+        obstacles[i].x -= gameSpeed;
         if (obstacles[i].x + obstacles[i].width < 0) {
           obstacles.splice(i, 1);
           score++;
-          checkSpeedIncrease();  // Check if we need to increase the game speed
+          checkSpeedIncrease();
         }
       }
     }
 
     function createObstacle() {
-      let height = 15;  // Random height for obstacle
-      let obstacleY = Math.random() * (canvas.height - height); // Random Y position within canvas height
+      let height = Math.random() < 0.5 ? 30 : 40;
+      let obstacleY = Math.random() * (canvas.height - height);
       let obstacle = {
         x: canvas.width,
-        y: obstacleY,  // Use the random Y position
+        y: obstacleY,
         width: 20 + Math.random() * 20,
         height: height
       };
@@ -107,7 +110,6 @@
     }
 
     function checkSpeedIncrease() {
-      // Increase game speed every time the score reaches multiples of 50
       if (score % 50 === 0 && score > 0) {
         gameSpeed += 1;
       }
@@ -117,25 +119,24 @@
       for (let i = 0; i < obstacles.length; i++) {
         let obstacle = obstacles[i];
         if (
-          dino.x + dino.width > obstacle.x && // Dino's right side is past the obstacle's left side
-          dino.x < obstacle.x + obstacle.width && // Dino's left side is before the obstacle's right side
-          dino.y + dino.height > obstacle.y && // Dino's bottom is below the obstacle's top
-          dino.y < obstacle.y + obstacle.height // Dino's top is above the obstacle's bottom
+          dino.x + dino.width > obstacle.x &&
+          dino.x < obstacle.x + obstacle.width &&
+          dino.y + dino.height > obstacle.y &&
+          dino.y < obstacle.y + obstacle.height
         ) {
-          resetGame(); // Reset the game if there is a collision
+          resetGame();
         }
       }
     }
 
     function resetGame() {
-      // Update high score if current score is higher
       if (score > highScore) {
         highScore = score;
       }
 
       score = 0;
       obstacles = [];
-      gameSpeed = 10;  // Reset speed after collision
+      gameSpeed = 10;
     }
 
     function gameLoop() {
@@ -147,19 +148,38 @@
       drawHighScore();
       detectCollision();
 
-      // Increase frequency of obstacle creation
-      if (Math.random() < obstacleFrequency) createObstacle();  // More obstacles will spawn
+      // Smooth vertical movement using acceleration and velocity
+      dino.y += dino.speedY;
+      dino.speedY += dino.acceleration;
+
+      // Apply friction (to make it stop gradually when no key is pressed)
+      if (dino.speedY > dino.maxSpeed) {
+        dino.speedY = dino.maxSpeed;
+      }
+      if (dino.speedY < -dino.maxSpeed) {
+        dino.speedY = -dino.maxSpeed;
+      }
+
+      // Create obstacles at a smooth frequency
+      if (Math.random() < obstacleFrequency) createObstacle();
 
       requestAnimationFrame(gameLoop);
     }
 
-    // Arrow keys for vertical movement
+    // Arrow keys for vertical movement with smoothness
     window.addEventListener("keydown", (e) => {
-      if (e.code === "ArrowUp" && dino.y > 50) {  // Move up but not off the canvas
-        dino.y -= 30;
+      if (e.code === "ArrowUp") {
+        dino.speedY = -4; // Move up smoothly
       }
-      if (e.code === "ArrowDown" && dino.y < canvas.height - dino.height) {  // Move down but stay within the canvas
-        dino.y += 30;
+      if (e.code === "ArrowDown") {
+        dino.speedY = 4; // Move down smoothly
+      }
+    });
+
+    window.addEventListener("keyup", (e) => {
+      // Stop movement when the key is released
+      if (e.code === "ArrowUp" || e.code === "ArrowDown") {
+        dino.speedY = 0;
       }
     });
 
