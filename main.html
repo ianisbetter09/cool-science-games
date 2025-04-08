@@ -50,12 +50,14 @@
 
     let dino = {
       x: 50,
-      y: 150,  // Fixed Y position (ground level)
+      y: 150,  // Fixed floating Y position
       width: 40,
       height: 30,
-      speedY: 0,  // Vertical speed
-      acceleration: 0.2,  // Vertical acceleration (for smoother movement)
-      maxSpeed: 4,  // Maximum speed for the vertical movement
+      speedY: 0,  // Vertical speed (velocity)
+      gravity: 0.2,  // Gravity to pull the dino down
+      maxSpeed: 4,  // Max speed when moving vertically
+      hoverY: 150,  // Target Y position for floating (ground level)
+      floatSpeed: 0.1,  // The speed at which it floats back to hoverY
     };
 
     let obstacles = [];
@@ -88,7 +90,7 @@
     }
 
     function createObstacle() {
-      let height = Math.random() < 0.5 ? 30 : 40;
+      let height = 15;
       let obstacleY = Math.random() * (canvas.height - height);
       let obstacle = {
         x: canvas.width,
@@ -148,16 +150,19 @@
       drawHighScore();
       detectCollision();
 
-      // Smooth vertical movement using acceleration and velocity
-      dino.y += dino.speedY;
-      dino.speedY += dino.acceleration;
-
-      // Apply friction (to make it stop gradually when no key is pressed)
-      if (dino.speedY > dino.maxSpeed) {
-        dino.speedY = dino.maxSpeed;
+      // Smoothly float to the desired Y position (hoverY)
+      if (dino.y < dino.hoverY) {
+        dino.y += dino.floatSpeed;
+      } else if (dino.y > dino.hoverY) {
+        dino.y -= dino.floatSpeed;
       }
-      if (dino.speedY < -dino.maxSpeed) {
-        dino.speedY = -dino.maxSpeed;
+
+      // Handle velocity when moving up or down (arrow key pressed)
+      dino.y += dino.speedY;
+
+      // Apply gravity (pull dino down) when no key is pressed
+      if (dino.speedY === 0 && dino.y < dino.hoverY) {
+        dino.speedY = dino.gravity;
       }
 
       // Create obstacles at a smooth frequency
@@ -169,17 +174,16 @@
     // Arrow keys for vertical movement with smoothness
     window.addEventListener("keydown", (e) => {
       if (e.code === "ArrowUp") {
-        dino.speedY = -4; // Move up smoothly
+        dino.speedY = -4;  // Move up smoothly
       }
       if (e.code === "ArrowDown") {
-        dino.speedY = 4; // Move down smoothly
+        dino.speedY = 4;  // Move down smoothly
       }
     });
 
     window.addEventListener("keyup", (e) => {
-      // Stop movement when the key is released
       if (e.code === "ArrowUp" || e.code === "ArrowDown") {
-        dino.speedY = 0;
+        dino.speedY = 0;  // Stop vertical movement when key is released
       }
     });
 
