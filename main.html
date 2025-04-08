@@ -141,35 +141,43 @@
       gameSpeed = 10;
     }
 
-    function gameLoop() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      drawDino();
-      updateObstacles();
-      drawObstacles();
-      drawScore();
-      drawHighScore();
-      detectCollision();
+   function gameLoop() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawDino();
+  updateObstacles();
+  drawObstacles();
+  drawScore();
+  drawHighScore();
+  detectCollision();
 
-      // Smoothly float to the desired Y position (hoverY)
-      if (dino.y < dino.hoverY) {
-        dino.y += dino.floatSpeed;
-      } else if (dino.y > dino.hoverY) {
-        dino.y -= dino.floatSpeed;
-      }
+  // Smoothly float to the desired Y position (hoverY)
+  if (dino.y < dino.hoverY) {
+    dino.y += dino.floatSpeed;
+  } else if (dino.y > dino.hoverY) {
+    dino.y -= dino.floatSpeed;
+  }
 
-      // Handle velocity when moving up or down (arrow key pressed)
-      dino.y += dino.speedY;
+  // Handle velocity when moving up or down (arrow key pressed)
+  dino.y += dino.speedY;
 
-      // Apply gravity (pull dino down) when no key is pressed
-      if (dino.speedY === 0 && dino.y < dino.hoverY) {
-        dino.speedY = dino.gravity;
-      }
+  // Apply gravity (pull dino down) when no key is pressed
+  if (dino.speedY === 0 && dino.y < dino.hoverY) {
+    dino.speedY = dino.gravity;
+  }
 
-      // Create obstacles at a smooth frequency
-      if (Math.random() < obstacleFrequency) createObstacle();
+  // Prevent the dino from going out of the canvas vertically
+  if (dino.y < 0) {
+    dino.y = 0;  // Prevent dino from going above the top
+  } else if (dino.y + dino.height > canvas.height) {
+    dino.y = canvas.height - dino.height;  // Prevent dino from going below the bottom
+  }
 
-      requestAnimationFrame(gameLoop);
-    }
+  // Create obstacles at a smooth frequency
+  if (Math.random() < obstacleFrequency) createObstacle();
+
+  requestAnimationFrame(gameLoop);
+}
+
 
     // Arrow keys for vertical movement with smoothness
     window.addEventListener("keydown", (e) => {
