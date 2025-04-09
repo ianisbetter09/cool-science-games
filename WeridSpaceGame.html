@@ -75,13 +75,15 @@
       ctx.fillStyle = "green";
       ctx.fillRect(dino.x, dino.y, dino.width, dino.height);
     }
+    const obstacleImage = new Image();
+    obstacleImage.src = "data:image/png;base64,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"; // Make sure this path is correct
 
     function drawObstacles() {
       for (let i = 0; i < obstacles.length; i++) {
-        ctx.fillStyle = "red";
-        ctx.fillRect(obstacles[i].x, obstacles[i].y, obstacles[i].width, obstacles[i].height);
+        ctx.drawImage(obstacleImage, obstacles[i].x, obstacles[i].y, obstacles[i].width, obstacles[i].height);
       }
     }
+
 
     function updateObstacles() {
       for (let i = 0; i < obstacles.length; i++) {
