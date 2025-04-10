@@ -75,14 +75,20 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 
 <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-GRQEKFCN3F"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-GRQEKFCN3F');
-</script>
+    <script>  
+    function open_fullscreen() {
+        var iframe = document.getElementById('game-area');
+        if (iframe.requestFullscreen) {
+          iframe.requestFullscreen();
+        } else if (iframe.mozRequestFullScreen) { // Firefox
+          iframe.mozRequestFullScreen();
+        } else if (iframe.webkitRequestFullscreen) { // Chrome, Safari and Opera
+          iframe.webkitRequestFullscreen();
+        } else if (iframe.msRequestFullscreen) { // IE/Edge
+          iframe.msRequestFullscreen();
+        }
+      }
+    </script>
 
 
 
