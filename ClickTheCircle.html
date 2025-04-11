@@ -82,7 +82,10 @@
 
       // Check if the circle time is up (player didn't click it in time)
       if (circleAppearTime + circleTimeout <= timeRemaining) {
-        endGame();
+        // If time expires, create a new circle and reset the timer
+        circle.x = Math.random() * canvas.width;
+        circle.y = Math.random() * canvas.height;
+        circleAppearTime = timeRemaining;
       }
     }
 
