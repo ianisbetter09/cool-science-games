@@ -2,162 +2,91 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Click the Circle Game</title>
+  <link rel="icon" type="image/x-icon" href=data:image/png;base64,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">
   <style>
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: #222;
-      color: white;
-      text-align: center;
-    }
-
-    h1 {
-      margin-top: 20px;
-    }
-
-    #info {
+      padding: 0;
       display: flex;
-      justify-content: space-around;
-      margin: 20px auto;
-      max-width: 600px;
-      font-size: 1.2em;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #000;
+      color: #fff;
+      font-family: Arial, sans-serif;
     }
-
-    #gameArea {
-      position: relative;
-      width: 90%;
-      height: 70vh;
+    canvas {
       border: 2px solid #fff;
-      margin: 0 auto;
-      background-color: #333;
-      overflow: hidden;
-    }
-
-    #circle {
-      width: 50px;
-      height: 50px;
-      background-color: red;
-      border-radius: 50%;
-      position: absolute;
-      display: none;
-      cursor: pointer;
-    }
-
-    #startBtn {
-      margin-top: 15px;
-      padding: 10px 20px;
-      font-size: 1.2em;
-      background-color: #28a745;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    #startBtn:hover {
-      background-color: #218838;
     }
   </style>
 </head>
 <body>
-
-  <h1>🎯 Click the Circle!</h1>
-  <div id="info">
-    <div id="score">Score: 0</div>
-    <div id="highScore">High Score: 0</div>
-    <div id="timer">Time: 30s</div>
-    <div id="level">Level: 1</div>
-  </div>
-
-  <button id="startBtn">Start Game</button>
-  <div id="gameArea">
-    <div id="circle"></div>
-  </div>
+  <canvas id="gameCanvas"></canvas>
 
   <script>
-    const circle = document.getElementById('circle');
-    const gameArea = document.getElementById('gameArea');
-    const scoreDisplay = document.getElementById('score');
-    const highScoreDisplay = document.getElementById('highScore');
-    const timerDisplay = document.getElementById('timer');
-    const levelDisplay = document.getElementById('level');
-    const startBtn = document.getElementById('startBtn');
-
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    let gameInterval;
     let score = 0;
-    let highScore = parseInt(localStorage.getItem('highScore')) || 0;
-    let timeLeft = 30;
-    let level = 1;
-    let countdownInterval = null;
-    let isPlaying = false;
 
-    highScoreDisplay.textContent = `High Score: ${highScore}`;
+    // Set canvas size
+    canvas.width = 600;
+    canvas.height = 400;
 
-    function randomPosition() {
-      const maxX = gameArea.clientWidth - circle.offsetWidth;
-      const maxY = gameArea.clientHeight - circle.offsetHeight;
-      const x = Math.floor(Math.random() * maxX);
-      const y = Math.floor(Math.random() * maxY);
-      circle.style.left = x + 'px';
-      circle.style.top = y + 'px';
+    // Circle object
+    const circle = {
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      radius: 30,
+      color: 'red',
+    };
+
+    // Draw the circle
+    function drawCircle() {
+      ctx.beginPath();
+      ctx.arc(circle.x, circle.y, circle.radius, 0, Math.PI * 2);
+      ctx.fillStyle = circle.color;
+      ctx.fill();
+      ctx.closePath();
     }
 
-    function updateLevel() {
-      level = Math.floor(score / 5) + 1;
-      levelDisplay.textContent = `Level: ${level}`;
-      const newSize = Math.max(20, 50 - (level - 1) * 5);
-      circle.style.width = newSize + 'px';
-      circle.style.height = newSize + 'px';
-    }
-
-    function updateScore() {
-      if (!isPlaying) return;
-      score++;
-      scoreDisplay.textContent = `Score: ${score}`;
-      if (score > highScore) {
-        highScore = score;
-        localStorage.setItem('highScore', highScore);
-        highScoreDisplay.textContent = `High Score: ${highScore}`;
+    // Handle click event
+    canvas.addEventListener('click', (event) => {
+      const distance = Math.sqrt(
+        Math.pow(event.offsetX - circle.x, 2) + Math.pow(event.offsetY - circle.y, 2)
+      );
+      
+      if (distance < circle.radius) {
+        score++;
+        circle.x = Math.random() * canvas.width;
+        circle.y = Math.random() * canvas.height;
       }
-      updateLevel();
-      randomPosition();
+    });
+
+    // Display score
+    function displayScore() {
+      ctx.font = '20px Arial';
+      ctx.fillStyle = 'white';
+      ctx.fillText('Score: ' + score, 10, 30);
     }
 
+    // Game loop
+    function gameLoop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawCircle();
+      displayScore();
+    }
+
+    // Start the game
     function startGame() {
-      if (isPlaying) return;
-      isPlaying = true;
       score = 0;
-      timeLeft = 30;
-      level = 1;
-
-      scoreDisplay.textContent = `Score: ${score}`;
-      timerDisplay.textContent = `Time: ${timeLeft}s`;
-      levelDisplay.textContent = `Level: ${level}`;
-
-      circle.style.display = 'block';
-      randomPosition();
-      updateLevel();
-
-      countdownInterval = setInterval(() => {
-        timeLeft--;
-        timerDisplay.textContent = `Time: ${timeLeft}s`;
-        if (timeLeft <= 0) {
-          endGame();
-        }
-      }, 1000);
+      gameInterval = setInterval(gameLoop, 1000 / 60); // 60 FPS
     }
 
-    function endGame() {
-      clearInterval(countdownInterval);
-      circle.style.display = 'none';
-      isPlaying = false;
-      alert(`⏰ Time's up! Your score: ${score}`);
-    }
-
-    circle.addEventListener('click', updateScore);
-    startBtn.addEventListener('click', startGame);
+    startGame();
   </script>
-
 </body>
 </html>
 
