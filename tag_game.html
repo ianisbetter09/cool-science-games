@@ -55,7 +55,7 @@
             y: 100,
             size: 30,
             color: 'red',
-            speed: 2,
+            speed: 3,
             dx: 0,
             dy: 0,
             isRunner: false
@@ -66,7 +66,7 @@
             y: 100,
             size: 30,
             color: 'blue',
-            speed: 2,
+            speed: 3,
             dx: 0,
             dy: 0,
             isRunner: false
@@ -152,6 +152,35 @@
             }, 1000);
         }
 
+        // Draw the player (with shadow and circle appearance)
+        function drawPlayer(player) {
+            ctx.beginPath();
+            ctx.arc(player.x, player.y, player.size, 0, Math.PI * 2);
+            ctx.fillStyle = player.color;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = "black";
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        // Tag zone (place where players can tag each other)
+        function drawTagZone() {
+            ctx.beginPath();
+            ctx.arc(400, 300, 100, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(0, 0, 255, 0.2)';
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        // Check if a player has entered the tag zone
+        function checkTag(player) {
+            const distance = Math.sqrt(Math.pow(player.x - 400, 2) + Math.pow(player.y - 300, 2));
+            if (distance < 100) {
+                return true;
+            }
+            return false;
+        }
+
         // Update runner's position (Player 1)
         function moveRunner() {
             if (keys1['ArrowUp']) runner.dy = -runner.speed;
@@ -172,118 +201,63 @@
             if (runner.y + runner.size > canvas.height) runner.y = canvas.height - runner.size;
         }
 
-        // Update chaser's position (Player 2 or AI)
-        function moveChaser(playerNum) {
-            let chaserToMove = playerNum === 1 ? chaser : chaser2;
-            let dx = runner.x - chaserToMove.x;
-            let dy = runner.y - chaserToMove.y;
-            let distance = Math.sqrt(dx * dx + dy * dy);
+        // Update chaser's position (AI for 2-player mode)
+        function moveChaser() {
+            if (is2PlayerMode) {
+                // Move towards the runner (simple AI for chaser)
+                const targetX = runner.x;
+                const targetY = runner.y;
 
-            if (distance > 0) {
-                chaserToMove.dx = (dx / distance) * chaserToMove.speed;
-                chaserToMove.dy = (dy / distance) * chaserToMove.speed;
-            }
+                if (chaser.x < targetX) chaser.dx = chaser.speed;
+                else if (chaser.x > targetX) chaser.dx = -chaser.speed;
+                else chaser.dx = 0;
 
-            chaserToMove.x += chaserToMove.dx;
-            chaserToMove.y += chaserToMove.dy;
-        }
+                if (chaser.y < targetY) chaser.dy = chaser.speed;
+                else if (chaser.y > targetY) chaser.dy = -chaser.speed;
+                else chaser.dy = 0;
 
-        // Update chaser2's position (for 2-player mode)
-        function moveChaser2() {
-            if (keys2['w']) chaser2.dy = -chaser2.speed;
-            else if (keys2['s']) chaser2.dy = chaser2.speed;
-            else chaser2.dy = 0;
+                chaser.x += chaser.dx;
+                chaser.y += chaser.dy;
 
-            if (keys2['a']) chaser2.dx = -chaser2.speed;
-            else if (keys2['d']) chaser2.dx = chaser2.speed;
-            else chaser2.dx = 0;
+                if (checkTag(chaser)) {
+                    alert("Chaser 1 tagged the runner!");
+                    resetGame();
+                }
 
-            chaser2.x += chaser2.dx;
-            chaser2.y += chaser2.dy;
+                // Repeat for chaser2 in 2-player mode
+                if (chaser2.x < targetX) chaser2.dx = chaser2.speed;
+                else if (chaser2.x > targetX) chaser2.dx = -chaser2.speed;
+                else chaser2.dx = 0;
 
-            // Boundaries check
-            if (chaser2.x < 0) chaser2.x = 0;
-            if (chaser2.x + chaser2.size > canvas.width) chaser2.x = canvas.width - chaser2.size;
-            if (chaser2.y < 0) chaser2.y = 0;
-            if (chaser2.y + chaser2.size > canvas.height) chaser2.y = canvas.height - chaser2.size;
-        }
+                if (chaser2.y < targetY) chaser2.dy = chaser2.speed;
+                else if (chaser2.y > targetY) chaser2.dy = -chaser2.speed;
+                else chaser2.dy = 0;
 
-        // Check for collision (tagging)
-        function checkTag() {
-            const checkCollision = (chaser) => {
-                const dx = runner.x - chaser.x;
-                const dy = runner.y - chaser.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
+                chaser2.x += chaser2.dx;
+                chaser2.y += chaser2.dy;
 
-                if (distance < (runner.size / 2 + chaser.size / 2)) {
-                    // Tag occurs, switch roles
-                    switchRoles();
+                if (checkTag(chaser2)) {
+                    alert("Chaser 2 tagged the runner!");
+                    resetGame();
                 }
             }
-
-            checkCollision(chaser);
-            if (is2PlayerMode) {
-                checkCollision(chaser2);
-            }
         }
 
-        // Switch roles between runner and chaser
-        function switchRoles() {
-            if (runner.isRunner) {
-                // Switch roles between runner and chaser
-                runner.isRunner = false;
-                chaser.isRunner = true;
-                chaser2.isRunner = false; // chaser2 stays chaser
-            } else if (chaser.isRunner) {
-                // Switch roles between runner and chaser
-                chaser.isRunner = false;
-                runner.isRunner = true;
-                chaser2.isRunner = false; // chaser2 stays chaser
-            } else if (chaser2.isRunner) {
-                // Switch roles between runner and chaser
-                chaser2.isRunner = false;
-                runner.isRunner = true;
-                chaser.isRunner = false; // chaser stays chaser
-            }
-
-            resetGame();
-        }
-
-        // Draw game elements
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Draw runner
-            ctx.fillStyle = runner.isRunner ? 'green' : 'gray'; // Runner color
-            ctx.fillRect(runner.x, runner.y, runner.size, runner.size);
-
-            // Draw chaser
-            ctx.fillStyle = chaser.isRunner ? 'green' : 'red'; // Chaser color
-            ctx.fillRect(chaser.x, chaser.y, chaser.size, chaser.size);
-            
-            // Draw chaser2 for 2-player mode
-            if (is2PlayerMode) {
-                ctx.fillStyle = chaser2.isRunner ? 'green' : 'blue'; // Chaser2 color
-                ctx.fillRect(chaser2.x, chaser2.y, chaser2.size, chaser2.size);
-            }
-        }
-
-        // Game loop
+        // Game loop to update the game state
         function gameLoop() {
-            if (runner.isRunner) {
-                moveRunner();
-            }
-            if (chaser.isRunner || chaser2.isRunner) {
-                moveChaser(1);
-            }
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawTagZone(); // Draw the tag zone
+            drawPlayer(runner);
+            drawPlayer(chaser);
             if (is2PlayerMode) {
-                moveChaser2();
+                drawPlayer(chaser2); // Draw chaser2 for 2-player mode
             }
-
-            checkTag();
-            draw();
-            requestAnimationFrame(gameLoop);  // Keep looping
+            moveRunner();
+            moveChaser();
+            requestAnimationFrame(gameLoop);
         }
+
     </script>
 </body>
 </html>
+
