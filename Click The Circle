@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Click the Circle Game</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #222;
+      color: white;
+      text-align: center;
+    }
+
+    h1 {
+      margin-top: 20px;
+    }
+
+    #info {
+      display: flex;
+      justify-content: space-around;
+      margin: 10px auto;
+      max-width: 600px;
+      font-size: 1.2em;
+    }
+
+    #gameArea {
+      position: relative;
+      width: 100%;
+      height: 75vh;
+      border: 2px solid #fff;
+      margin: 10px auto;
+      overflow: hidden;
+      background-color: #333;
+    }
+
+    #circle {
+      width: 50px;
+      height: 50px;
+      background-color: red;
+      border-radius: 50%;
+      position: absolute;
+      cursor: pointer;
+      transition: all 0.1s ease;
+    }
+
+    #startBtn {
+      padding: 10px 20px;
+      font-size: 1em;
+      background-color: limegreen;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    #startBtn:hover {
+      background-color: green;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🎯 Click the Circle!</h1>
+  <div id="info">
+    <div id="score">Score: 0</div>
+    <div id="highScore">High Score: 0</div>
+    <div id="timer">Time: 30s</div>
+    <div id="level">Level: 1</div>
+  </div>
+
+  <button id="startBtn">Start Game</button>
+  <div id="gameArea">
+    <div id="circle" style="display: none;"></div>
+  </div>
+
+  <script>
+    const circle = document.getElementById('circle');
+    const gameArea = document.getElementById('gameArea');
+    const scoreDisplay = document.getElementById('score');
+    const highScoreDisplay = document.getElementById('highScore');
+    const timerDisplay = document.getElementById('timer');
+    const levelDisplay = document.getElementById('level');
+    const startBtn = document.getElementById('startBtn');
+
+    let score = 0;
+    let highScore = localStorage.getItem('highScore') || 0;
+    let timeLeft = 30;
+    let level = 1;
+    let gameInterval;
+    let countdownInterval;
+
+    highScoreDisplay.textContent = `High Score: ${highScore}`;
+
+    function randomPosition() {
+      const maxX = gameArea.clientWidth - circle.offsetWidth;
+      const maxY = gameArea.clientHeight - circle.offsetHeight;
+      const x = Math.floor(Math.random() * maxX);
+      const y = Math.floor(Math.random() * maxY);
+      circle.style.left = x + 'px';
+      circle.style.top = y + 'px';
+    }
+
+    function updateLevel() {
+      level = Math.floor(score / 5) + 1;
+      levelDisplay.textContent = `Level: ${level}`;
+      const newSize = Math.max(20, 50 - (level - 1) * 5); // Smaller circle
+      circle.style.width = newSize + 'px';
+      circle.style.height = newSize + 'px';
+    }
+
+    function updateScore() {
+      score++;
+      scoreDisplay.textContent = `Score: ${score}`;
+      if (score > highScore) {
+        highScore = score;
+        localStorage.setItem('highScore', highScore);
+        highScoreDisplay.textContent = `High Score: ${highScore}`;
+      }
+      updateLevel();
+      randomPosition();
+    }
+
+    function startGame() {
+      score = 0;
+      level = 1;
+      timeLeft = 30;
+      scoreDisplay.textContent = `Score: ${score}`;
+      levelDisplay.textContent = `Level: ${level}`;
+      timerDisplay.textContent = `Time: ${timeLeft}s`;
+      circle.style.display = 'block';
+      randomPosition();
+      updateLevel();
+
+      countdownInterval = setInterval(() => {
+        timeLeft--;
+        timerDisplay.textContent = `Time: ${timeLeft}s`;
+        if (timeLeft <= 0) {
+          endGame();
+        }
+      }, 1000);
+    }
+
+    function endGame() {
+      clearInterval(countdownInterval);
+      circle.style.display = 'none';
+      alert(`⏰ Time's up! Your score: ${score}`);
+    }
+
+    circle.addEventListener('click', updateScore);
+    startBtn.addEventListener('click', startGame);
+  </script>
+
+</body>
+</html>
