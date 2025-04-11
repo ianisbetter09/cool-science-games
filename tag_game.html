@@ -9,7 +9,8 @@
         canvas { background-color: #f0f0f0; display: block; margin: 0 auto; }
         .hidden { display: none; }
         #timer { position: absolute; top: 20px; left: 20px; font-size: 24px; color: black; }
-        #homeScreen { text-align: center; }
+        #homeScreen { text-align: center; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        #gameCanvas { display: block; margin: 0 auto; }
     </style>
 </head>
 <body>
@@ -21,8 +22,8 @@
     </div>
 
     <!-- Game Screen -->
-    <canvas id="gameCanvas"></canvas>
-    <div id="timer">Time Left: 30s</div>
+    <canvas id="gameCanvas" class="hidden"></canvas>
+    <div id="timer" class="hidden">Time Left: 30s</div>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
@@ -36,7 +37,6 @@
         let is2PlayerMode = false;
         let gameTime = 30; // 30 seconds timer
         let timerInterval;
-        let roleSwitching = false;
 
         // Game variables for players
         let runner = {
@@ -117,6 +117,7 @@
             is2PlayerMode = players === 2;
             homeScreen.classList.add('hidden');
             canvas.classList.remove('hidden');
+            timerElement.classList.remove('hidden');
             resetGame();
             startTimer();
             gameLoop();
@@ -168,89 +169,4 @@
             if (runner.x < 0) runner.x = 0;
             if (runner.x + runner.size > canvas.width) runner.x = canvas.width - runner.size;
             if (runner.y < 0) runner.y = 0;
-            if (runner.y + runner.size > canvas.height) runner.y = canvas.height - runner.size;
-        }
-
-        // Update chaser's position (Player 2 or AI)
-        function moveChaser(playerNum) {
-            let chaserToMove = playerNum === 1 ? chaser : chaser2;
-            let dx = runner.x - chaserToMove.x;
-            let dy = runner.y - chaserToMove.y;
-            let distance = Math.sqrt(dx * dx + dy * dy);
-
-            if (distance > 0) {
-                chaserToMove.dx = (dx / distance) * chaserToMove.speed;
-                chaserToMove.dy = (dy / distance) * chaserToMove.speed;
-            }
-
-            chaserToMove.x += chaserToMove.dx;
-            chaserToMove.y += chaserToMove.dy;
-        }
-
-        // Update chaser2's position (for 2-player mode)
-        function moveChaser2() {
-            if (keys2['w']) chaser2.dy = -chaser2.speed;
-            else if (keys2['s']) chaser2.dy = chaser2.speed;
-            else chaser2.dy = 0;
-
-            if (keys2['a']) chaser2.dx = -chaser2.speed;
-            else if (keys2['d']) chaser2.dx = chaser2.speed;
-            else chaser2.dx = 0;
-
-            chaser2.x += chaser2.dx;
-            chaser2.y += chaser2.dy;
-
-            // Boundaries check
-            if (chaser2.x < 0) chaser2.x = 0;
-            if (chaser2.x + chaser2.size > canvas.width) chaser2.x = canvas.width - chaser2.size;
-            if (chaser2.y < 0) chaser2.y = 0;
-            if (chaser2.y + chaser2.size > canvas.height) chaser2.y = canvas.height - chaser2.size;
-        }
-
-        // Check for collision (tagging)
-        function checkTag() {
-            const checkCollision = (chaser) => {
-                const dx = runner.x - chaser.x;
-                const dy = runner.y - chaser.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-
-                if (distance < (runner.size / 2 + chaser.size / 2)) {
-                    // Tag occurs, switch roles
-                    switchRoles();
-                }
-            }
-
-            checkCollision(chaser);
-            if (is2PlayerMode) {
-                checkCollision(chaser2);
-            }
-        }
-
-        // Switch roles between runner and chaser
-        function switchRoles() {
-            if (runner.isRunner) {
-                // Switch roles between runner and chaser
-                runner.isRunner = false;
-                chaser.isRunner = true;
-                chaser2.isRunner = false; // chaser2 stays chaser
-            } else if (chaser.isRunner) {
-                // Switch roles between runner and chaser
-                chaser.isRunner = false;
-                runner.isRunner = true;
-                chaser2.isRunner = false; // chaser2 stays chaser
-            } else if (chaser2.isRunner) {
-                // Switch roles between runner and chaser
-                chaser2.isRunner = false;
-                runner.isRunner = true;
-                chaser.isRunner = false; // chaser stays chaser
-            }
-
-            resetGame();
-        }
-
-        // Draw game elements
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Draw runner
-            ctx
+            if (runner.y + runner.size > canvas.height
