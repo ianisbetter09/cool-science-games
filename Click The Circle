@@ -19,19 +19,19 @@
     #info {
       display: flex;
       justify-content: space-around;
-      margin: 10px auto;
+      margin: 20px auto;
       max-width: 600px;
       font-size: 1.2em;
     }
 
     #gameArea {
       position: relative;
-      width: 100%;
-      height: 75vh;
+      width: 90%;
+      height: 70vh;
       border: 2px solid #fff;
-      margin: 10px auto;
-      overflow: hidden;
+      margin: 0 auto;
       background-color: #333;
+      overflow: hidden;
     }
 
     #circle {
@@ -40,23 +40,23 @@
       background-color: red;
       border-radius: 50%;
       position: absolute;
+      display: none;
       cursor: pointer;
-      transition: all 0.1s ease;
     }
 
     #startBtn {
+      margin-top: 15px;
       padding: 10px 20px;
-      font-size: 1em;
-      background-color: limegreen;
+      font-size: 1.2em;
+      background-color: #28a745;
       color: white;
       border: none;
       border-radius: 5px;
       cursor: pointer;
-      margin-top: 10px;
     }
 
     #startBtn:hover {
-      background-color: green;
+      background-color: #218838;
     }
   </style>
 </head>
@@ -72,7 +72,7 @@
 
   <button id="startBtn">Start Game</button>
   <div id="gameArea">
-    <div id="circle" style="display: none;"></div>
+    <div id="circle"></div>
   </div>
 
   <script>
@@ -85,11 +85,11 @@
     const startBtn = document.getElementById('startBtn');
 
     let score = 0;
-    let highScore = localStorage.getItem('highScore') || 0;
+    let highScore = parseInt(localStorage.getItem('highScore')) || 0;
     let timeLeft = 30;
     let level = 1;
-    let gameInterval;
-    let countdownInterval;
+    let countdownInterval = null;
+    let isPlaying = false;
 
     highScoreDisplay.textContent = `High Score: ${highScore}`;
 
@@ -105,12 +105,13 @@
     function updateLevel() {
       level = Math.floor(score / 5) + 1;
       levelDisplay.textContent = `Level: ${level}`;
-      const newSize = Math.max(20, 50 - (level - 1) * 5); // Smaller circle
+      const newSize = Math.max(20, 50 - (level - 1) * 5);
       circle.style.width = newSize + 'px';
       circle.style.height = newSize + 'px';
     }
 
     function updateScore() {
+      if (!isPlaying) return;
       score++;
       scoreDisplay.textContent = `Score: ${score}`;
       if (score > highScore) {
@@ -123,12 +124,16 @@
     }
 
     function startGame() {
+      if (isPlaying) return;
+      isPlaying = true;
       score = 0;
-      level = 1;
       timeLeft = 30;
+      level = 1;
+
       scoreDisplay.textContent = `Score: ${score}`;
-      levelDisplay.textContent = `Level: ${level}`;
       timerDisplay.textContent = `Time: ${timeLeft}s`;
+      levelDisplay.textContent = `Level: ${level}`;
+
       circle.style.display = 'block';
       randomPosition();
       updateLevel();
@@ -145,6 +150,7 @@
     function endGame() {
       clearInterval(countdownInterval);
       circle.style.display = 'none';
+      isPlaying = false;
       alert(`⏰ Time's up! Your score: ${score}`);
     }
 
@@ -154,3 +160,4 @@
 
 </body>
 </html>
+
