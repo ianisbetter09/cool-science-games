@@ -37,6 +37,7 @@
         let is2PlayerMode = false;
         let gameTime = 30; // 30 seconds timer
         let timerInterval;
+        let gameOver = false;
 
         // Game variables for players
         let runner = {
@@ -47,10 +48,9 @@
             speed: 4,
             dx: 0,
             dy: 0,
-            isRunner: true
         };
 
-        let chaser = {
+        let chaser1 = {
             x: 100,
             y: 100,
             size: 30,
@@ -58,7 +58,6 @@
             speed: 2,
             dx: 0,
             dy: 0,
-            isRunner: false
         };
 
         let chaser2 = {
@@ -69,7 +68,6 @@
             speed: 2,
             dx: 0,
             dy: 0,
-            isRunner: false
         };
 
         // Movement keys for 1-player mode
@@ -85,30 +83,27 @@
             w: false,
             s: false,
             a: false,
-            d: false
+            d: false,
+            ArrowUp: false,
+            ArrowDown: false,
+            ArrowLeft: false,
+            ArrowRight: false
         };
 
+        // Player movement listeners
         document.addEventListener('keydown', (e) => {
             if (is2PlayerMode) {
-                if (e.key in keys2) {
-                    keys2[e.key] = true;
-                }
+                if (e.key in keys2) keys2[e.key] = true;
             } else {
-                if (e.key in keys1) {
-                    keys1[e.key] = true;
-                }
+                if (e.key in keys1) keys1[e.key] = true;
             }
         });
 
         document.addEventListener('keyup', (e) => {
             if (is2PlayerMode) {
-                if (e.key in keys2) {
-                    keys2[e.key] = false;
-                }
+                if (e.key in keys2) keys2[e.key] = false;
             } else {
-                if (e.key in keys1) {
-                    keys1[e.key] = false;
-                }
+                if (e.key in keys1) keys1[e.key] = false;
             }
         });
 
@@ -127,55 +122,37 @@
         function resetGame() {
             runner.x = 400;
             runner.y = 300;
-            chaser.x = 100;
-            chaser.y = 100;
+            chaser1.x = 100;
+            chaser1.y = 100;
             chaser2.x = 700;
             chaser2.y = 100;
-
-            runner.isRunner = true;
-            chaser.isRunner = false;
-            chaser2.isRunner = false;
+            gameOver = false;
         }
 
         // Start timer
         function startTimer() {
-            gameTime = 30; // Reset to 30 seconds
+            gameTime = 30;
             timerElement.textContent = `Time Left: ${gameTime}s`;
             timerInterval = setInterval(() => {
+                if (gameOver) return;
                 gameTime--;
                 timerElement.textContent = `Time Left: ${gameTime}s`;
                 if (gameTime <= 0) {
                     clearInterval(timerInterval);
-                    alert("Time's up! " + (runner.isRunner ? "You" : "Your opponent") + " lost!");
+                    gameOver = true;
+                    alert("Time's up! The runner lost!");
                     resetGame();
                 }
             }, 1000);
         }
 
-        // Draw the player (with shadow and circle appearance)
+        // Draw player on canvas
         function drawPlayer(player) {
             ctx.beginPath();
             ctx.arc(player.x, player.y, player.size, 0, Math.PI * 2);
             ctx.fillStyle = player.color;
-            ctx.shadowBlur = 10;
-            ctx.shadowColor = "black";
             ctx.fill();
             ctx.closePath();
-        }
-
-        // Tag zone (place where players can tag each other)
-        function drawTagZone() {
-            ctx.beginPath();
-            ctx.arc(400, 300, 100, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgba(0, 0, 255, 0.2)';
-            ctx.fill();
-            ctx.closePath();
-        }
-
-        // Check if a player has entered the tag zone
-        function checkTag(player) {
-            const distance = Math.sqrt(Math.pow(player.x - 400, 2) + Math.pow(player.y - 300, 2));
-            return distance < 100;
         }
 
         // Update runner's position (Player 1)
@@ -199,58 +176,50 @@
         }
 
         // Update chaser's position (AI for 2-player mode)
-        function moveChaser() {
-            if (is2PlayerMode) {
-                // Move towards the runner (simple AI for chaser)
-                const targetX = runner.x;
-                const targetY = runner.y;
+        function moveChaser(chaser, target) {
+            const dx = target.x - chaser.x;
+            const dy = target.y - chaser.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
 
-                if (chaser.x < targetX) chaser.dx = chaser.speed;
-                else if (chaser.x > targetX) chaser.dx = -chaser.speed;
-                else chaser.dx = 0;
-
-                if (chaser.y < targetY) chaser.dy = chaser.speed;
-                else if (chaser.y > targetY) chaser.dy = -chaser.speed;
-                else chaser.dy = 0;
-
-                chaser.x += chaser.dx;
-                chaser.y += chaser.dy;
-
-                if (checkTag(chaser)) {
-                    alert("Chaser 1 tagged the runner!");
-                    resetGame();
-                }
-
-                // Repeat for chaser2 in 2-player mode
-                if (chaser2.x < targetX) chaser2.dx = chaser2.speed;
-                else if (chaser2.x > targetX) chaser2.dx = -chaser2.speed;
-                else chaser2.dx = 0;
-
-                if (chaser2.y < targetY) chaser2.dy = chaser2.speed;
-                else if (chaser2.y > targetY) chaser2.dy = -chaser2.speed;
-                else chaser2.dy = 0;
-
-                chaser2.x += chaser2.dx;
-                chaser2.y += chaser2.dy;
-
-                if (checkTag(chaser2)) {
-                    alert("Chaser 2 tagged the runner!");
-                    resetGame();
-                }
+            if (distance > 1) {
+                chaser.dx = (dx / distance) * chaser.speed;
+                chaser.dy = (dy / distance) * chaser.speed;
             }
+
+            chaser.x += chaser.dx;
+            chaser.y += chaser.dy;
+        }
+
+        // Collision check for tagging
+        function checkTag(chaser, runner) {
+            const distance = Math.sqrt(Math.pow(chaser.x - runner.x, 2) + Math.pow(chaser.y - runner.y, 2));
+            return distance < chaser.size + runner.size;
         }
 
         // Game loop to update the game state
         function gameLoop() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);  // Clear canvas
 
-            drawTagZone();  // Draw the tag zone
-            drawPlayer(runner);  // Draw the runner
-            drawPlayer(chaser);  // Draw the chaser(s)
+            // Draw the players
+            drawPlayer(runner);
+            drawPlayer(chaser1);
             if (is2PlayerMode) drawPlayer(chaser2);
 
             moveRunner();  // Move the runner
-            moveChaser();  // Move the chaser(s)
+            if (!gameOver) {
+                moveChaser(chaser1, runner);  // Move chaser1 toward the runner
+                if (is2PlayerMode) moveChaser(chaser2, runner);  // Move chaser2 toward the runner
+            }
+
+            // Check if any chaser has tagged the runner
+            if (checkTag(chaser1, runner)) {
+                alert("Chaser 1 tagged the runner!");
+                resetGame();
+            }
+            if (is2PlayerMode && checkTag(chaser2, runner)) {
+                alert("Chaser 2 tagged the runner!");
+                resetGame();
+            }
 
             requestAnimationFrame(gameLoop);  // Repeat the game loop
         }
