@@ -34,24 +34,20 @@
       color: black;
     }
 
-    #highScoreDisplay {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      font-size: 20px;
-      color: black;
-    }
+   
   </style>
 </head>
 <body>
   <canvas id="gameCanvas" width="800" height="400"></canvas>
+  <div id="scoreDisplayContainer" style="position: absolute; top: 20px; left: 20px; font-size: 20px; color: black;">
   <div id="scoreDisplay">Score: 0</div>
-  <br></br>
   <div id="highScoreDisplay">High Score: 0</div>
+</div>
 
   <script>
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
+    let paused = false;
 
     let dino = {
       x: 50,
@@ -182,7 +178,9 @@ const shipPng = new Image();
   // Create obstacles at a smooth frequency
   if (Math.random() < obstacleFrequency) createObstacle();
 
+  if (!paused) {
   requestAnimationFrame(gameLoop);
+}
 }
 
 
@@ -201,7 +199,15 @@ const shipPng = new Image();
         dino.speedY = 0;  // Stop vertical movement when key is released
       }
     });
-
+    
+window.addEventListener("keydown", (e) => {
+  if (e.code === "Escape") {
+    paused = !paused;
+    if (!paused) {
+      gameLoop(); // Resume the game loop if unpaused
+    }
+  }
+});
     gameLoop();
   </script>
 </body>
