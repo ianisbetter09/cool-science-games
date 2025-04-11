@@ -44,7 +44,7 @@
             y: 300,
             size: 30,
             color: 'green',
-            speed: 5,
+            speed: 4,
             dx: 0,
             dy: 0,
             isRunner: true
@@ -55,7 +55,7 @@
             y: 100,
             size: 30,
             color: 'red',
-            speed: 3,
+            speed: 2,
             dx: 0,
             dy: 0,
             isRunner: false
@@ -66,7 +66,7 @@
             y: 100,
             size: 30,
             color: 'blue',
-            speed: 3,
+            speed: 2,
             dx: 0,
             dy: 0,
             isRunner: false
@@ -175,10 +175,7 @@
         // Check if a player has entered the tag zone
         function checkTag(player) {
             const distance = Math.sqrt(Math.pow(player.x - 400, 2) + Math.pow(player.y - 300, 2));
-            if (distance < 100) {
-                return true;
-            }
-            return false;
+            return distance < 100;
         }
 
         // Update runner's position (Player 1)
@@ -245,19 +242,18 @@
 
         // Game loop to update the game state
         function gameLoop() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            drawTagZone(); // Draw the tag zone
-            drawPlayer(runner);
-            drawPlayer(chaser);
-            if (is2PlayerMode) {
-                drawPlayer(chaser2); // Draw chaser2 for 2-player mode
-            }
-            moveRunner();
-            moveChaser();
-            requestAnimationFrame(gameLoop);
-        }
+            ctx.clearRect(0, 0, canvas.width, canvas.height);  // Clear canvas
 
+            drawTagZone();  // Draw the tag zone
+            drawPlayer(runner);  // Draw the runner
+            drawPlayer(chaser);  // Draw the chaser(s)
+            if (is2PlayerMode) drawPlayer(chaser2);
+
+            moveRunner();  // Move the runner
+            moveChaser();  // Move the chaser(s)
+
+            requestAnimationFrame(gameLoop);  // Repeat the game loop
+        }
     </script>
 </body>
 </html>
-
