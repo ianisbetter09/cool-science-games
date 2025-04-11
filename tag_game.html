@@ -3,23 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tag Game (One Player)</title>
+    <title>Tag Game</title>
     <style>
         body { margin: 0; padding: 0; }
         canvas { background-color: #f0f0f0; display: block; margin: 0 auto; }
+        .hidden { display: none; }
+        #timer { position: absolute; top: 20px; left: 20px; font-size: 24px; color: black; }
+        #homeScreen { text-align: center; }
     </style>
 </head>
 <body>
+    <!-- Home Screen -->
+    <div id="homeScreen">
+        <h1>Tag Game</h1>
+        <button onclick="startGame(1)">1 Player Mode</button>
+        <button onclick="startGame(2)">2 Player Mode</button>
+    </div>
+
+    <!-- Game Screen -->
     <canvas id="gameCanvas"></canvas>
+    <div id="timer">Time Left: 30s</div>
+
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
+        const homeScreen = document.getElementById('homeScreen');
+        const timerElement = document.getElementById('timer');
         
-        // Set canvas size
         canvas.width = 800;
         canvas.height = 600;
 
-        // Game variables
+        let is2PlayerMode = false;
+        let gameTime = 30; // 30 seconds timer
+        let timerInterval;
+        let roleSwitching = false;
+
+        // Game variables for players
         let runner = {
             x: 400,
             y: 300,
@@ -27,7 +46,8 @@
             color: 'green',
             speed: 5,
             dx: 0,
-            dy: 0
+            dy: 0,
+            isRunner: true
         };
 
         let chaser = {
@@ -37,37 +57,108 @@
             color: 'red',
             speed: 2,
             dx: 0,
-            dy: 0
+            dy: 0,
+            isRunner: false
         };
 
-        // Movement handling
-        const keys = {
+        let chaser2 = {
+            x: 700,
+            y: 100,
+            size: 30,
+            color: 'blue',
+            speed: 2,
+            dx: 0,
+            dy: 0,
+            isRunner: false
+        };
+
+        // Movement keys for 1-player mode
+        const keys1 = {
             ArrowUp: false,
             ArrowDown: false,
             ArrowLeft: false,
             ArrowRight: false
         };
 
+        // Movement keys for 2-player mode
+        const keys2 = {
+            w: false,
+            s: false,
+            a: false,
+            d: false
+        };
+
         document.addEventListener('keydown', (e) => {
-            if (e.key in keys) {
-                keys[e.key] = true;
+            if (is2PlayerMode) {
+                if (e.key in keys2) {
+                    keys2[e.key] = true;
+                }
+            } else {
+                if (e.key in keys1) {
+                    keys1[e.key] = true;
+                }
             }
         });
 
         document.addEventListener('keyup', (e) => {
-            if (e.key in keys) {
-                keys[e.key] = false;
+            if (is2PlayerMode) {
+                if (e.key in keys2) {
+                    keys2[e.key] = false;
+                }
+            } else {
+                if (e.key in keys1) {
+                    keys1[e.key] = false;
+                }
             }
         });
 
-        // Update runner's position
+        // Start the game
+        function startGame(players) {
+            is2PlayerMode = players === 2;
+            homeScreen.classList.add('hidden');
+            canvas.classList.remove('hidden');
+            resetGame();
+            startTimer();
+            gameLoop();
+        }
+
+        // Reset the game
+        function resetGame() {
+            runner.x = 400;
+            runner.y = 300;
+            chaser.x = 100;
+            chaser.y = 100;
+            chaser2.x = 700;
+            chaser2.y = 100;
+
+            runner.isRunner = true;
+            chaser.isRunner = false;
+            chaser2.isRunner = false;
+        }
+
+        // Start timer
+        function startTimer() {
+            gameTime = 30; // Reset to 30 seconds
+            timerElement.textContent = `Time Left: ${gameTime}s`;
+            timerInterval = setInterval(() => {
+                gameTime--;
+                timerElement.textContent = `Time Left: ${gameTime}s`;
+                if (gameTime <= 0) {
+                    clearInterval(timerInterval);
+                    alert("Time's up! " + (runner.isRunner ? "You" : "Your opponent") + " lost!");
+                    resetGame();
+                }
+            }, 1000);
+        }
+
+        // Update runner's position (Player 1)
         function moveRunner() {
-            if (keys['ArrowUp']) runner.dy = -runner.speed;
-            else if (keys['ArrowDown']) runner.dy = runner.speed;
+            if (keys1['ArrowUp']) runner.dy = -runner.speed;
+            else if (keys1['ArrowDown']) runner.dy = runner.speed;
             else runner.dy = 0;
 
-            if (keys['ArrowLeft']) runner.dx = -runner.speed;
-            else if (keys['ArrowRight']) runner.dx = runner.speed;
+            if (keys1['ArrowLeft']) runner.dx = -runner.speed;
+            else if (keys1['ArrowRight']) runner.dx = runner.speed;
             else runner.dx = 0;
 
             runner.x += runner.dx;
@@ -80,39 +171,81 @@
             if (runner.y + runner.size > canvas.height) runner.y = canvas.height - runner.size;
         }
 
-        // Move the chaser
-        function moveChaser() {
-            let dx = runner.x - chaser.x;
-            let dy = runner.y - chaser.y;
+        // Update chaser's position (Player 2 or AI)
+        function moveChaser(playerNum) {
+            let chaserToMove = playerNum === 1 ? chaser : chaser2;
+            let dx = runner.x - chaserToMove.x;
+            let dy = runner.y - chaserToMove.y;
             let distance = Math.sqrt(dx * dx + dy * dy);
 
             if (distance > 0) {
-                chaser.dx = (dx / distance) * chaser.speed;
-                chaser.dy = (dy / distance) * chaser.speed;
+                chaserToMove.dx = (dx / distance) * chaserToMove.speed;
+                chaserToMove.dy = (dy / distance) * chaserToMove.speed;
             }
 
-            chaser.x += chaser.dx;
-            chaser.y += chaser.dy;
+            chaserToMove.x += chaserToMove.dx;
+            chaserToMove.y += chaserToMove.dy;
+        }
+
+        // Update chaser2's position (for 2-player mode)
+        function moveChaser2() {
+            if (keys2['w']) chaser2.dy = -chaser2.speed;
+            else if (keys2['s']) chaser2.dy = chaser2.speed;
+            else chaser2.dy = 0;
+
+            if (keys2['a']) chaser2.dx = -chaser2.speed;
+            else if (keys2['d']) chaser2.dx = chaser2.speed;
+            else chaser2.dx = 0;
+
+            chaser2.x += chaser2.dx;
+            chaser2.y += chaser2.dy;
+
+            // Boundaries check
+            if (chaser2.x < 0) chaser2.x = 0;
+            if (chaser2.x + chaser2.size > canvas.width) chaser2.x = canvas.width - chaser2.size;
+            if (chaser2.y < 0) chaser2.y = 0;
+            if (chaser2.y + chaser2.size > canvas.height) chaser2.y = canvas.height - chaser2.size;
         }
 
         // Check for collision (tagging)
         function checkTag() {
-            const dx = runner.x - chaser.x;
-            const dy = runner.y - chaser.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
+            const checkCollision = (chaser) => {
+                const dx = runner.x - chaser.x;
+                const dy = runner.y - chaser.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
 
-            if (distance < (runner.size / 2 + chaser.size / 2)) {
-                alert("You got tagged! Game Over!");
-                resetGame();
+                if (distance < (runner.size / 2 + chaser.size / 2)) {
+                    // Tag occurs, switch roles
+                    switchRoles();
+                }
+            }
+
+            checkCollision(chaser);
+            if (is2PlayerMode) {
+                checkCollision(chaser2);
             }
         }
 
-        // Reset the game
-        function resetGame() {
-            runner.x = 400;
-            runner.y = 300;
-            chaser.x = 100;
-            chaser.y = 100;
+        // Switch roles between runner and chaser
+        function switchRoles() {
+            if (runner.isRunner) {
+                // Switch roles between runner and chaser
+                runner.isRunner = false;
+                chaser.isRunner = true;
+                chaser2.isRunner = false; // chaser2 stays chaser
+            } else if (chaser.isRunner) {
+                // Switch roles between runner and chaser
+                chaser.isRunner = false;
+                runner.isRunner = true;
+                chaser2.isRunner = false; // chaser2 stays chaser
+            } else if (chaser2.isRunner) {
+                // Switch roles between runner and chaser
+                chaser2.isRunner = false;
+                runner.isRunner = true;
+                chaser.isRunner = false; // chaser stays chaser
+            }
+
+            resetGame();
         }
 
         // Draw game elements
@@ -120,32 +253,4 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             // Draw runner
-            ctx.beginPath();
-            ctx.arc(runner.x + runner.size / 2, runner.y + runner.size / 2, runner.size / 2, 0, Math.PI * 2);
-            ctx.fillStyle = runner.color;
-            ctx.fill();
-            ctx.closePath();
-
-            // Draw chaser
-            ctx.beginPath();
-            ctx.arc(chaser.x + chaser.size / 2, chaser.y + chaser.size / 2, chaser.size / 2, 0, Math.PI * 2);
-            ctx.fillStyle = chaser.color;
-            ctx.fill();
-            ctx.closePath();
-        }
-
-        // Game loop
-        function gameLoop() {
-            moveRunner();
-            moveChaser();
-            checkTag();
-            draw();
-            requestAnimationFrame(gameLoop);
-        }
-
-        // Start the game
-        gameLoop();
-    </script>
-</body>
-</html>
-
+            ctx
