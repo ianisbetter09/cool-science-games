@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tag Game (One Player)</title>
+    <style>
+        body { margin: 0; padding: 0; }
+        canvas { background-color: #f0f0f0; display: block; margin: 0 auto; }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Set canvas size
+        canvas.width = 800;
+        canvas.height = 600;
+
+        // Game variables
+        let runner = {
+            x: 400,
+            y: 300,
+            size: 30,
+            color: 'green',
+            speed: 5,
+            dx: 0,
+            dy: 0
+        };
+
+        let chaser = {
+            x: 100,
+            y: 100,
+            size: 30,
+            color: 'red',
+            speed: 2,
+            dx: 0,
+            dy: 0
+        };
+
+        // Movement handling
+        const keys = {
+            ArrowUp: false,
+            ArrowDown: false,
+            ArrowLeft: false,
+            ArrowRight: false
+        };
+
+        document.addEventListener('keydown', (e) => {
+            if (keys.hasOwnProperty(e.key)) {
+                keys[e.key] = true;
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (keys.hasOwnProperty(e.key)) {
+                keys[e.key] = false;
+            }
+        });
+
+        // Update runner's position
+        function moveRunner() {
+            if (keys['ArrowUp']) runner.dy = -runner.speed;
+            else if (keys['ArrowDown']) runner.dy = runner.speed;
+            else runner.dy = 0;
+
+            if (keys['ArrowLeft']) runner.dx = -runner.speed;
+            else if (keys['ArrowRight']) runner.dx = runner.speed;
+            else runner.dx = 0;
+
+            runner.x += runner.dx;
+            runner.y += runner.dy;
+
+            // Boundaries check
+            if (runner.x < 0) runner.x = 0;
+            if (runner.x + runner.size > canvas.width) runner.x = canvas.width - runner.size;
+            if (runner.y < 0) runner.y = 0;
+            if (runner.y + runner.size > canvas.height) runner.y = canvas.height - runner.size;
+        }
+
+        // Move the chaser
+        function moveChaser() {
+            let dx = runner.x - chaser.x;
+            let dy = runner.y - chaser.y;
+            let distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance > 0) {
+                chaser.dx = (dx / distance) * chaser.speed;
+                chaser.dy = (dy / distance) * chaser.speed;
+            }
+
+            chaser.x += chaser.dx;
+            chaser.y += chaser.dy;
+        }
+
+        // Check for collision (tagging)
+        function checkTag() {
+            const dx = runner.x - chaser.x;
+            const dy = runner.y - chaser.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < (runner.size / 2 + chaser.size / 2)) {
+                alert("You got tagged! Game Over!");
+                resetGame();
+            }
+        }
+
+        // Reset the game
+        function resetGame() {
+            runner.x = 400;
+            runner.y = 300;
+            chaser.x = 100;
+            chaser.y = 100;
+        }
+
+        // Draw game elements
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw runner
+            ctx.beginPath();
+            ctx.arc(runner.x + runner.size / 2, runner.y + runner.size / 2, runner.size / 2, 0, Math.PI * 2);
+            ctx.fillStyle = runner.color;
+            ctx.fill();
+            ctx.closePath();
+
+            // Draw chaser
+            ctx.beginPath();
+            ctx.arc(chaser.x + chaser.size / 2, chaser.y + chaser.size / 2, chaser.size / 2, 0, Math.PI * 2);
+            ctx.fillStyle = chaser.color;
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        // Game loop
+        function gameLoop() {
+            moveRunner();
+            moveChaser();
+            checkTag();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Start the game
+        gameLoop();
+    </script>
+</body>
+</html>
