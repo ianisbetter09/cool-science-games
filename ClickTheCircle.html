@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Click the Circle Game</title>
   <style>
     body {
@@ -27,19 +27,18 @@
   <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
-    let gameInterval;
-    let level = 1;
-    let score = 0;
-    let timeRemaining = 30; // 30 seconds per level
-    let circleSize = 30;
-    let circleTimeout = 2; // Time before circle "expires" (seconds)
-    let circleAppearTime = 0; // Time when the current circle appeared
 
-    // Set canvas size
+    // Game settings
     canvas.width = 600;
     canvas.height = 400;
+    let score = 0;
+    let highScore = 0;
+    let timeRemaining = 30;
+    let circleSize = 30;
+    let circleTimeout = 2;
+    let circleAppearTime = 0;
+    let gameInterval;
 
-    // Circle object
     const circle = {
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
@@ -47,7 +46,6 @@
       color: 'red',
     };
 
-    // Draw the circle
     function drawCircle() {
       ctx.beginPath();
       ctx.arc(circle.x, circle.y, circle.radius, 0, Math.PI * 2);
@@ -56,89 +54,73 @@
       ctx.closePath();
     }
 
-    // Display score, level, and time remaining
-    function displayScore() {
+    function displayInfo() {
       ctx.font = '20px Arial';
       ctx.fillStyle = 'white';
       ctx.fillText('Score: ' + score, 10, 30);
-      ctx.fillText('Level: ' + level, canvas.width - 100, 30);
-      ctx.fillText('Time: ' + Math.ceil(timeRemaining), canvas.width - 100, 60);
+      ctx.fillText('High Score: ' + highScore, 10, 60);
+      ctx.fillText('Time: ' + Math.ceil(timeRemaining), canvas.width - 100, 30);
     }
 
-    // Update the game every frame
     function gameLoop() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Draw the circle and display score/level/time
       drawCircle();
-      displayScore();
+      displayInfo();
 
-      // Check if time has run out for the circle
-      if (timeRemaining > 0) {
-        timeRemaining -= 1 / 60; // Decrease time every frame
-      } else {
+      timeRemaining -= 1 / 60;
+      if (timeRemaining <= 0) {
         endGame();
+        return;
       }
 
-      // Check if the circle time is up (player didn't click it in time)
-      if (circleAppearTime + circleTimeout <= timeRemaining) {
-        // If time expires, create a new circle and reset the timer
-        circle.x = Math.random() * canvas.width;
-        circle.y = Math.random() * canvas.height;
-        circleAppearTime = timeRemaining;
+      // Check if circle timeout passed
+      if (circleAppearTime + circleTimeout <= 30 - timeRemaining) {
+        newCircle();
       }
     }
 
-    // Handle click event (player clicks the circle)
+    function newCircle() {
+      circle.x = Math.random() * (canvas.width - 2 * circle.radius) + circle.radius;
+      circle.y = Math.random() * (canvas.height - 2 * circle.radius) + circle.radius;
+      circleAppearTime = 30 - timeRemaining;
+    }
+
     canvas.addEventListener('click', (event) => {
       const distance = Math.sqrt(
         Math.pow(event.offsetX - circle.x, 2) + Math.pow(event.offsetY - circle.y, 2)
       );
-      
+
       if (distance < circle.radius) {
         score++;
-        circle.x = Math.random() * canvas.width;
-        circle.y = Math.random() * canvas.height;
-        circleTimeout = Math.max(1, circleTimeout - 0.1); // Reduce circle timeout for more challenge
-        circleAppearTime = timeRemaining; // Reset the circle's appearance time
+        newCircle();
+        circleTimeout = Math.max(0.5, circleTimeout - 0.05); // Optional: faster with time
       }
     });
 
-    // End the game when the player misses a circle or time runs out
     function endGame() {
       clearInterval(gameInterval);
-      alert(`Game Over! You scored ${score} points!`);
+      if (score > highScore) {
+        highScore = score;
+        alert(`New High Score! You scored ${score} points!`);
+      } else {
+        alert(`Game Over! You scored ${score} points.`);
+      }
       restartGame();
     }
 
-    // Level up function
-    function levelUp() {
-      level++;
-      timeRemaining = 30 - level; // Decrease time limit per level (minimum of 5 seconds)
-      if (timeRemaining < 5) timeRemaining = 5;
-      circleSize -= 5; // Make the circle smaller each level
-      if (circleSize < 10) circleSize = 10; // Minimum size limit
-      circle.radius = circleSize;
-      circleTimeout = Math.max(1, circleTimeout - 0.1); // Reduce circle timeout time
-    }
-
-    // Start the game
     function startGame() {
       score = 0;
-      level = 1;
       timeRemaining = 30;
-      circleSize = 30;
-      circleTimeout = 2; // Start with a 2-second timeout for the circle to be clicked
-      gameInterval = setInterval(gameLoop, 1000 / 60); // 60 FPS
+      circleTimeout = 2;
+      newCircle();
+      gameInterval = setInterval(gameLoop, 1000 / 60);
     }
 
-    // Restart the game
     function restartGame() {
       startGame();
     }
 
-    startGame(); // Initialize the game
-
+    startGame();
   </script>
 </body>
 </html>
