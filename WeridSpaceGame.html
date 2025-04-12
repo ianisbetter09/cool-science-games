@@ -66,15 +66,19 @@ window.addEventListener("gamepaddisconnected", function(e) {
   gamepadIndex = null;
 });
 
-// Check gamepad input
 function pollGamepad() {
   const gamepads = navigator.getGamepads();
   const gp = gamepads[gamepadIndex];
 
-  if (!gp) return;
+  if (!gp) {
+    console.log("Gamepad not found or disconnected.");
+    return;
+  }
 
-  const upPressed = gp.buttons[12].pressed;
-  const downPressed = gp.buttons[13].pressed;
+  const upPressed = gp.buttons[12]?.pressed;
+  const downPressed = gp.buttons[13]?.pressed;
+
+  console.log("Gamepad input:", { upPressed, downPressed });
 
   if (upPressed) {
     dino.speedY = -4;
@@ -84,6 +88,7 @@ function pollGamepad() {
     dino.speedY = 0;
   }
 }
+
 
     let paused = false;
 
