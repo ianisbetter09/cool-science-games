@@ -70,24 +70,22 @@ function pollGamepad() {
   const gamepads = navigator.getGamepads();
   const gp = gamepads[gamepadIndex];
 
-  if (!gp) {
-    console.log("Gamepad not found or disconnected.");
-    return;
-  }
+  if (!gp) return;
 
-  const upPressed = gp.buttons[12]?.pressed;
-  const downPressed = gp.buttons[13]?.pressed;
+  const vertical = gp.axes[1]; // Up/Down on left stick or D-pad
 
-  console.log("Gamepad input:", { upPressed, downPressed });
-
-  if (upPressed) {
+  // Deadzone for sensitivity
+  if (vertical < -0.2) {
     dino.speedY = -4;
-  } else if (downPressed) {
+  } else if (vertical > 0.2) {
     dino.speedY = 4;
   } else {
     dino.speedY = 0;
   }
+
+  console.log("Axis Y:", vertical);
 }
+
 
 
     let paused = false;
