@@ -51,6 +51,41 @@
   <script>
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
+
+    let gamepadIndex = null;
+
+// Detect connection
+window.addEventListener("gamepadconnected", function(e) {
+  console.log("Gamepad connected:", e.gamepad);
+  alert("Gamepad connected! Use D-pad Up/Down to move.");
+
+  gamepadIndex = e.gamepad.index;
+});
+
+window.addEventListener("gamepaddisconnected", function(e) {
+  console.log("Gamepad disconnected:", e.gamepad);
+  gamepadIndex = null;
+});
+
+// Check gamepad input
+function pollGamepad() {
+  const gamepads = navigator.getGamepads();
+  const gp = gamepads[gamepadIndex];
+
+  if (!gp) return;
+
+  const upPressed = gp.buttons[12].pressed;
+  const downPressed = gp.buttons[13].pressed;
+
+  if (upPressed) {
+    dino.speedY = -4;
+  } else if (downPressed) {
+    dino.speedY = 4;
+  } else {
+    dino.speedY = 0;
+  }
+}
+
     let paused = false;
 
     let dino = {
@@ -152,6 +187,8 @@ const shipPng = new Image();
 
    function gameLoop() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+     if (gamepadIndex !== null) pollGamepad();
+
   drawDino();
   updateObstacles();
   drawObstacles();
