@@ -304,12 +304,11 @@ function gameLoop() {
     
 window.addEventListener("keydown", (e) => {
   if (e.code === "Escape") {
-    paused = !paused;
-    if (!paused) {
-      gameLoop(); // Resume the game loop if unpaused
-    }
+    togglePause(); // ✅ Use your existing pause function, it handles it right
   }
 });
+
+
     animationFrameId = requestAnimationFrame(gameLoop);
 
     const fullscreenBtn = document.getElementById("fullscreenBtn");
