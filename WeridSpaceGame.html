@@ -19,7 +19,7 @@
 
     #gameCanvas {
       background-image: url(https://t4.ftcdn.net/jpg/02/43/75/73/360_F_243757367_gBpS6R5c8DB7pL5gw9gi9KXlzFfbdZOA.jpg);
-      background-repeat: no-repaet;
+      background-repeat: no-repeat;
       background-size: cover;
       background-attachment: flex;
       display: block;
@@ -106,8 +106,7 @@ function toggleFullscreen() {
 let lastStartPressed = false;
 let lastSelectPressed = false;
 
-let startCooldown = 0;
-let selectCooldown = 0;
+
 
 function pollGamepad() {
   const gamepads = navigator.getGamepads();
