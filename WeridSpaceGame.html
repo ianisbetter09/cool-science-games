@@ -75,6 +75,25 @@ window.addEventListener("gamepaddisconnected", function(e) {
   console.log("Gamepad disconnected:", e.gamepad);
   gamepadIndex = null;
 });
+function togglePause() {
+  paused = !paused;
+  if (!paused) {
+    gameLoop(); // Resume the game loop
+  }
+}
+
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    canvas.requestFullscreen().catch(err => {
+      alert(`Error trying to enter fullscreen: ${err.message}`);
+    });
+  } else {
+    document.exitFullscreen();
+  }
+}
+
+let lastStartPressed = false;
+let lastSelectPressed = false;
 
 function pollGamepad() {
   const gamepads = navigator.getGamepads();
@@ -82,9 +101,9 @@ function pollGamepad() {
 
   if (!gp) return;
 
-  const vertical = gp.axes[1]; // Up/Down on left stick or D-pad
+  const vertical = gp.axes[1];
 
-  // Deadzone for sensitivity
+  // Movement
   if (vertical < -0.2) {
     dino.speedY = -4;
   } else if (vertical > 0.2) {
@@ -93,8 +112,23 @@ function pollGamepad() {
     dino.speedY = 0;
   }
 
-  console.log("Axis Y:", vertical);
+  // === SNES-style button mappings ===
+  const startButton = gp.buttons[9];   // Start
+  const selectButton = gp.buttons[8];  // Select
+
+  // Pause (Start button toggle)
+  if (startButton.pressed && !lastStartPressed) {
+    togglePause();
+  }
+  lastStartPressed = startButton.pressed;
+
+  // Fullscreen (Select button toggle)
+  if (selectButton.pressed && !lastSelectPressed) {
+    toggleFullscreen();
+  }
+  lastSelectPressed = selectButton.pressed;
 }
+
 
 
 
