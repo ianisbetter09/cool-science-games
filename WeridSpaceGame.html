@@ -39,6 +39,16 @@
 </head>
 <body>
   <canvas id="gameCanvas" width="800" height="400"></canvas>
+  <button id="fullscreenBtn" style="
+  position: absolute; 
+  top: 20px; 
+  right: 20px; 
+  padding: 10px 15px; 
+  font-size: 16px;
+  cursor: pointer;
+  z-index: 1000;
+">Full Screen</button>
+
   <div id="scoreDisplayContainer" style="position: absolute; top: 20px; left: 20px; font-size: 20px; color: black;">
   <div id="scoreDisplay">Score: 0</div>
   <div id="highScoreDisplay">High Score: 0</div>
@@ -252,6 +262,18 @@ window.addEventListener("keydown", (e) => {
   }
 });
     gameLoop();
+    const fullscreenBtn = document.getElementById("fullscreenBtn");
+
+fullscreenBtn.addEventListener("click", () => {
+  if (!document.fullscreenElement) {
+    canvas.requestFullscreen().catch(err => {
+      alert(`Error trying to enable full-screen mode: ${err.message}`);
+    });
+  } else {
+    document.exitFullscreen();
+  }
+});
+
   </script>
 </body>
 </html>
