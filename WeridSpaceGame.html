@@ -61,6 +61,8 @@
   <script>
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
+    let animationFrameId = null;
+
 
     let gamepadIndex = null;
 
@@ -77,10 +79,17 @@ window.addEventListener("gamepaddisconnected", function(e) {
 });
 function togglePause() {
   paused = !paused;
-  if (!paused) {
-    gameLoop(); // Resume the game loop
+
+  if (paused) {
+    // Just let the current loop keep polling/drawing
+  } else {
+    if (animationFrameId) {
+      cancelAnimationFrame(animationFrameId);
+    }
+    animationFrameId = requestAnimationFrame(gameLoop);
   }
 }
+
 
 function toggleFullscreen() {
   if (!document.fullscreenElement) {
@@ -234,26 +243,30 @@ const shipPng = new Image();
 function gameLoop() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Always poll for gamepad input
   if (gamepadIndex !== null) pollGamepad();
 
-  // Always render game elements
   drawDino();
   drawObstacles();
   drawScore();
   drawHighScore();
 
-  // Don't update anything if paused
   if (paused) {
-    requestAnimationFrame(gameLoop); // Keep checking for unpause/fullscreen
+    // Dimmed background
+    ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = "white";
+    ctx.font = "32px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText("Paused", canvas.width / 2, canvas.height / 2);
+
+    animationFrameId = requestAnimationFrame(gameLoop); // Still need to keep polling
     return;
   }
 
-  // Only update if not paused
   updateObstacles();
   detectCollision();
 
-  // Floating effect
   if (dino.y < dino.hoverY) {
     dino.y += dino.floatSpeed;
   } else if (dino.y > dino.hoverY) {
@@ -262,15 +275,14 @@ function gameLoop() {
 
   dino.y += dino.speedY;
 
-  // Boundary checks
   if (dino.y < 0) dino.y = 0;
   else if (dino.y + dino.height > canvas.height) dino.y = canvas.height - dino.height;
 
-  // Spawn obstacles
   if (Math.random() < obstacleFrequency) createObstacle();
 
-  requestAnimationFrame(gameLoop);
+  animationFrameId = requestAnimationFrame(gameLoop);
 }
+
 
 
 
@@ -298,7 +310,8 @@ window.addEventListener("keydown", (e) => {
     }
   }
 });
-    gameLoop();
+    animationFrameId = requestAnimationFrame(gameLoop);
+
     const fullscreenBtn = document.getElementById("fullscreenBtn");
 
 fullscreenBtn.addEventListener("click", () => {
