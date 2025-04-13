@@ -103,7 +103,6 @@ function pollGamepad() {
 
   const vertical = gp.axes[1];
 
-  // Movement
   if (vertical < -0.2) {
     dino.speedY = -4;
   } else if (vertical > 0.2) {
@@ -112,22 +111,23 @@ function pollGamepad() {
     dino.speedY = 0;
   }
 
-  // === SNES-style button mappings ===
-  const startButton = gp.buttons[9];   // Start
-  const selectButton = gp.buttons[8];  // Select
+  // SNES buttons
+  const startButton = gp.buttons[9];
+  const selectButton = gp.buttons[8];
 
-  // Pause (Start button toggle)
+  // START = Pause toggle
   if (startButton.pressed && !lastStartPressed) {
     togglePause();
   }
   lastStartPressed = startButton.pressed;
 
-  // Fullscreen (Select button toggle)
+  // SELECT = Fullscreen toggle
   if (selectButton.pressed && !lastSelectPressed) {
     toggleFullscreen();
   }
   lastSelectPressed = selectButton.pressed;
 }
+
 
 
 
@@ -231,9 +231,16 @@ const shipPng = new Image();
       gameSpeed = 10;
     }
 
-   function gameLoop() {
+function gameLoop() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-     if (gamepadIndex !== null) pollGamepad();
+
+  // Always poll gamepad
+  if (gamepadIndex !== null) pollGamepad();
+
+  if (paused) {
+    requestAnimationFrame(gameLoop); // Keep checking input
+    return;
+  }
 
   drawDino();
   updateObstacles();
@@ -242,33 +249,23 @@ const shipPng = new Image();
   drawHighScore();
   detectCollision();
 
-  // Smoothly float to the desired Y position (hoverY)
+  // Floating effect
   if (dino.y < dino.hoverY) {
     dino.y += dino.floatSpeed;
   } else if (dino.y > dino.hoverY) {
     dino.y -= dino.floatSpeed;
   }
 
-  // Handle velocity when moving up or down (arrow key pressed)
   dino.y += dino.speedY;
 
-  // Apply gravity (pull dino down) when no key is pressed
-  
+  if (dino.y < 0) dino.y = 0;
+  else if (dino.y + dino.height > canvas.height) dino.y = canvas.height - dino.height;
 
-  // Prevent the dino from going out of the canvas vertically
-  if (dino.y < 0) {
-    dino.y = 0;  // Prevent dino from going above the top
-  } else if (dino.y + dino.height > canvas.height) {
-    dino.y = canvas.height - dino.height;  // Prevent dino from going below the bottom
-  }
-
-  // Create obstacles at a smooth frequency
   if (Math.random() < obstacleFrequency) createObstacle();
 
-  if (!paused) {
   requestAnimationFrame(gameLoop);
 }
-}
+
 
 
     // Arrow keys for vertical movement with smoothness
