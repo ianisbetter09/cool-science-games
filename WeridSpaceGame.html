@@ -234,19 +234,23 @@ const shipPng = new Image();
 function gameLoop() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Always poll gamepad
+  // Always poll for gamepad input
   if (gamepadIndex !== null) pollGamepad();
 
-  if (paused) {
-    requestAnimationFrame(gameLoop); // Keep checking input
-    return;
-  }
-
+  // Always render game elements
   drawDino();
-  updateObstacles();
   drawObstacles();
   drawScore();
   drawHighScore();
+
+  // Don't update anything if paused
+  if (paused) {
+    requestAnimationFrame(gameLoop); // Keep checking for unpause/fullscreen
+    return;
+  }
+
+  // Only update if not paused
+  updateObstacles();
   detectCollision();
 
   // Floating effect
@@ -258,9 +262,11 @@ function gameLoop() {
 
   dino.y += dino.speedY;
 
+  // Boundary checks
   if (dino.y < 0) dino.y = 0;
   else if (dino.y + dino.height > canvas.height) dino.y = canvas.height - dino.height;
 
+  // Spawn obstacles
   if (Math.random() < obstacleFrequency) createObstacle();
 
   requestAnimationFrame(gameLoop);
