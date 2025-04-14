@@ -70,17 +70,19 @@
     let highScore = 0;
     let gameSpeed = 10;
     let obstacles = [];
+    let isUpPressed = false;
+    let isDownPressed = false;
+  
 
     const dino = {
-      x: 50,
-      y: 150,
-      width: 40,
-      height: 30,
-      velocity: 0,  // This controls vertical speed
-      gravity: 0.2,
-      moveSpeed: 2, // Speed of movement
-      maxSpeed: 4  // Max speed of movement
-    };
+  x: 50,
+  y: 150,
+  width: 40,
+  height: 30,
+  velocity: 0,
+  maxSpeed: 4
+};
+
 
     const shipPng = new Image();
     shipPng.src = "ship.png";  // Make sure this image is available in your directory
@@ -198,55 +200,51 @@ function gameLoop() {
   detectCollision();
 
   // === Hovering Effect (Extremely Subtle) ===
-  if (!isMoving) {
+  if (!isUpPressed && !isDownPressed) {
     hoverTime += 0.05;
     dino.y += Math.sin(hoverTime) * 0.05; // Extremely subtle hover (smaller multiplier)
+  }
+
+  // === Vertical Movement (based on key presses) ===
+  if (isUpPressed) {
+    dino.velocity = -12;  // Move up faster
+  } else if (isDownPressed) {
+    dino.velocity = 12;  // Move down faster
   } else {
-    // Apply manual velocity if moving with keys
-    dino.y += dino.velocity;
-    if (dino.velocity < dino.maxSpeed) {
-      dino.velocity += dino.gravity;
+    // If neither up nor down is pressed, apply gravity
+    if (dino.velocity < 0) {
+      dino.velocity += dino.gravity;  // Slow downward movement
+    } else if (dino.velocity > 0) {
+      dino.velocity -= dino.gravity;  // Slow upward movement
     }
   }
 
-  // Constrain ship within canvas bounds
+  dino.y += dino.velocity;
+
+  // === Constrain ship within canvas bounds ===
   if (dino.y < 0) dino.y = 0;
   if (dino.y + dino.height > canvas.height) {
     dino.y = canvas.height - dino.height;
   }
 
-  isMoving = false; // reset movement flag
-
   requestAnimationFrame(gameLoop);
 }
 
 
+
 window.addEventListener("keydown", (event) => {
-  if (event.key === "Escape") {
-    togglePause();
-  }
+  if (event.key === "Escape") togglePause();
+  if (event.key === "Enter") toggleFullscreen();
 
-  if (event.key === "ArrowUp") {
-    dino.velocity = -12;  // Increased movement speed
-    isMoving = true;
-  }
-
-  if (event.key === "ArrowDown") {
-    dino.velocity = 12;  // Increased movement speed
-    isMoving = true;
-  }
-
-  if (event.key === "Enter") {
-    toggleFullscreen();
-  }
+  if (event.key === "ArrowUp") isUpPressed = true;
+  if (event.key === "ArrowDown") isDownPressed = true;
 });
 
 window.addEventListener("keyup", (event) => {
-  if (event.key === "ArrowUp" || event.key === "ArrowDown") {
-    dino.velocity = 0;
-    isMoving = false;
-  }
+  if (event.key === "ArrowUp") isUpPressed = false;
+  if (event.key === "ArrowDown") isDownPressed = false;
 });
+
 
 
 
