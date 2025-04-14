@@ -125,7 +125,7 @@
 
     function createObstacle() {
       // Increased chance to spawn an obstacle (e.g., 30% chance per frame)
-      if (Math.random() < 0.1) {
+      if (Math.random() < 0.05) {
         let height = 15;
         let width = Math.random() * (80 - 30) + 30;  // Random width between 30 and 80
         let obstacleY = Math.random() * (canvas.height - height);
