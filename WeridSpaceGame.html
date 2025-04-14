@@ -82,7 +82,8 @@
       gravity: 0.2,
       maxSpeed: 4,
       hoverY: 150,
-      floatSpeed: 0.1
+      floatSpeed: 0.1,
+      moveSpeed: 10  // Increased movement speed
     };
 
     const shipPng = new Image();
@@ -125,9 +126,9 @@
     }
 
     function createObstacle() {
-      let height = 10
+      let height = 15;
       let obstacleY = Math.random() * (canvas.height - height);
-      let width = 30
+      let width = 30;
       let speed = gameSpeed + Math.random() * 3; // Random speed for each obstacle
 
       obstacles.push({
@@ -196,12 +197,6 @@
       updateObstacles();
       detectCollision();
 
-      if (dino.y < dino.hoverY) {
-        dino.y += dino.floatSpeed;
-      } else if (dino.y > dino.hoverY) {
-        dino.y -= dino.floatSpeed;
-      }
-
       // Make sure the spaceship doesn't go off the screen
       if (dino.y < 0) dino.y = 0;
       if (dino.y + dino.height > canvas.height) dino.y = canvas.height - dino.height;
@@ -216,11 +211,11 @@
       }
 
       if (event.key === "ArrowUp") {
-        dino.y -= 5;  // Move up
+        dino.y -= dino.moveSpeed;  // Move up
       }
 
       if (event.key === "ArrowDown") {
-        dino.y += 5;  // Move down
+        dino.y += dino.moveSpeed;  // Move down
       }
 
       if (event.key === "Enter") {
@@ -229,7 +224,7 @@
     });
 
     // Create obstacles at intervals
-    setInterval(createObstacle, 1500);  // Create a new obstacle every 1.5 seconds
+    setInterval(createObstacle, 1000);  // Create a new obstacle every 1 second
 
     // Initialize game when image is loaded
     shipPng.onload = () => {
