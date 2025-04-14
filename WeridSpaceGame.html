@@ -65,8 +65,6 @@
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
     let animationFrameId = null;
-    let startCooldown = 0;
-    let selectCooldown = 0;
     let paused = false;
     let score = 0;
     let highScore = 0;
@@ -126,10 +124,10 @@
     }
 
     function createObstacle() {
-      // Random chance to spawn an obstacle (e.g., 20% chance)
-      if (Math.random() < 15) {
+      // Increased chance to spawn an obstacle (e.g., 30% chance per frame)
+      if (Math.random() < 0.3) {
         let height = 15;
-        let width = Math.random() * (40 - 30) + 30;  // Random width between 30 and 80
+        let width = Math.random() * (80 - 30) + 30;  // Random width between 30 and 80
         let obstacleY = Math.random() * (canvas.height - height);
         let speed = gameSpeed + Math.random() * 3; // Random speed for each obstacle
 
@@ -197,6 +195,9 @@
         return;
       }
 
+      // Create obstacles at random chance per frame
+      createObstacle();
+
       updateObstacles();
       detectCollision();
 
@@ -225,9 +226,6 @@
         toggleFullscreen();
       }
     });
-
-    // Create obstacles at intervals (but with random chance each tick)
-    setInterval(createObstacle, 1000);  // Check every second if an obstacle should be spawned
 
     // Initialize game when image is loaded
     shipPng.onload = () => {
