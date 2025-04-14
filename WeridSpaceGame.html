@@ -207,9 +207,9 @@ function gameLoop() {
 
   // === Vertical Movement (based on key presses) ===
   if (isUpPressed) {
-    dino.velocity = -2;  // Move up at a slower speed
+    dino.velocity = -3;  // Move up at a slower speed
   } else if (isDownPressed) {
-    dino.velocity = 2;  // Move down at a slower speed
+    dino.velocity = 3;  // Move down at a slower speed
   } else {
     // Apply gravity: slow the movement when no keys are pressed
     if (dino.velocity < 0) {
