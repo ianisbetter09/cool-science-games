@@ -171,7 +171,7 @@
       gameSpeed = 10;
     }
 
-    let hoverTime = 0;
+let hoverTime = 0;
 let isMoving = false;
 
 function gameLoop() {
@@ -197,12 +197,12 @@ function gameLoop() {
   updateObstacles();
   detectCollision();
 
-  // === Hover when not pressing keys ===
+  // === Hovering Effect (Extremely Subtle) ===
   if (!isMoving) {
     hoverTime += 0.05;
-    dino.y += Math.sin(hoverTime) * 0.5; // subtle up/down hover
+    dino.y += Math.sin(hoverTime) * 0.2; // Extremely subtle hover (smaller multiplier)
   } else {
-    // Apply gravity if user is moving manually
+    // Apply manual velocity if moving with keys
     dino.y += dino.velocity;
     if (dino.velocity < dino.maxSpeed) {
       dino.velocity += dino.gravity;
@@ -221,18 +221,18 @@ function gameLoop() {
 }
 
 
-   window.addEventListener("keydown", (event) => {
+window.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
     togglePause();
   }
 
   if (event.key === "ArrowUp") {
-    dino.velocity = -dino.moveSpeed;
+    dino.velocity = -12;  // Increased movement speed
     isMoving = true;
   }
 
   if (event.key === "ArrowDown") {
-    dino.velocity = dino.moveSpeed;
+    dino.velocity = 12;  // Increased movement speed
     isMoving = true;
   }
 
@@ -247,6 +247,7 @@ window.addEventListener("keyup", (event) => {
     isMoving = false;
   }
 });
+
 
 
     // Start the game loop once the ship image is loaded
