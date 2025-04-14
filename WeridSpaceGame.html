@@ -171,72 +171,83 @@
       gameSpeed = 10;
     }
 
-    function gameLoop() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);  // Clear the canvas each frame
+    let hoverTime = 0;
+let isMoving = false;
 
-      if (paused) {
-        // Draw the paused screen overlay
-        ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        ctx.fillStyle = "white";
-        ctx.font = "32px Arial";
-        ctx.textAlign = "center";
-        ctx.fillText("Paused", canvas.width / 2, canvas.height / 2);
+function gameLoop() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        return; // Don't continue with the game loop when paused
-      }
+  if (paused) {
+    ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    ctx.fillStyle = "white";
+    ctx.font = "32px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText("Paused", canvas.width / 2, canvas.height / 2);
 
-      drawDino();
-      drawObstacles();
-      drawScore();
+    return;
+  }
 
-      // Create obstacles
-      createObstacle();
+  drawDino();
+  drawObstacles();
+  drawScore();
 
-      // Update obstacles and check for collisions
-      updateObstacles();
-      detectCollision();
+  createObstacle();
+  updateObstacles();
+  detectCollision();
 
-      // Apply gravity to smooth movement
-      dino.y += dino.velocity;
-      if (dino.y < 0) dino.y = 0; // Prevent moving off the top of the canvas
-      if (dino.y + dino.height > canvas.height) {
-        dino.y = canvas.height - dino.height;  // Prevent falling off the bottom of the screen
-      }
-
-      // Apply gravity to the velocity to simulate falling
-      if (dino.velocity < dino.maxSpeed) {
-        dino.velocity += dino.gravity; // Acceleration due to gravity
-      }
-
-      requestAnimationFrame(gameLoop);  // Continue the game loop
+  // === Hover when not pressing keys ===
+  if (!isMoving) {
+    hoverTime += 0.05;
+    dino.y += Math.sin(hoverTime) * 0.5; // subtle up/down hover
+  } else {
+    // Apply gravity if user is moving manually
+    dino.y += dino.velocity;
+    if (dino.velocity < dino.maxSpeed) {
+      dino.velocity += dino.gravity;
     }
+  }
 
-    // Event listeners for keyboard controls
-    window.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") {
-        togglePause();
-      }
+  // Constrain ship within canvas bounds
+  if (dino.y < 0) dino.y = 0;
+  if (dino.y + dino.height > canvas.height) {
+    dino.y = canvas.height - dino.height;
+  }
 
-      if (event.key === "ArrowUp") {
-        dino.velocity = -dino.moveSpeed;  // Move up (negative velocity)
-      }
+  isMoving = false; // reset movement flag
 
-      if (event.key === "ArrowDown") {
-        dino.velocity = dino.moveSpeed;  // Move down (positive velocity)
-      }
+  requestAnimationFrame(gameLoop);
+}
 
-      if (event.key === "Enter") {
-        toggleFullscreen();
-      }
-    });
 
-    window.addEventListener("keyup", (event) => {
-      if (event.key === "ArrowUp" || event.key === "ArrowDown") {
-        dino.velocity = 0;  // Stop movement when key is released
-      }
-    });
+   window.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") {
+    togglePause();
+  }
+
+  if (event.key === "ArrowUp") {
+    dino.velocity = -dino.moveSpeed;
+    isMoving = true;
+  }
+
+  if (event.key === "ArrowDown") {
+    dino.velocity = dino.moveSpeed;
+    isMoving = true;
+  }
+
+  if (event.key === "Enter") {
+    toggleFullscreen();
+  }
+});
+
+window.addEventListener("keyup", (event) => {
+  if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+    dino.velocity = 0;
+    isMoving = false;
+  }
+});
+
 
     // Start the game loop once the ship image is loaded
     shipPng.onload = () => {
