@@ -207,24 +207,25 @@ function gameLoop() {
 
   // === Vertical Movement (based on key presses) ===
   if (isUpPressed) {
-    dino.velocity = -12;  // Move up faster
+    dino.velocity = -4;  // Move up at a controlled speed
   } else if (isDownPressed) {
-    dino.velocity = 12;  // Move down faster
+    dino.velocity = 4;  // Move down at a controlled speed
   } else {
-    // If neither up nor down is pressed, apply gravity
+    // Apply gravity: slow the movement when no keys are pressed
     if (dino.velocity < 0) {
-      dino.velocity += dino.gravity;  // Slow downward movement
+      dino.velocity += 0.2;  // Slow upward movement to simulate gravity
     } else if (dino.velocity > 0) {
-      dino.velocity -= dino.gravity;  // Slow upward movement
+      dino.velocity -= 0.2;  // Slow downward movement to simulate gravity
     }
   }
 
+  // Update vertical position based on velocity
   dino.y += dino.velocity;
 
   // === Constrain ship within canvas bounds ===
-  if (dino.y < 0) dino.y = 0;
+  if (dino.y < 0) dino.y = 0;  // Prevent moving above the top of the canvas
   if (dino.y + dino.height > canvas.height) {
-    dino.y = canvas.height - dino.height;
+    dino.y = canvas.height - dino.height;  // Prevent moving below the bottom of the canvas
   }
 
   requestAnimationFrame(gameLoop);
