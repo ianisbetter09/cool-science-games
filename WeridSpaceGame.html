@@ -207,15 +207,15 @@ function gameLoop() {
 
   // === Vertical Movement (based on key presses) ===
   if (isUpPressed) {
-    dino.velocity = -3;  // Move up at a controlled speed
+    dino.velocity = -2;  // Move up at a slower speed
   } else if (isDownPressed) {
-    dino.velocity = 3;  // Move down at a controlled speed
+    dino.velocity = 2;  // Move down at a slower speed
   } else {
     // Apply gravity: slow the movement when no keys are pressed
     if (dino.velocity < 0) {
-      dino.velocity += 0.03;  // Slow upward movement to simulate gravity
+      dino.velocity += 0.1;  // Slow upward movement to simulate gravity
     } else if (dino.velocity > 0) {
-      dino.velocity -= 0.03;  // Slow downward movement to simulate gravity
+      dino.velocity -= 0.1;  // Slow downward movement to simulate gravity
     }
   }
 
@@ -230,6 +230,7 @@ function gameLoop() {
 
   requestAnimationFrame(gameLoop);
 }
+
 
 
 
