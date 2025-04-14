@@ -125,12 +125,12 @@
     }
 
     function createObstacle() {
-      let height = 15;
+      let height = 15 + Math.random() * 50; // Make obstacle heights more varied
       let obstacleY = Math.random() * (canvas.height - height);
       obstacles.push({
         x: canvas.width,
         y: obstacleY,
-        width: 20 + Math.random() * 20,
+        width: 20 + Math.random() * 30, // Random width for obstacles
         height: height
       });
     }
@@ -198,6 +198,10 @@
         dino.y -= dino.floatSpeed;
       }
 
+      // Make sure the spaceship doesn't go off the screen
+      if (dino.y < 0) dino.y = 0;
+      if (dino.y + dino.height > canvas.height) dino.y = canvas.height - dino.height;
+
       requestAnimationFrame(gameLoop);
     }
 
@@ -219,6 +223,9 @@
         toggleFullscreen();
       }
     });
+
+    // Create obstacles at intervals
+    setInterval(createObstacle, 2000);  // Create a new obstacle every 2 seconds
 
     // Initialize game when image is loaded
     shipPng.onload = () => {
