@@ -67,7 +67,6 @@
     let animationFrameId = null;
     let startCooldown = 0;
     let selectCooldown = 0;
-    let gamepadIndex = null;
     let paused = false;
     let score = 0;
     let highScore = 0;
@@ -89,17 +88,6 @@
     const shipPng = new Image();
     shipPng.src = "ship.png";  // Make sure this image is available in your directory
 
-    // Gamepad events
-    window.addEventListener("gamepadconnected", function(e) {
-      console.log("Gamepad connected:", e.gamepad);
-      gamepadIndex = e.gamepad.index;
-    });
-
-    window.addEventListener("gamepaddisconnected", function(e) {
-      console.log("Gamepad disconnected:", e.gamepad);
-      gamepadIndex = null;
-    });
-
     function togglePause() {
       paused = !paused;
       if (!paused) gameLoop();
@@ -110,32 +98,6 @@
         canvas.requestFullscreen().catch(err => alert(`Error trying to enter fullscreen: ${err.message}`));
       } else {
         document.exitFullscreen();
-      }
-    }
-
-    function pollGamepad() {
-      const gamepads = navigator.getGamepads();
-      const gp = gamepads[gamepadIndex];
-      if (!gp) return;
-
-      const vertical = gp.axes[1];  // Vertical axis for up and down movement
-      if (vertical < -0.2) {
-        dino.speedY = -4;
-      } else if (vertical > 0.2) {
-        dino.speedY = 4;
-      } else {
-        dino.speedY = 0;
-      }
-
-      // Handle pause and fullscreen with cooldown
-      if (gp.buttons[9].pressed && startCooldown === 0) {
-        togglePause();
-        startCooldown = 20;
-      }
-
-      if (gp.buttons[8].pressed && selectCooldown === 0) {
-        toggleFullscreen();
-        selectCooldown = 20;
       }
     }
 
@@ -210,8 +172,6 @@
     function gameLoop() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      if (gamepadIndex !== null) pollGamepad();
-
       drawDino();
       drawObstacles();
       drawScore();
@@ -246,14 +206,24 @@
       if (event.key === "Escape") {
         togglePause();
       }
+
+      if (event.key === "ArrowUp") {
+        dino.y -= 5;  // Move up
+      }
+
+      if (event.key === "ArrowDown") {
+        dino.y += 5;  // Move down
+      }
+
+      if (event.key === "Enter") {
+        toggleFullscreen();
+      }
     });
 
-    // Initialize game loop
+    // Initialize game when image is loaded
     shipPng.onload = () => {
       gameLoop();  // Start the game loop once the ship image is loaded
     };
-
-    // Start game when image is loaded
   </script>
 </body>
 </html>
