@@ -70,20 +70,16 @@
     let highScore = 0;
     let gameSpeed = 10;
     let obstacles = [];
-    let lastTime = 0;  // To track the delta time
 
     const dino = {
       x: 50,
       y: 150,
       width: 40,
       height: 30,
-      speedY: 0,
+      velocity: 0,  // This controls vertical speed
       gravity: 0.2,
-      maxSpeed: 4,
-      hoverY: 150,
-      floatSpeed: 0.1,
-      moveSpeed: 0.2,  // Lower value for smoother movement
-      velocity: 0  // For smooth up/down movement
+      moveSpeed: 2, // Speed of movement
+      maxSpeed: 4  // Max speed of movement
     };
 
     const shipPng = new Image();
@@ -91,7 +87,7 @@
 
     function togglePause() {
       paused = !paused;
-      if (!paused) gameLoop();
+      if (!paused) gameLoop();  // Continue the game loop when unpaused
     }
 
     function toggleFullscreen() {
@@ -103,7 +99,6 @@
     }
 
     function drawDino() {
-      ctx.fillStyle = "green";
       ctx.drawImage(shipPng, dino.x, dino.y, dino.width, dino.height);
     }
 
@@ -126,7 +121,6 @@
     }
 
     function createObstacle() {
-      // Increased chance to spawn an obstacle (e.g., 30% chance per frame)
       if (Math.random() < 0.05) {
         let height = 15;
         let width = Math.random() * (80 - 30) + 30;  // Random width between 30 and 80
@@ -177,42 +171,44 @@
       gameSpeed = 10;
     }
 
-    function gameLoop(timestamp) {
-      const deltaTime = (timestamp - lastTime) / 1000;  // Time difference in seconds
-      lastTime = timestamp;
-
-      ctx.clearRect(0, 0, canvas.width, canvas.height);  // Clear the canvas every frame
+    function gameLoop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);  // Clear the canvas each frame
 
       if (paused) {
-        // Draw paused screen overlay
+        // Draw the paused screen overlay
         ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-
+        
         ctx.fillStyle = "white";
         ctx.font = "32px Arial";
         ctx.textAlign = "center";
         ctx.fillText("Paused", canvas.width / 2, canvas.height / 2);
 
-        // Don't continue the game loop when paused
-        return;
+        return; // Don't continue with the game loop when paused
       }
 
       drawDino();
       drawObstacles();
       drawScore();
 
-      // Create obstacles at random chance per frame
+      // Create obstacles
       createObstacle();
 
+      // Update obstacles and check for collisions
       updateObstacles();
       detectCollision();
 
-      // Make sure the spaceship doesn't go off the screen
-      if (dino.y < 0) dino.y = 0;
-      if (dino.y + dino.height > canvas.height) dino.y = canvas.height - dino.height;
+      // Apply gravity to smooth movement
+      dino.y += dino.velocity;
+      if (dino.y < 0) dino.y = 0; // Prevent moving off the top of the canvas
+      if (dino.y + dino.height > canvas.height) {
+        dino.y = canvas.height - dino.height;  // Prevent falling off the bottom of the screen
+      }
 
-      // Smooth movement based on velocity
-      dino.y += dino.velocity * deltaTime; // Update Y position with smooth motion
+      // Apply gravity to the velocity to simulate falling
+      if (dino.velocity < dino.maxSpeed) {
+        dino.velocity += dino.gravity; // Acceleration due to gravity
+      }
 
       requestAnimationFrame(gameLoop);  // Continue the game loop
     }
@@ -224,11 +220,11 @@
       }
 
       if (event.key === "ArrowUp") {
-        dino.velocity = -dino.moveSpeed;  // Move up with smoother acceleration
+        dino.velocity = -dino.moveSpeed;  // Move up (negative velocity)
       }
 
       if (event.key === "ArrowDown") {
-        dino.velocity = dino.moveSpeed;  // Move down with smoother acceleration
+        dino.velocity = dino.moveSpeed;  // Move down (positive velocity)
       }
 
       if (event.key === "Enter") {
@@ -242,9 +238,9 @@
       }
     });
 
-    // Initialize game when image is loaded
+    // Start the game loop once the ship image is loaded
     shipPng.onload = () => {
-      gameLoop(0);  // Start the game loop once the ship image is loaded
+      gameLoop();  // Start the game loop
     };
   </script>
 </body>
