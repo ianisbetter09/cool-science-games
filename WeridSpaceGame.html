@@ -200,7 +200,7 @@ function gameLoop() {
   // === Hovering Effect (Extremely Subtle) ===
   if (!isMoving) {
     hoverTime += 0.05;
-    dino.y += Math.sin(hoverTime) * 0.2; // Extremely subtle hover (smaller multiplier)
+    dino.y += Math.sin(hoverTime) * 0.05; // Extremely subtle hover (smaller multiplier)
   } else {
     // Apply manual velocity if moving with keys
     dino.y += dino.velocity;
