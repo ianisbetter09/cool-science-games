@@ -115,7 +115,7 @@
 
     function updateObstacles() {
       for (let i = 0; i < obstacles.length; i++) {
-        obstacles[i].x -= gameSpeed;
+        obstacles[i].x -= obstacles[i].speed;  // Each obstacle has its own speed
         if (obstacles[i].x + obstacles[i].width < 0) {
           obstacles.splice(i, 1);
           score++;
@@ -127,11 +127,15 @@
     function createObstacle() {
       let height = 15 + Math.random() * 50; // Make obstacle heights more varied
       let obstacleY = Math.random() * (canvas.height - height);
+      let width = 10 + Math.random() * 20; // Narrower obstacles
+      let speed = gameSpeed + Math.random() * 3; // Random speed for each obstacle
+
       obstacles.push({
         x: canvas.width,
         y: obstacleY,
-        width: 20 + Math.random() * 30, // Random width for obstacles
-        height: height
+        width: width,
+        height: height,
+        speed: speed  // Each obstacle moves at its own speed
       });
     }
 
@@ -142,7 +146,7 @@
 
     function checkSpeedIncrease() {
       if (score % 50 === 0 && score > 0) {
-        gameSpeed += 1;
+        gameSpeed += 1;  // Increase the base game speed when score reaches multiples of 50
       }
     }
 
@@ -225,7 +229,7 @@
     });
 
     // Create obstacles at intervals
-    setInterval(createObstacle, 2000);  // Create a new obstacle every 2 seconds
+    setInterval(createObstacle, 1500);  // Create a new obstacle every 1.5 seconds
 
     // Initialize game when image is loaded
     shipPng.onload = () => {
