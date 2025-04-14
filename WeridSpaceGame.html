@@ -70,6 +70,7 @@
     let highScore = 0;
     let gameSpeed = 10;
     let obstacles = [];
+    let lastTime = 0;  // To track the delta time
 
     const dino = {
       x: 50,
@@ -81,7 +82,8 @@
       maxSpeed: 4,
       hoverY: 150,
       floatSpeed: 0.1,
-      moveSpeed: 10  // Increased movement speed
+      moveSpeed: 0.2,  // Lower value for smoother movement
+      velocity: 0  // For smooth up/down movement
     };
 
     const shipPng = new Image();
@@ -175,7 +177,10 @@
       gameSpeed = 10;
     }
 
-    function gameLoop() {
+    function gameLoop(timestamp) {
+      const deltaTime = (timestamp - lastTime) / 1000;  // Time difference in seconds
+      lastTime = timestamp;
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       drawDino();
@@ -205,6 +210,9 @@
       if (dino.y < 0) dino.y = 0;
       if (dino.y + dino.height > canvas.height) dino.y = canvas.height - dino.height;
 
+      // Smooth movement based on velocity
+      dino.y += dino.velocity * deltaTime; // Update Y position with smooth motion
+
       requestAnimationFrame(gameLoop);
     }
 
@@ -215,11 +223,11 @@
       }
 
       if (event.key === "ArrowUp") {
-        dino.y -= dino.moveSpeed;  // Move up
+        dino.velocity = -dino.moveSpeed;  // Move up with smoother acceleration
       }
 
       if (event.key === "ArrowDown") {
-        dino.y += dino.moveSpeed;  // Move down
+        dino.velocity = dino.moveSpeed;  // Move down with smoother acceleration
       }
 
       if (event.key === "Enter") {
@@ -227,9 +235,15 @@
       }
     });
 
+    window.addEventListener("keyup", (event) => {
+      if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+        dino.velocity = 0;  // Stop movement when key is released
+      }
+    });
+
     // Initialize game when image is loaded
     shipPng.onload = () => {
-      gameLoop();  // Start the game loop once the ship image is loaded
+      gameLoop(0);  // Start the game loop once the ship image is loaded
     };
   </script>
 </body>
