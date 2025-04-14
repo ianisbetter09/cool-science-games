@@ -289,9 +289,16 @@ function gameLoop() {
 
   if (Math.random() < obstacleFrequency) createObstacle();
 
-shipPng.onload = () => {
-  animationFrameId = requestAnimationFrame(gameLoop);
-};
+if (shipPng.complete) {
+  // If image is already loaded (cached), just start
+  requestAnimationFrame(gameLoop);
+} else {
+  // If not, wait for it to load
+  shipPng.onload = () => {
+    requestAnimationFrame(gameLoop);
+  };
+}
+
 }
 
 
