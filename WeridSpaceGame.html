@@ -125,9 +125,9 @@
     }
 
     function createObstacle() {
-      let height = 15 + Math.random() * 50; // Make obstacle heights more varied
+      let height = 10
       let obstacleY = Math.random() * (canvas.height - height);
-      let width = 10 + Math.random() * 20; // Narrower obstacles
+      let width = 30
       let speed = gameSpeed + Math.random() * 3; // Random speed for each obstacle
 
       obstacles.push({
