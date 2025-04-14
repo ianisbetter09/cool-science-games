@@ -25,14 +25,6 @@
       border: 1px solid #000;
     }
 
-    #scoreDisplay {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      font-size: 20px;
-      color: black;
-    }
-
     #fullscreenBtn {
       position: absolute; 
       top: 20px; 
@@ -49,6 +41,20 @@
       left: 20px;
       font-size: 20px;
       color: black;
+    }
+
+    #scoreDisplayContainer {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      display: flex;
+      flex-direction: column;  /* Arrange elements vertically */
+      font-size: 20px;
+      color: black;
+    }
+
+    #scoreDisplay {
+      margin-bottom: 5px;  /* Adds some space between score and high score */
     }
   </style>
 </head>
@@ -231,9 +237,6 @@ function gameLoop() {
   requestAnimationFrame(gameLoop);
 }
 
-
-
-
 window.addEventListener("keydown", (event) => {
   if (event.key === "Escape") togglePause();
   if (event.key === "Enter") toggleFullscreen();
@@ -247,13 +250,10 @@ window.addEventListener("keyup", (event) => {
   if (event.key === "ArrowDown") isDownPressed = false;
 });
 
-
-
-
-    // Start the game loop once the ship image is loaded
-    shipPng.onload = () => {
-      gameLoop();  // Start the game loop
-    };
+// Start the game loop once the ship image is loaded
+shipPng.onload = () => {
+  gameLoop();  // Start the game loop
+};
   </script>
 </body>
 </html>
