@@ -181,13 +181,10 @@
       const deltaTime = (timestamp - lastTime) / 1000;  // Time difference in seconds
       lastTime = timestamp;
 
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      drawDino();
-      drawObstacles();
-      drawScore();
+      ctx.clearRect(0, 0, canvas.width, canvas.height);  // Clear the canvas every frame
 
       if (paused) {
+        // Draw paused screen overlay
         ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -196,9 +193,13 @@
         ctx.textAlign = "center";
         ctx.fillText("Paused", canvas.width / 2, canvas.height / 2);
 
-        animationFrameId = requestAnimationFrame(gameLoop);  // Keep polling even in paused state
+        // Don't continue the game loop when paused
         return;
       }
+
+      drawDino();
+      drawObstacles();
+      drawScore();
 
       // Create obstacles at random chance per frame
       createObstacle();
@@ -213,7 +214,7 @@
       // Smooth movement based on velocity
       dino.y += dino.velocity * deltaTime; // Update Y position with smooth motion
 
-      requestAnimationFrame(gameLoop);
+      requestAnimationFrame(gameLoop);  // Continue the game loop
     }
 
     // Event listeners for keyboard controls
