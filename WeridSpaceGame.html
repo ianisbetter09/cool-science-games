@@ -127,9 +127,9 @@
 
     function createObstacle() {
       // Random chance to spawn an obstacle (e.g., 20% chance)
-      if (Math.random() < 1) {
+      if (Math.random() < 5) {
         let height = 15;
-        let width = Math.random() * (80 - 30) + 30;  // Random width between 30 and 80
+        let width = Math.random() * (40 - 30) + 30;  // Random width between 30 and 80
         let obstacleY = Math.random() * (canvas.height - height);
         let speed = gameSpeed + Math.random() * 3; // Random speed for each obstacle
 
