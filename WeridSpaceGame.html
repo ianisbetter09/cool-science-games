@@ -126,18 +126,21 @@
     }
 
     function createObstacle() {
-      let height = 15;
-      let obstacleY = Math.random() * (canvas.height - height);
-      let width = 30;
-      let speed = gameSpeed + Math.random() * 3; // Random speed for each obstacle
+      // Random chance to spawn an obstacle (e.g., 20% chance)
+      if (Math.random() < 0.2) {
+        let height = 15;
+        let width = Math.random() * (80 - 30) + 30;  // Random width between 30 and 80
+        let obstacleY = Math.random() * (canvas.height - height);
+        let speed = gameSpeed + Math.random() * 3; // Random speed for each obstacle
 
-      obstacles.push({
-        x: canvas.width,
-        y: obstacleY,
-        width: width,
-        height: height,
-        speed: speed  // Each obstacle moves at its own speed
-      });
+        obstacles.push({
+          x: canvas.width,
+          y: obstacleY,
+          width: width,
+          height: height,
+          speed: speed  // Each obstacle moves at its own speed
+        });
+      }
     }
 
     function drawScore() {
@@ -223,8 +226,8 @@
       }
     });
 
-    // Create obstacles at intervals
-    setInterval(createObstacle, 1000);  // Create a new obstacle every 1 second
+    // Create obstacles at intervals (but with random chance each tick)
+    setInterval(createObstacle, 1000);  // Check every second if an obstacle should be spawned
 
     // Initialize game when image is loaded
     shipPng.onload = () => {
