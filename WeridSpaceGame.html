@@ -25,15 +25,7 @@
       border: 1px solid #000;
     }
 
-    #fullscreenBtn {
-      position: absolute; 
-      top: 20px; 
-      right: 20px; 
-      padding: 10px 15px; 
-      font-size: 16px;
-      cursor: pointer;
-      z-index: 1000;
-    }
+    
 
     #pauseInstructions {
       position: absolute;
@@ -60,12 +52,12 @@
 </head>
 <body>
   <canvas id="gameCanvas" width="800" height="400"></canvas>
-  <button id="fullscreenBtn">Full Screen</button>
+  
   <div id="scoreDisplayContainer">
     <div id="scoreDisplay">Score: 0</div>
     <div id="highScoreDisplay">High Score: 0</div>
   </div>
-  <div id="pauseInstructions">Press Esc to pause, use up and down arrow keys to move, also fullscreen button :l</div>
+  <div id="pauseInstructions">Press Esc to pause, use up and down arrow keys to move, push enter for fullscreen  :l</div>
 
   <script>
     const canvas = document.getElementById("gameCanvas");
