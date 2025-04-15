@@ -27,235 +27,242 @@
     <div id="timer" class="hidden">Time Left: 30s</div>
 
     <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        const homeScreen = document.getElementById('homeScreen');
-        const timerElement = document.getElementById('timer');
+        // Wait until the page is fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // All your JavaScript here
 
-        canvas.width = 800;
-        canvas.height = 600;
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+            const homeScreen = document.getElementById('homeScreen');
+            const timerElement = document.getElementById('timer');
 
-        let is2PlayerMode = false;
-        let gameTime = 30;
-        let timerInterval;
-        let gameOver = false;
+            canvas.width = 800;
+            canvas.height = 600;
 
-        let player1 = {
-            x: 100,
-            y: 100,
-            size: 30,
-            color: 'red',
-            speed: 2,
-            dx: 0,
-            dy: 0,
-        };
+            let is2PlayerMode = false;
+            let gameTime = 30;
+            let timerInterval;
+            let gameOver = false;
 
-        let player2 = {
-            x: 400,
-            y: 300,
-            size: 30,
-            color: 'green',
-            speed: 4,
-            dx: 0,
-            dy: 0,
-        };
+            let player1 = {
+                x: 100,
+                y: 100,
+                size: 30,
+                color: 'red',
+                speed: 2,
+                dx: 0,
+                dy: 0,
+            };
 
-        let players = [player1, player2];
-        let currentRunnerIndex = 1;
+            let player2 = {
+                x: 400,
+                y: 300,
+                size: 30,
+                color: 'green',
+                speed: 4,
+                dx: 0,
+                dy: 0,
+            };
 
-        const keys = {
-            w: false, a: false, s: false, d: false,
-            ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false
-        };
+            let players = [player1, player2];
+            let currentRunnerIndex = 1;
 
-        const powerUps = [];
+            const keys = {
+                w: false, a: false, s: false, d: false,
+                ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false
+            };
 
-        const powerUpTypes = [
-            {
-                name: "speed",
-                icon: "⚡",
-                effect: (player) => {
-                    if (!player.hasSpeedBoost) {
-                        player.speed += 2;
-                        player.hasSpeedBoost = true;
-                        setTimeout(() => {
-                            player.speed -= 2;
-                            player.hasSpeedBoost = false;
-                        }, 5000);
+            const powerUps = [];
+
+            const powerUpTypes = [
+                {
+                    name: "speed",
+                    icon: "⚡",
+                    effect: (player) => {
+                        if (!player.hasSpeedBoost) {
+                            player.speed += 2;
+                            player.hasSpeedBoost = true;
+                            setTimeout(() => {
+                                player.speed -= 2;
+                                player.hasSpeedBoost = false;
+                            }, 5000);
+                        }
+                    }
+                },
+                {
+                    name: "dash",
+                    icon: "💨",
+                    effect: (player) => {
+                        player.x += player.dx * 20;
+                        player.y += player.dy * 20;
                     }
                 }
-            },
-            {
-                name: "dash",
-                icon: "💨",
-                effect: (player) => {
-                    player.x += player.dx * 20;
-                    player.y += player.dy * 20;
-                }
-            }
-        ];
+            ];
 
-        function spawnPowerUp() {
-            const type = powerUpTypes[Math.floor(Math.random() * powerUpTypes.length)];
-            powerUps.push({
-                ...type,
-                x: Math.random() * (canvas.width - 30) + 15,
-                y: Math.random() * (canvas.height - 30) + 15,
-                size: 20
-            });
-
-            setTimeout(spawnPowerUp, Math.random() * 5000 + 5000);
-        }
-
-        document.addEventListener('keydown', (e) => {
-            if (e.key in keys) keys[e.key] = true;
-        });
-        document.addEventListener('keyup', (e) => {
-            if (e.key in keys) keys[e.key] = false;
-        });
-
-        function startGame(playersCount) {
-            is2PlayerMode = playersCount === 2;
-            homeScreen.classList.add('hidden');
-            canvas.classList.remove('hidden');
-            timerElement.classList.remove('hidden');
-            resetGame();
-            startTimer();
-            spawnPowerUp();
-            gameLoop();
-        }
-
-        function resetGame() {
-            player1.x = 100;
-            player1.y = 100;
-            player2.x = 400;
-            player2.y = 300;
-            currentRunnerIndex = 1;
-            gameOver = false;
-        }
-
-        function startTimer() {
-            gameTime = 30;
-            timerElement.textContent = `Time Left: ${gameTime}s`;
-            timerInterval = setInterval(() => {
-                if (gameOver) return;
-                gameTime--;
-                timerElement.textContent = `Time Left: ${gameTime}s`;
-                if (gameTime <= 0) {
-                    clearInterval(timerInterval);
-                    gameOver = true;
-                    alert("Time's up!");
-                }
-            }, 1000);
-        }
-
-        function drawPlayer(player) {
-            ctx.beginPath();
-            ctx.arc(player.x, player.y, player.size, 0, Math.PI * 2);
-            ctx.fillStyle = player.color;
-            ctx.fill();
-            ctx.closePath();
-        }
-
-        function drawPowerUps() {
-            powerUps.forEach(p => {
-                ctx.font = "20px Arial";
-                ctx.textAlign = "center";
-                ctx.textBaseline = "middle";
-                ctx.fillText(p.icon, p.x, p.y);
-            });
-        }
-
-        function drawArrowAbovePlayer(player) {
-            ctx.beginPath();
-            ctx.moveTo(player.x, player.y - player.size - 10);            // bottom of arrow
-            ctx.lineTo(player.x - 10, player.y - player.size - 30);       // left point
-            ctx.lineTo(player.x + 10, player.y - player.size - 30);       // right point
-            ctx.closePath();
-            ctx.fillStyle = 'black';                                      // arrow color
-            ctx.fill();
-        }
-
-        function movePlayer(player, controls) {
-            player.dx = player.dy = 0;
-
-            if (keys[controls.up]) player.dy = -player.speed;
-            if (keys[controls.down]) player.dy = player.speed;
-            if (keys[controls.left]) player.dx = -player.speed;
-            if (keys[controls.right]) player.dx = player.speed;
-
-            player.x += player.dx;
-            player.y += player.dy;
-
-            // Stay in bounds
-            player.x = Math.max(0, Math.min(canvas.width - player.size, player.x));
-            player.y = Math.max(0, Math.min(canvas.height - player.size, player.y));
-        }
-
-        function checkTag(a, b) {
-            const dx = a.x - b.x;
-            const dy = a.y - b.y;
-            return Math.sqrt(dx * dx + dy * dy) < a.size + b.size;
-        }
-
-        function switchRoles() {
-            currentRunnerIndex = 1 - currentRunnerIndex;
-            alert(`Player ${currentRunnerIndex + 1} is now the runner!`);
-        }
-
-        function teleportPlayer(player) {
-            // Teleport the player a short distance away from the other player
-            const offsetX = Math.random() * 100 - 50;
-            const offsetY = Math.random() * 100 - 50;
-            player.x += offsetX;
-            player.y += offsetY;
-
-            // Ensure player stays within bounds after teleport
-            player.x = Math.max(0, Math.min(canvas.width - player.size, player.x));
-            player.y = Math.max(0, Math.min(canvas.height - player.size, player.y));
-        }
-
-        function gameLoop() {
-            if (gameOver) return;
-
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            const runner = players[currentRunnerIndex];
-            const chaser = players[1 - currentRunnerIndex];
-
-            drawPlayer(runner);
-            drawPlayer(chaser);
-            drawArrowAbovePlayer(chaser); // Add this to show who's "it"
-            drawPowerUps();
-
-            if (currentRunnerIndex === 0) {
-                movePlayer(runner, { up: 'w', down: 's', left: 'a', right: 'd' });
-                movePlayer(chaser, { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight' });
-            } else {
-                movePlayer(runner, { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight' });
-                movePlayer(chaser, { up: 'w', down: 's', left: 'a', right: 'd' });
-            }
-
-            // Power-up collection
-            powerUps.forEach((p, index) => {
-                players.forEach(player => {
-                    const dist = Math.sqrt((player.x - p.x) ** 2 + (player.y - p.y) ** 2);
-                    if (dist < player.size + p.size) {
-                        p.effect(player);
-                        powerUps.splice(index, 1);
-                    }
+            function spawnPowerUp() {
+                const type = powerUpTypes[Math.floor(Math.random() * powerUpTypes.length)];
+                powerUps.push({
+                    ...type,
+                    x: Math.random() * (canvas.width - 30) + 15,
+                    y: Math.random() * (canvas.height - 30) + 15,
+                    size: 20
                 });
-            });
 
-            if (checkTag(runner, chaser)) {
-                // Teleport both players away from each other and switch roles
-                teleportPlayer(runner);
-                teleportPlayer(chaser);
-                switchRoles();
+                setTimeout(spawnPowerUp, Math.random() * 5000 + 5000);
             }
 
-            requestAnimationFrame(gameLoop);
-        }
+            document.addEventListener('keydown', (e) => {
+                if (e.key in keys) keys[e.key] = true;
+            });
+            document.addEventListener('keyup', (e) => {
+                if (e.key in keys) keys[e.key] = false;
+            });
+
+            // This function starts the game
+            function startGame(playersCount) {
+                console.log('Start game button clicked'); // Debugging line
+                is2PlayerMode = playersCount === 2;
+                homeScreen.classList.add('hidden');
+                canvas.classList.remove('hidden');
+                timerElement.classList.remove('hidden');
+                resetGame();
+                startTimer();
+                spawnPowerUp();
+                gameLoop();
+            }
+
+            function resetGame() {
+                player1.x = 100;
+                player1.y = 100;
+                player2.x = 400;
+                player2.y = 300;
+                currentRunnerIndex = 1;
+                gameOver = false;
+            }
+
+            function startTimer() {
+                gameTime = 30;
+                timerElement.textContent = `Time Left: ${gameTime}s`;
+                timerInterval = setInterval(() => {
+                    if (gameOver) return;
+                    gameTime--;
+                    timerElement.textContent = `Time Left: ${gameTime}s`;
+                    if (gameTime <= 0) {
+                        clearInterval(timerInterval);
+                        gameOver = true;
+                        alert("Time's up!");
+                    }
+                }, 1000);
+            }
+
+            function drawPlayer(player) {
+                ctx.beginPath();
+                ctx.arc(player.x, player.y, player.size, 0, Math.PI * 2);
+                ctx.fillStyle = player.color;
+                ctx.fill();
+                ctx.closePath();
+            }
+
+            function drawPowerUps() {
+                powerUps.forEach(p => {
+                    ctx.font = "20px Arial";
+                    ctx.textAlign = "center";
+                    ctx.textBaseline = "middle";
+                    ctx.fillText(p.icon, p.x, p.y);
+                });
+            }
+
+            function drawArrowAbovePlayer(player) {
+                ctx.beginPath();
+                ctx.moveTo(player.x, player.y - player.size - 10);            // bottom of arrow
+                ctx.lineTo(player.x - 10, player.y - player.size - 30);       // left point
+                ctx.lineTo(player.x + 10, player.y - player.size - 30);       // right point
+                ctx.closePath();
+                ctx.fillStyle = 'black';                                      // arrow color
+                ctx.fill();
+            }
+
+            function movePlayer(player, controls) {
+                player.dx = player.dy = 0;
+
+                if (keys[controls.up]) player.dy = -player.speed;
+                if (keys[controls.down]) player.dy = player.speed;
+                if (keys[controls.left]) player.dx = -player.speed;
+                if (keys[controls.right]) player.dx = player.speed;
+
+                player.x += player.dx;
+                player.y += player.dy;
+
+                // Stay in bounds
+                player.x = Math.max(0, Math.min(canvas.width - player.size, player.x));
+                player.y = Math.max(0, Math.min(canvas.height - player.size, player.y));
+            }
+
+            function checkTag(a, b) {
+                const dx = a.x - b.x;
+                const dy = a.y - b.y;
+                return Math.sqrt(dx * dx + dy * dy) < a.size + b.size;
+            }
+
+            function switchRoles() {
+                currentRunnerIndex = 1 - currentRunnerIndex;
+                alert(`Player ${currentRunnerIndex + 1} is now the runner!`);
+            }
+
+            function teleportPlayer(player) {
+                // Teleport the player a short distance away from the other player
+                const offsetX = Math.random() * 100 - 50;
+                const offsetY = Math.random() * 100 - 50;
+                player.x += offsetX;
+                player.y += offsetY;
+
+                // Ensure player stays within bounds after teleport
+                player.x = Math.max(0, Math.min(canvas.width - player.size, player.x));
+                player.y = Math.max(0, Math.min(canvas.height - player.size, player.y));
+            }
+
+            function gameLoop() {
+                if (gameOver) return;
+
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                const runner = players[currentRunnerIndex];
+                const chaser = players[1 - currentRunnerIndex];
+
+                drawPlayer(runner);
+                drawPlayer(chaser);
+                drawArrowAbovePlayer(chaser); // Add this to show who's "it"
+                drawPowerUps();
+
+                if (currentRunnerIndex === 0) {
+                    movePlayer(runner, { up: 'w', down: 's', left: 'a', right: 'd' });
+                    movePlayer(chaser, { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight' });
+                } else {
+                    movePlayer(runner, { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight' });
+                    movePlayer(chaser, { up: 'w', down: 's', left: 'a', right: 'd' });
+                }
+
+                // Power-up collection
+                powerUps.forEach((p, index) => {
+                    players.forEach(player => {
+                        const dist = Math.sqrt((player.x - p.x) ** 2 + (player.y - p.y) ** 2);
+                        if (dist < player.size + p.size) {
+                            p.effect(player);
+                            powerUps.splice(index, 1);
+                        }
+                    });
+                });
+
+                if (checkTag(runner, chaser)) {
+                    // Teleport both players away from each other and switch roles
+                    teleportPlayer(runner);
+                    teleportPlayer(chaser);
+                    switchRoles();
+                }
+
+                requestAnimationFrame(gameLoop);
+            }
+        });
     </script>
 </body>
 </html>
