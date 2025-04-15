@@ -171,6 +171,19 @@
 
         document.addEventListener('keyup', (e) => {
             if (e.key in keys) keys[e.key] = false;
+            // Reset the speed to 0 when the key is released to prevent continuous movement
+            if (e.key === 'w' || e.key === 's') {
+                player1.dy = 0;
+            }
+            if (e.key === 'a' || e.key === 'd') {
+                player1.dx = 0;
+            }
+            if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                player2.dy = 0;
+            }
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                player2.dx = 0;
+            }
         });
 
         window.startGame = function(playersCount) {
@@ -259,7 +272,6 @@
 
         function switchRoles() {
             currentRunnerIndex = 1 - currentRunnerIndex;
-            alert(`Player ${currentRunnerIndex + 1} is now the runner!`);
         }
 
         function teleportPlayer(player) {
