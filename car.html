@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>3D Car Game</title>
   <style>
     body { margin: 0; overflow: hidden; }
@@ -29,14 +29,20 @@
   light.position.set(10, 20, 10);
   scene.add(light);
 
-  // Ground (Road)
-  const roadGeometry = new THREE.PlaneGeometry(10, 100);
-  const roadMaterial = new THREE.MeshStandardMaterial({ color: 0x333333 });
-  const road = new THREE.Mesh(roadGeometry, roadMaterial);
-  road.rotation.x = -Math.PI / 2;
-  scene.add(road);
+  // Road (multiple segments to simulate endless road)
+  const roadSegments = [];
+  const roadSegmentLength = 20;
+  for (let i = 0; i < 5; i++) {
+    const roadGeometry = new THREE.PlaneGeometry(10, roadSegmentLength);
+    const roadMaterial = new THREE.MeshStandardMaterial({ color: 0x333333 });
+    const road = new THREE.Mesh(roadGeometry, roadMaterial);
+    road.rotation.x = -Math.PI / 2;
+    road.position.z = -i * roadSegmentLength;
+    scene.add(road);
+    roadSegments.push(road);
+  }
 
-  // Car
+  // Player car
   const carGeometry = new THREE.BoxGeometry(1, 1, 2);
   const carMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
   const car = new THREE.Mesh(carGeometry, carMaterial);
@@ -51,22 +57,64 @@
     if (e.key === 'ArrowLeft') moveLeft = true;
     if (e.key === 'ArrowRight') moveRight = true;
   });
-
   document.addEventListener('keyup', (e) => {
     if (e.key === 'ArrowLeft') moveLeft = false;
     if (e.key === 'ArrowRight') moveRight = false;
   });
 
+  // Obstacles
+  const obstacles = [];
+
+  function spawnObstacle() {
+    const obsGeometry = new THREE.BoxGeometry(1, 1, 1);
+    const obsMaterial = new THREE.MeshStandardMaterial({ color: 0x000000 });
+    const obs = new THREE.Mesh(obsGeometry, obsMaterial);
+    obs.position.set((Math.floor(Math.random() * 5) - 2) * 2, 0.5, -50);
+    scene.add(obs);
+    obstacles.push(obs);
+  }
+
+  setInterval(spawnObstacle, 1500); // every 1.5 sec
+
+  let isGameOver = false;
+
   function animate() {
+    if (isGameOver) return;
+
     requestAnimationFrame(animate);
 
-    // Move car
+    // Move car left/right
     if (moveLeft && car.position.x > -4) car.position.x -= 0.1;
     if (moveRight && car.position.x < 4) car.position.x += 0.1;
 
-    // Move road (illusion)
-    road.position.z += 0.2;
-    if (road.position.z > 50) road.position.z = 0;
+    // Scroll road segments
+    roadSegments.forEach(road => {
+      road.position.z += 0.2;
+      if (road.position.z > 10) {
+        road.position.z -= roadSegmentLength * roadSegments.length;
+      }
+    });
+
+    // Move obstacles toward player
+    obstacles.forEach((obs, index) => {
+      obs.position.z += 0.2;
+
+      // Collision check
+      if (
+        Math.abs(obs.position.x - car.position.x) < 1 &&
+        Math.abs(obs.position.z - car.position.z) < 1
+      ) {
+        isGameOver = true;
+        alert("💥 Game Over!");
+        window.location.reload();
+      }
+
+      // Remove off-screen
+      if (obs.position.z > 10) {
+        scene.remove(obs);
+        obstacles.splice(index, 1);
+      }
+    });
 
     renderer.render(scene, camera);
   }
