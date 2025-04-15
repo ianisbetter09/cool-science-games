@@ -2,13 +2,26 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>3D Car Game</title>
+  <title>3D Car Coin Collector</title>
   <style>
-    body { margin: 0; overflow: hidden; }
+    body { margin: 0; overflow: hidden; font-family: Arial, sans-serif; }
     canvas { display: block; }
+    #hud {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 24px;
+      color: white;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 10px 15px;
+      border-radius: 8px;
+    }
   </style>
 </head>
 <body>
+
+<div id="hud">Coins: <span id="coinCount">0</span></div>
+
 <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
 
 <script>
@@ -65,26 +78,26 @@
     if (e.key === 'ArrowRight') moveRight = false;
   });
 
-  // Obstacles
-  const obstacles = [];
-  const obstacleSpeed = 0.4;
+  // Coins
+  const coins = [];
+  const coinSpeed = 0.4;
+  let coinCount = 0;
 
-  function spawnObstacle() {
-    const obsGeometry = new THREE.BoxGeometry(1, 1, 1);
-    const obsMaterial = new THREE.MeshStandardMaterial({ color: 0x000000 });
-    const obs = new THREE.Mesh(obsGeometry, obsMaterial);
-    obs.position.set((Math.floor(Math.random() * 5) - 2) * 2, 0.5, -50);
-    scene.add(obs);
-    obstacles.push(obs);
+  const coinCounter = document.getElementById('coinCount');
+
+  function spawnCoin() {
+    const coinGeometry = new THREE.CylinderGeometry(0.4, 0.4, 0.1, 32);
+    const coinMaterial = new THREE.MeshStandardMaterial({ color: 0xffd700 });
+    const coin = new THREE.Mesh(coinGeometry, coinMaterial);
+    coin.rotation.x = Math.PI / 2;
+    coin.position.set((Math.floor(Math.random() * 5) - 2) * 2, 0.5, -50);
+    scene.add(coin);
+    coins.push(coin);
   }
 
-  setInterval(spawnObstacle, 1500); // every 1.5 sec
-
-  let isGameOver = false;
+  setInterval(spawnCoin, 1000); // every 1 sec
 
   function animate() {
-    if (isGameOver) return;
-
     requestAnimationFrame(animate);
 
     // Move car left/right
@@ -99,24 +112,26 @@
       }
     });
 
-    // Move obstacles toward player
-    obstacles.forEach((obs, index) => {
-      obs.position.z += obstacleSpeed;
+    // Move coins & detect collection
+    coins.forEach((coin, index) => {
+      coin.position.z += coinSpeed;
 
-      // Collision check
+      // Coin collection check
       if (
-        Math.abs(obs.position.x - car.position.x) < 1 &&
-        Math.abs(obs.position.z - car.position.z) < 1
+        Math.abs(coin.position.x - car.position.x) < 0.75 &&
+        Math.abs(coin.position.z - car.position.z) < 1
       ) {
-        isGameOver = true;
-        alert("💥 Game Over!");
-        window.location.reload();
+        coinCount++;
+        coinCounter.textContent = coinCount;
+        scene.remove(coin);
+        coins.splice(index, 1);
+        return; // Skip rest for this coin
       }
 
-      // Remove off-screen
-      if (obs.position.z > 20) {
-        scene.remove(obs);
-        obstacles.splice(index, 1);
+      // Remove if off-screen
+      if (coin.position.z > 20) {
+        scene.remove(coin);
+        coins.splice(index, 1);
       }
     });
 
