@@ -1,207 +1,235 @@
-<script>
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    const homeScreen = document.getElementById('homeScreen');
-    const timerElement = document.getElementById('timer');
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tag Game</title>
+    <style>
+        body { margin: 0; padding: 0; }
+        canvas { background-color: #f0f0f0; display: block; margin: 0 auto; }
+        .hidden { display: none; }
+        #timer { position: absolute; top: 20px; left: 20px; font-size: 24px; color: black; }
+        #homeScreen { text-align: center; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        #gameCanvas { display: block; margin: 0 auto; }
+    </style>
+</head>
+<body>
 
-    canvas.width = 800;
-    canvas.height = 600;
+    <!-- Home Screen -->
+    <div id="homeScreen">
+        <h1>Tag Game</h1>
+        <button onclick="startGame(1)">1 Player Mode</button>
+        <button onclick="startGame(2)">2 Player Mode</button>
+    </div>
 
-    let is2PlayerMode = false;
-    let gameTime = 30;
-    let timerInterval;
-    let gameOver = false;
+    <!-- Game Screen -->
+    <canvas id="gameCanvas" class="hidden"></canvas>
+    <div id="timer" class="hidden">Time Left: 30s</div>
 
-    
-    let player1 = {
-        x: 100,
-        y: 100,
-        size: 30,
-        color: 'red',
-        speed: 2,
-        dx: 0,
-        dy: 0,
-    };
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const homeScreen = document.getElementById('homeScreen');
+        const timerElement = document.getElementById('timer');
 
-    let player2 = {
-        x: 400,
-        y: 300,
-        size: 30,
-        color: 'green',
-        speed: 4,
-        dx: 0,
-        dy: 0,
-    };
+        canvas.width = 800;
+        canvas.height = 600;
 
-    let players = [player1, player2];
-    let currentRunnerIndex = 1;
+        let is2PlayerMode = false;
+        let gameTime = 30;
+        let timerInterval;
+        let gameOver = false;
 
-    const keys = {
-        w: false, a: false, s: false, d: false,
-        ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false
-    };
+        let player1 = {
+            x: 100,
+            y: 100,
+            size: 30,
+            color: 'red',
+            speed: 2,
+            dx: 0,
+            dy: 0,
+        };
 
-    const powerUps = [];
+        let player2 = {
+            x: 400,
+            y: 300,
+            size: 30,
+            color: 'green',
+            speed: 4,
+            dx: 0,
+            dy: 0,
+        };
 
-    const powerUpTypes = [
-        {
-            name: "speed",
-            icon: "⚡",
-            effect: (player) => {
-                if (!player.hasSpeedBoost) {
-                    player.speed += 2;
-                    player.hasSpeedBoost = true;
-                    setTimeout(() => {
-                        player.speed -= 2;
-                        player.hasSpeedBoost = false;
-                    }, 5000);
+        let players = [player1, player2];
+        let currentRunnerIndex = 1;
+
+        const keys = {
+            w: false, a: false, s: false, d: false,
+            ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false
+        };
+
+        const powerUps = [];
+
+        const powerUpTypes = [
+            {
+                name: "speed",
+                icon: "⚡",
+                effect: (player) => {
+                    if (!player.hasSpeedBoost) {
+                        player.speed += 2;
+                        player.hasSpeedBoost = true;
+                        setTimeout(() => {
+                            player.speed -= 2;
+                            player.hasSpeedBoost = false;
+                        }, 5000);
+                    }
+                }
+            },
+            {
+                name: "dash",
+                icon: "💨",
+                effect: (player) => {
+                    player.x += player.dx * 20;
+                    player.y += player.dy * 20;
                 }
             }
-        },
-        {
-            name: "dash",
-            icon: "💨",
-            effect: (player) => {
-                player.x += player.dx * 20;
-                player.y += player.dy * 20;
-            }
-        }
-    ];
+        ];
 
-    function spawnPowerUp() {
-        const type = powerUpTypes[Math.floor(Math.random() * powerUpTypes.length)];
-        powerUps.push({
-            ...type,
-            x: Math.random() * (canvas.width - 30) + 15,
-            y: Math.random() * (canvas.height - 30) + 15,
-            size: 20
-        });
-
-        // Respawn in 5-10 seconds
-        setTimeout(spawnPowerUp, Math.random() * 5000 + 5000);
-    }
-
-    document.addEventListener('keydown', (e) => {
-        if (e.key in keys) keys[e.key] = true;
-    });
-    document.addEventListener('keyup', (e) => {
-        if (e.key in keys) keys[e.key] = false;
-    });
-
-    function startGame(playersCount) {
-        is2PlayerMode = playersCount === 2;
-        homeScreen.classList.add('hidden');
-        canvas.classList.remove('hidden');
-        timerElement.classList.remove('hidden');
-        resetGame();
-        startTimer();
-        spawnPowerUp();
-        gameLoop();
-    }
-
-    function resetGame() {
-        player1.x = 100;
-        player1.y = 100;
-        player2.x = 400;
-        player2.y = 300;
-        currentRunnerIndex = 1;
-        gameOver = false;
-    }
-
-    function startTimer() {
-        gameTime = 30;
-        timerElement.textContent = `Time Left: ${gameTime}s`;
-        timerInterval = setInterval(() => {
-            if (gameOver) return;
-            gameTime--;
-            timerElement.textContent = `Time Left: ${gameTime}s`;
-            if (gameTime <= 0) {
-                clearInterval(timerInterval);
-                gameOver = true;
-                alert("Time's up!");
-            }
-        }, 1000);
-    }
-
-    function drawPlayer(player) {
-        ctx.beginPath();
-        ctx.arc(player.x, player.y, player.size, 0, Math.PI * 2);
-        ctx.fillStyle = player.color;
-        ctx.fill();
-        ctx.closePath();
-    }
-
-    function drawPowerUps() {
-        powerUps.forEach(p => {
-            ctx.font = "20px Arial";
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillText(p.icon, p.x, p.y);
-        });
-    }
-
-    function movePlayer(player, controls) {
-        player.dx = player.dy = 0;
-
-        if (keys[controls.up]) player.dy = -player.speed;
-        if (keys[controls.down]) player.dy = player.speed;
-        if (keys[controls.left]) player.dx = -player.speed;
-        if (keys[controls.right]) player.dx = player.speed;
-
-        player.x += player.dx;
-        player.y += player.dy;
-
-        // Stay in bounds
-        player.x = Math.max(0, Math.min(canvas.width - player.size, player.x));
-        player.y = Math.max(0, Math.min(canvas.height - player.size, player.y));
-    }
-
-    function checkTag(a, b) {
-        const dx = a.x - b.x;
-        const dy = a.y - b.y;
-        return Math.sqrt(dx * dx + dy * dy) < a.size + b.size;
-    }
-
-    function switchRoles() {
-        currentRunnerIndex = 1 - currentRunnerIndex;
-        alert(`Player ${currentRunnerIndex + 1} is now the runner!`);
-    }
-
-    function gameLoop() {
-        if (gameOver) return;
-
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        const runner = players[currentRunnerIndex];
-        const chaser = players[1 - currentRunnerIndex];
-
-        drawPlayer(runner);
-        drawPlayer(chaser);
-        drawPowerUps();
-
-        if (currentRunnerIndex === 0) {
-            movePlayer(runner, { up: 'w', down: 's', left: 'a', right: 'd' });
-            movePlayer(chaser, { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight' });
-        } else {
-            movePlayer(runner, { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight' });
-            movePlayer(chaser, { up: 'w', down: 's', left: 'a', right: 'd' });
-        }
-
-        // Power-up collection
-        powerUps.forEach((p, index) => {
-            players.forEach(player => {
-                const dist = Math.sqrt((player.x - p.x) ** 2 + (player.y - p.y) ** 2);
-                if (dist < player.size + p.size) {
-                    p.effect(player);
-                    powerUps.splice(index, 1);
-                }
+        function spawnPowerUp() {
+            const type = powerUpTypes[Math.floor(Math.random() * powerUpTypes.length)];
+            powerUps.push({
+                ...type,
+                x: Math.random() * (canvas.width - 30) + 15,
+                y: Math.random() * (canvas.height - 30) + 15,
+                size: 20
             });
-        });
 
-        if (checkTag(runner, chaser)) {
-            switchRoles();
+            setTimeout(spawnPowerUp, Math.random() * 5000 + 5000);
         }
 
-        requestAnimationFrame(gameLoop);
-    }
-</script>
+        document.addEventListener('keydown', (e) => {
+            if (e.key in keys) keys[e.key] = true;
+        });
+        document.addEventListener('keyup', (e) => {
+            if (e.key in keys) keys[e.key] = false;
+        });
+
+        function startGame(playersCount) {
+            is2PlayerMode = playersCount === 2;
+            homeScreen.classList.add('hidden');
+            canvas.classList.remove('hidden');
+            timerElement.classList.remove('hidden');
+            resetGame();
+            startTimer();
+            spawnPowerUp();
+            gameLoop();
+        }
+
+        function resetGame() {
+            player1.x = 100;
+            player1.y = 100;
+            player2.x = 400;
+            player2.y = 300;
+            currentRunnerIndex = 1;
+            gameOver = false;
+        }
+
+        function startTimer() {
+            gameTime = 30;
+            timerElement.textContent = `Time Left: ${gameTime}s`;
+            timerInterval = setInterval(() => {
+                if (gameOver) return;
+                gameTime--;
+                timerElement.textContent = `Time Left: ${gameTime}s`;
+                if (gameTime <= 0) {
+                    clearInterval(timerInterval);
+                    gameOver = true;
+                    alert("Time's up!");
+                }
+            }, 1000);
+        }
+
+        function drawPlayer(player) {
+            ctx.beginPath();
+            ctx.arc(player.x, player.y, player.size, 0, Math.PI * 2);
+            ctx.fillStyle = player.color;
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        function drawPowerUps() {
+            powerUps.forEach(p => {
+                ctx.font = "20px Arial";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText(p.icon, p.x, p.y);
+            });
+        }
+
+        function movePlayer(player, controls) {
+            player.dx = player.dy = 0;
+
+            if (keys[controls.up]) player.dy = -player.speed;
+            if (keys[controls.down]) player.dy = player.speed;
+            if (keys[controls.left]) player.dx = -player.speed;
+            if (keys[controls.right]) player.dx = player.speed;
+
+            player.x += player.dx;
+            player.y += player.dy;
+
+            // Stay in bounds
+            player.x = Math.max(0, Math.min(canvas.width - player.size, player.x));
+            player.y = Math.max(0, Math.min(canvas.height - player.size, player.y));
+        }
+
+        function checkTag(a, b) {
+            const dx = a.x - b.x;
+            const dy = a.y - b.y;
+            return Math.sqrt(dx * dx + dy * dy) < a.size + b.size;
+        }
+
+        function switchRoles() {
+            currentRunnerIndex = 1 - currentRunnerIndex;
+            alert(`Player ${currentRunnerIndex + 1} is now the runner!`);
+        }
+
+        function gameLoop() {
+            if (gameOver) return;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const runner = players[currentRunnerIndex];
+            const chaser = players[1 - currentRunnerIndex];
+
+            drawPlayer(runner);
+            drawPlayer(chaser);
+            drawPowerUps();
+
+            if (currentRunnerIndex === 0) {
+                movePlayer(runner, { up: 'w', down: 's', left: 'a', right: 'd' });
+                movePlayer(chaser, { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight' });
+            } else {
+                movePlayer(runner, { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight' });
+                movePlayer(chaser, { up: 'w', down: 's', left: 'a', right: 'd' });
+            }
+
+            // Power-up collection
+            powerUps.forEach((p, index) => {
+                players.forEach(player => {
+                    const dist = Math.sqrt((player.x - p.x) ** 2 + (player.y - p.y) ** 2);
+                    if (dist < player.size + p.size) {
+                        p.effect(player);
+                        powerUps.splice(index, 1);
+                    }
+                });
+            });
+
+            if (checkTag(runner, chaser)) {
+                switchRoles();
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+    </script>
+</body>
+</html>
