@@ -29,9 +29,11 @@
   light.position.set(10, 20, 10);
   scene.add(light);
 
-  // Road (multiple segments to simulate endless road)
+  // Road segments
   const roadSegments = [];
   const roadSegmentLength = 20;
+  const roadSpeed = 0.4;
+
   for (let i = 0; i < 5; i++) {
     const roadGeometry = new THREE.PlaneGeometry(10, roadSegmentLength);
     const roadMaterial = new THREE.MeshStandardMaterial({ color: 0x333333 });
@@ -52,6 +54,7 @@
   // Movement
   let moveLeft = false;
   let moveRight = false;
+  const carSpeed = 0.2;
 
   document.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowLeft') moveLeft = true;
@@ -64,6 +67,7 @@
 
   // Obstacles
   const obstacles = [];
+  const obstacleSpeed = 0.4;
 
   function spawnObstacle() {
     const obsGeometry = new THREE.BoxGeometry(1, 1, 1);
@@ -84,20 +88,20 @@
     requestAnimationFrame(animate);
 
     // Move car left/right
-    if (moveLeft && car.position.x > -4) car.position.x -= 0.1;
-    if (moveRight && car.position.x < 4) car.position.x += 0.1;
+    if (moveLeft && car.position.x > -4) car.position.x -= carSpeed;
+    if (moveRight && car.position.x < 4) car.position.x += carSpeed;
 
     // Scroll road segments
     roadSegments.forEach(road => {
-      road.position.z += 0.2;
-      if (road.position.z > 10) {
+      road.position.z += roadSpeed;
+      if (road.position.z > 30) {
         road.position.z -= roadSegmentLength * roadSegments.length;
       }
     });
 
     // Move obstacles toward player
     obstacles.forEach((obs, index) => {
-      obs.position.z += 0.2;
+      obs.position.z += obstacleSpeed;
 
       // Collision check
       if (
@@ -110,7 +114,7 @@
       }
 
       // Remove off-screen
-      if (obs.position.z > 10) {
+      if (obs.position.z > 20) {
         scene.remove(obs);
         obstacles.splice(index, 1);
       }
