@@ -19,6 +19,7 @@
       border: 2px solid #fff;
     }
 
+
     .car {
       width: 50px;
       height: 100px;
