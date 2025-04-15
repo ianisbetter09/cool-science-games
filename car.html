@@ -161,6 +161,78 @@
 
   setInterval(spawnCoin, 1000); // every 1 sec
 
+  // Road segment falling behavior
+  function makeRoadSegmentFall(road) {
+    const fallDistance = Math.random() * 10 + 5; // Random fall distance
+    const fallDuration = Math.random() * 2 + 2; // Random time for falling
+
+    // Animate the road segment falling
+    let startTime = Date.now();
+    const fallAnimation = () => {
+      const elapsedTime = (Date.now() - startTime) / 1000; // time in seconds
+      if (elapsedTime < fallDuration) {
+        road.position.y -= fallDistance / fallDuration * (elapsedTime);
+        requestAnimationFrame(fallAnimation);
+      } else {
+        scene.remove(road); // Remove road segment after falling
+      }
+    };
+    fallAnimation();
+  }
+
+  // Scroll road segments and apply fall logic
+  function updateRoadSegments() {
+    roadSegments.forEach((road, index) => {
+      road.position.z += roadSpeed;
+      
+      // Randomly cause some road segments to "fall off"
+      if (road.position.z > 15 && Math.random() < 0.05) {
+        makeRoadSegmentFall(road);
+        // Reset this road segment after it falls
+        road.position.z -= roadSegmentLength * roadSegments.length;
+      }
+
+      if (road.position.z > 30) {
+        road.position.z -= roadSegmentLength * roadSegments.length;
+      }
+    });
+  }
+
+  // Scroll dashes
+  function updateDashes() {
+    dashes.forEach(dash => {
+      dash.position.z += roadSpeed;
+      if (dash.position.z > 10) {
+        dash.position.z -= dashSpacing * dashCount;
+      }
+    });
+  }
+
+  // Move coins & detect collection
+  function updateCoins() {
+    coins.forEach((coin, index) => {
+      coin.position.z += coinSpeed;
+
+      // Coin collection check
+      if (
+        Math.abs(coin.position.x - car.position.x) < 0.75 &&
+        Math.abs(coin.position.z - car.position.z) < 1
+      ) {
+        coinCount++;
+        coinCounter.textContent = coinCount;
+        scene.remove(coin);
+        coins.splice(index, 1);
+        return;
+      }
+
+      // Remove if off-screen
+      if (coin.position.z > 20) {
+        scene.remove(coin);
+        coins.splice(index, 1);
+      }
+    });
+  }
+
   // Shop button functionality
   const shopButton = document.getElementById('shopButton');
   const shopUI = document.getElementById('shopUI');
@@ -207,44 +279,9 @@
     if (moveLeft && car.position.x > -4) car.position.x -= carSpeed;
     if (moveRight && car.position.x < 4) car.position.x += carSpeed;
 
-    // Scroll road segments
-    roadSegments.forEach(road => {
-      road.position.z += roadSpeed;
-      if (road.position.z > 30) {
-        road.position.z -= roadSegmentLength * roadSegments.length;
-      }
-    });
-
-    // Scroll dashes
-    dashes.forEach(dash => {
-      dash.position.z += roadSpeed;
-      if (dash.position.z > 10) {
-        dash.position.z -= dashSpacing * dashCount;
-      }
-    });
-
-    // Move coins & detect collection
-    coins.forEach((coin, index) => {
-      coin.position.z += coinSpeed;
-
-      // Coin collection check
-      if (
-        Math.abs(coin.position.x - car.position.x) < 0.75 &&
-        Math.abs(coin.position.z - car.position.z) < 1
-      ) {
-        coinCount++;
-        coinCounter.textContent = coinCount;
-        scene.remove(coin);
-        coins.splice(index, 1);
-        return;
-      }
-
-      // Remove if off-screen
-      if (coin.position.z > 20) {
-        scene.remove(coin);
-        coins.splice(index, 1);
-      }
-    });
+    updateRoadSegments();
+    updateDashes();
+    updateCoins();
 
     renderer.render(scene, camera);
   }
