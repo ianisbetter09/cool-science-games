@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Car Driving Game</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #222;
+    }
+
+    #gameArea {
+      width: 400px;
+      height: 600px;
+      margin: auto;
+      background: #555;
+      position: relative;
+      border: 2px solid #fff;
+    }
+
+    .car {
+      width: 50px;
+      height: 100px;
+      background: red;
+      position: absolute;
+      bottom: 20px;
+      left: 175px;
+      border-radius: 5px;
+    }
+
+    .obstacle {
+      width: 50px;
+      height: 100px;
+      background: black;
+      position: absolute;
+      top: 0;
+    }
+  </style>
+</head>
+<body>
+
+<div id="gameArea">
+  <div class="car" id="playerCar"></div>
+</div>
+
+<script>
+  const gameArea = document.getElementById("gameArea");
+  const playerCar = document.getElementById("playerCar");
+
+  let carX = 175;
+  const carSpeed = 10;
+  const gameWidth = 400;
+  const carWidth = 50;
+
+  // Move the car
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowLeft" && carX > 0) {
+      carX -= carSpeed;
+    }
+    if (e.key === "ArrowRight" && carX < gameWidth - carWidth) {
+      carX += carSpeed;
+    }
+    playerCar.style.left = carX + "px";
+  });
+
+  // Create obstacles
+  function createObstacle() {
+    const obstacle = document.createElement("div");
+    obstacle.classList.add("obstacle");
+    obstacle.style.left = Math.floor(Math.random() * (gameWidth - 50)) + "px";
+    obstacle.style.top = "0px";
+    gameArea.appendChild(obstacle);
+    moveObstacle(obstacle);
+  }
+
+  // Move obstacle
+  function moveObstacle(obstacle) {
+    let obstacleY = 0;
+    const move = setInterval(() => {
+      obstacleY += 5;
+      obstacle.style.top = obstacleY + "px";
+
+      // Check collision
+      const carRect = playerCar.getBoundingClientRect();
+      const obsRect = obstacle.getBoundingClientRect();
+      if (
+        obsRect.top < carRect.bottom &&
+        obsRect.bottom > carRect.top &&
+        obsRect.left < carRect.right &&
+        obsRect.right > carRect.left
+      ) {
+        alert("💥 Game Over!");
+        window.location.reload();
+        clearInterval(move);
+      }
+
+      // Remove if off screen
+      if (obstacleY > 600) {
+        clearInterval(move);
+        obstacle.remove();
+      }
+    }, 30);
+  }
+
+  // Start spawning obstacles
+  setInterval(createObstacle, 1500);
+</script>
+
+</body>
+</html>
