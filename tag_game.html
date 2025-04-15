@@ -232,4 +232,30 @@
                 movePlayer(runner, { up: 'w', down: 's', left: 'a', right: 'd' });
                 movePlayer(chaser, { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight' });
             } else {
-                movePlayer(runner, { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft
+                movePlayer(runner, { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight' });
+                movePlayer(chaser, { up: 'w', down: 's', left: 'a', right: 'd' });
+            }
+
+            // Power-up collection
+            powerUps.forEach((p, index) => {
+                players.forEach(player => {
+                    const dist = Math.sqrt((player.x - p.x) ** 2 + (player.y - p.y) ** 2);
+                    if (dist < player.size + p.size) {
+                        p.effect(player);
+                        powerUps.splice(index, 1);
+                    }
+                });
+            });
+
+            if (checkTag(runner, chaser)) {
+                // Teleport both players away from each other and switch roles
+                teleportPlayer(runner);
+                teleportPlayer(chaser);
+                switchRoles();
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+    </script>
+</body>
+</html>
