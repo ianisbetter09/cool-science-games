@@ -130,4 +130,106 @@
             player1.y = 100;
             player2.x = 400;
             player2.y = 300;
-            currentRunnerIndex
+            currentRunnerIndex = 1;
+            gameOver = false;
+        }
+
+        function startTimer() {
+            gameTime = 30;
+            timerElement.textContent = `Time Left: ${gameTime}s`;
+            timerInterval = setInterval(() => {
+                if (gameOver) return;
+                gameTime--;
+                timerElement.textContent = `Time Left: ${gameTime}s`;
+                if (gameTime <= 0) {
+                    clearInterval(timerInterval);
+                    gameOver = true;
+                    alert("Time's up!");
+                }
+            }, 1000);
+        }
+
+        function drawPlayer(player) {
+            ctx.beginPath();
+            ctx.arc(player.x, player.y, player.size, 0, Math.PI * 2);
+            ctx.fillStyle = player.color;
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        function drawPowerUps() {
+            powerUps.forEach(p => {
+                ctx.font = "20px Arial";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText(p.icon, p.x, p.y);
+            });
+        }
+
+        function drawArrowAbovePlayer(player) {
+            ctx.beginPath();
+            ctx.moveTo(player.x, player.y - player.size - 10);            // bottom of arrow
+            ctx.lineTo(player.x - 10, player.y - player.size - 30);       // left point
+            ctx.lineTo(player.x + 10, player.y - player.size - 30);       // right point
+            ctx.closePath();
+            ctx.fillStyle = 'black';                                      // arrow color
+            ctx.fill();
+        }
+
+        function movePlayer(player, controls) {
+            player.dx = player.dy = 0;
+
+            if (keys[controls.up]) player.dy = -player.speed;
+            if (keys[controls.down]) player.dy = player.speed;
+            if (keys[controls.left]) player.dx = -player.speed;
+            if (keys[controls.right]) player.dx = player.speed;
+
+            player.x += player.dx;
+            player.y += player.dy;
+
+            // Stay in bounds
+            player.x = Math.max(0, Math.min(canvas.width - player.size, player.x));
+            player.y = Math.max(0, Math.min(canvas.height - player.size, player.y));
+        }
+
+        function checkTag(a, b) {
+            const dx = a.x - b.x;
+            const dy = a.y - b.y;
+            return Math.sqrt(dx * dx + dy * dy) < a.size + b.size;
+        }
+
+        function switchRoles() {
+            currentRunnerIndex = 1 - currentRunnerIndex;
+            alert(`Player ${currentRunnerIndex + 1} is now the runner!`);
+        }
+
+        function teleportPlayer(player) {
+            // Teleport the player a short distance away from the other player
+            const offsetX = Math.random() * 100 - 50;
+            const offsetY = Math.random() * 100 - 50;
+            player.x += offsetX;
+            player.y += offsetY;
+
+            // Ensure player stays within bounds after teleport
+            player.x = Math.max(0, Math.min(canvas.width - player.size, player.x));
+            player.y = Math.max(0, Math.min(canvas.height - player.size, player.y));
+        }
+
+        function gameLoop() {
+            if (gameOver) return;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const runner = players[currentRunnerIndex];
+            const chaser = players[1 - currentRunnerIndex];
+
+            drawPlayer(runner);
+            drawPlayer(chaser);
+            drawArrowAbovePlayer(chaser); // Add this to show who's "it"
+            drawPowerUps();
+
+            if (currentRunnerIndex === 0) {
+                movePlayer(runner, { up: 'w', down: 's', left: 'a', right: 'd' });
+                movePlayer(chaser, { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight' });
+            } else {
+                movePlayer(runner, { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft
