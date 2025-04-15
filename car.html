@@ -16,11 +16,61 @@
       padding: 10px 15px;
       border-radius: 8px;
     }
+    #shopButton {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 18px;
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #shopUI {
+      display: none;
+      position: absolute;
+      top: 50px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 300px;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 20px;
+      border-radius: 8px;
+    }
+    .shop-item {
+      margin-bottom: 10px;
+    }
+    .shop-item button {
+      background-color: #ff9800;
+      padding: 5px 10px;
+      border: none;
+      cursor: pointer;
+    }
+    .shop-item button:disabled {
+      background-color: #ccc;
+    }
   </style>
 </head>
 <body>
 
 <div id="hud">Coins: <span id="coinCount">0</span></div>
+<button id="shopButton">Shop</button>
+
+<div id="shopUI">
+  <h3>Shop</h3>
+  <div class="shop-item">
+    <span>Speed Boost (10 coins)</span>
+    <button id="speedBoostBtn">Buy</button>
+  </div>
+  <div class="shop-item">
+    <span>Extra Life (20 coins)</span>
+    <button id="extraLifeBtn">Buy</button>
+  </div>
+  <button id="closeShopBtn">Close</button>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
 
@@ -111,6 +161,45 @@
 
   setInterval(spawnCoin, 1000); // every 1 sec
 
+  // Shop button functionality
+  const shopButton = document.getElementById('shopButton');
+  const shopUI = document.getElementById('shopUI');
+  const closeShopBtn = document.getElementById('closeShopBtn');
+  
+  shopButton.addEventListener('click', () => {
+    shopUI.style.display = 'block';
+  });
+
+  closeShopBtn.addEventListener('click', () => {
+    shopUI.style.display = 'none';
+  });
+
+  // Shop actions
+  const speedBoostBtn = document.getElementById('speedBoostBtn');
+  const extraLifeBtn = document.getElementById('extraLifeBtn');
+
+  speedBoostBtn.addEventListener('click', () => {
+    if (coinCount >= 10) {
+      coinCount -= 10;
+      coinCounter.textContent = coinCount;
+      alert('You purchased a Speed Boost!');
+      // Add actual game logic for speed boost here
+    } else {
+      alert('Not enough coins!');
+    }
+  });
+
+  extraLifeBtn.addEventListener('click', () => {
+    if (coinCount >= 20) {
+      coinCount -= 20;
+      coinCounter.textContent = coinCount;
+      alert('You purchased an Extra Life!');
+      // Add actual game logic for extra life here
+    } else {
+      alert('Not enough coins!');
+    }
+  });
+
   function animate() {
     requestAnimationFrame(animate);
 
@@ -168,5 +257,6 @@
     renderer.setSize(window.innerWidth, window.innerHeight);
   });
 </script>
+
 </body>
 </html>
