@@ -57,6 +57,20 @@
     roadSegments.push(road);
   }
 
+  // Lane dashes
+  const dashes = [];
+  const dashCount = 20;
+  const dashSpacing = 5;
+
+  for (let i = 0; i < dashCount; i++) {
+    const dashGeometry = new THREE.BoxGeometry(0.3, 0.01, 1.5);
+    const dashMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
+    const dash = new THREE.Mesh(dashGeometry, dashMaterial);
+    dash.position.set(0, 0.01, -i * dashSpacing);
+    scene.add(dash);
+    dashes.push(dash);
+  }
+
   // Player car
   const carGeometry = new THREE.BoxGeometry(1, 1, 2);
   const carMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
@@ -112,6 +126,14 @@
       }
     });
 
+    // Scroll dashes
+    dashes.forEach(dash => {
+      dash.position.z += roadSpeed;
+      if (dash.position.z > 10) {
+        dash.position.z -= dashSpacing * dashCount;
+      }
+    });
+
     // Move coins & detect collection
     coins.forEach((coin, index) => {
       coin.position.z += coinSpeed;
@@ -125,7 +147,7 @@
         coinCounter.textContent = coinCount;
         scene.remove(coin);
         coins.splice(index, 1);
-        return; // Skip rest for this coin
+        return;
       }
 
       // Remove if off-screen
