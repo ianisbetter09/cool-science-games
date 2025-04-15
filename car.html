@@ -95,10 +95,11 @@
   // Road segments
   const roadSegments = [];
   const roadSegmentLength = 20;
+  const roadWidth = 10; // Width of the road
   const roadSpeed = 0.4;
 
   for (let i = 0; i < 5; i++) {
-    const roadGeometry = new THREE.PlaneGeometry(10, roadSegmentLength);
+    const roadGeometry = new THREE.PlaneGeometry(roadWidth, roadSegmentLength);
     const roadMaterial = new THREE.MeshStandardMaterial({ color: 0x333333 });
     const road = new THREE.Mesh(roadGeometry, roadMaterial);
     road.rotation.x = -Math.PI / 2;
@@ -161,20 +162,25 @@
 
   setInterval(spawnCoin, 1000); // every 1 sec
 
-  // Road segment falling behavior
-  function makeRoadSegmentFall(road) {
-    const fallDistance = Math.random() * 10 + 5; // Random fall distance
-    const fallDuration = Math.random() * 2 + 2; // Random time for falling
+  // Road segment falling behavior (only parts of the road fall)
+  function makeRoadPortionFall(road) {
+    const fallStart = Math.random() * roadWidth - roadWidth / 2; // Random starting x position
+    const fallEnd = fallStart + Math.random() * (roadWidth / 2); // Random ending x position
+    const fallDuration = Math.random() * 2 + 2; // Random fall time duration
 
-    // Animate the road segment falling
+    // Animate the road portion falling
     let startTime = Date.now();
     const fallAnimation = () => {
       const elapsedTime = (Date.now() - startTime) / 1000; // time in seconds
       if (elapsedTime < fallDuration) {
-        road.position.y -= fallDistance / fallDuration * (elapsedTime);
+        // Adjust the height of the road between the fall start and fall end positions
+        if (road.position.x >= fallStart && road.position.x <= fallEnd) {
+          road.position.y -= (roadWidth / fallDuration) * elapsedTime;
+        }
         requestAnimationFrame(fallAnimation);
       } else {
-        scene.remove(road); // Remove road segment after falling
+        // After falling, remove the road portion
+        road.position.y = 0;
       }
     };
     fallAnimation();
@@ -185,10 +191,9 @@
     roadSegments.forEach((road, index) => {
       road.position.z += roadSpeed;
       
-      // Randomly cause some road segments to "fall off"
+      // Randomly cause portions of the road to "fall off"
       if (road.position.z > 15 && Math.random() < 0.05) {
-        makeRoadSegmentFall(road);
-        // Reset this road segment after it falls
+        makeRoadPortionFall(road);
         road.position.z -= roadSegmentLength * roadSegments.length;
       }
 
@@ -233,6 +238,14 @@
     });
   }
 
+  // Check if car falls off the road (game over logic)
+  function checkGameOver() {
+    if (car.position.x < -roadWidth / 2 || car.position.x > roadWidth / 2) {
+      alert("Game Over! You fell off the road.");
+      window.location.reload(); // Reload the game
+    }
+  }
+
   // Shop button functionality
   const shopButton = document.getElementById('shopButton');
   const shopUI = document.getElementById('shopUI');
@@ -275,13 +288,14 @@
   function animate() {
     requestAnimationFrame(animate);
 
-    // Move car left/right
-    if (moveLeft && car.position.x > -4) car.position.x -= carSpeed;
-    if (moveRight && car.position.x < 4) car.position.x += carSpeed;
+    // Move car left/right (within the road limits)
+    if (moveLeft && car.position.x > -roadWidth / 2) car.position.x -= carSpeed;
+    if (moveRight && car.position.x < roadWidth / 2) car.position.x += carSpeed;
 
     updateRoadSegments();
     updateDashes();
     updateCoins();
+    checkGameOver(); // Check if the car has fallen off the road
 
     renderer.render(scene, camera);
   }
