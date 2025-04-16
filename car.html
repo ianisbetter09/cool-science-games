@@ -82,6 +82,8 @@
   let timerText = document.createElement("div");
   let finishedCars = [];
   let raceFinished = false;
+  let carVelocity = new THREE.Vector3(0, 0, 0);
+
 
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x87ceeb); // Sky blue
@@ -149,7 +151,7 @@ for (let i = 0; i < 4; i++) {
   const oppCar = new THREE.Mesh(oppGeometry, oppMaterial);
   oppCar.position.set((i - 2) * 2, 0.5, -5);
 
-  const speed = 0.03 + Math.random() * 0.05; // Vary speed
+const speed = 0.07 + Math.random() * 0.06; 
 
   scene.add(oppCar);
   opponentCars.push({ mesh: oppCar, speed, finished: false });
@@ -291,6 +293,27 @@ opponentCars.forEach(op => {
   }
 });
 
+// Player collision with opponent cars
+// Player collision with opponent cars (with bounce)
+opponentCars.forEach(op => {
+  const dx = car.position.x - op.mesh.position.x;
+  const dz = car.position.z - op.mesh.position.z;
+
+  if (Math.abs(dx) < 1 && Math.abs(dz) < 2) {
+    // Compute simple bounce force away from the other car
+    const bounceForce = new THREE.Vector3(dx, 0, dz).normalize().multiplyScalar(0.3);
+    carVelocity.add(bounceForce);
+
+    // Optional: Slight push to the AI car too (for effect)
+    op.mesh.position.add(bounceForce.clone().multiplyScalar(-0.2));
+  }
+});
+
+// Apply velocity to the car
+car.position.add(carVelocity);
+
+// Gradually reduce the velocity (friction)
+carVelocity.multiplyScalar(0.9); // you can tweak this for more or less "slip"
 
   // Player finish logic
   if (!raceFinished && !finishedCars.includes(car) && car.position.z <= finishLineZ) {
