@@ -308,6 +308,9 @@ opponentCars.forEach(op => {
       carVelocity.add(bounceForce);
       op.mesh.position.add(bounceForce.clone().multiplyScalar(-0.2));
     }
+if (car.position.z < op.mesh.position.z) {
+  op.speed += 0.001; // try to catch up if behind
+}
 
     // Finish line check
     if (op.mesh.position.z <= finishLineZ) {
