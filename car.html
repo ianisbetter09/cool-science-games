@@ -148,9 +148,13 @@ for (let i = 0; i < 4; i++) {
   const oppMaterial = new THREE.MeshStandardMaterial({ color: carColors[i] });
   const oppCar = new THREE.Mesh(oppGeometry, oppMaterial);
   oppCar.position.set((i - 2) * 2, 0.5, -5);
+
+  const speed = 0.03 + Math.random() * 0.05; // Vary speed
+
   scene.add(oppCar);
-  opponentCars.push(oppCar);
+  opponentCars.push({ mesh: oppCar, speed, finished: false });
 }
+
 
   document.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowLeft') moveLeft = true;
@@ -194,16 +198,7 @@ scene.add(finishLine);
   setInterval(spawnCoin, 1000); // every 1 sec
 
   // Spikes
-  const spikes = [];
 
-  function spawnSpike() {
-    const spikeGeometry = new THREE.ConeGeometry(0.5, 1, 8);
-    const spikeMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
-    const spike = new THREE.Mesh(spikeGeometry, spikeMaterial);
-    spike.position.set((Math.floor(Math.random() * 5) - 2) * 2, 0.5, -50);
-    scene.add(spike);
-    spikes.push(spike);
-  }
 
 function updateTimer() {
   if (raceFinished) return;
@@ -213,17 +208,9 @@ function updateTimer() {
 }
 
   
-  setInterval(() => {
-    if (Math.random() < 0.6) { // 60% chance to spawn
-      spawnSpike();
-    }
-  }, 1500); // every 1.5 sec
 
-  function checkGameOver(spike) {
-    const dx = Math.abs(spike.position.x - car.position.x);
-    const dz = Math.abs(spike.position.z - car.position.z);
-    return dx < 0.75 && dz < 1;
-  }
+
+
 
   // UI Buttons
   const shopButton = document.getElementById('shopButton');
@@ -291,14 +278,19 @@ function animate() {
   });
 
   // Opponent movement (bonus snippet)
-  opponentCars.forEach(op => {
-    if (!finishedCars.includes(op)) {
-      op.position.z -= 0.03 + Math.random() * 0.02;
-      if (op.position.z <= finishLineZ) {
-        finishedCars.push(op);
-      }
+opponentCars.forEach(op => {
+  if (!op.finished) {
+    op.mesh.position.z -= op.speed;
+    // Optional: wobble left/right a bit to make them look dynamic
+    op.mesh.position.x += Math.sin(Date.now() * 0.001 + op.mesh.position.z) * 0.01;
+
+    if (op.mesh.position.z <= finishLineZ) {
+      op.finished = true;
+      finishedCars.push(op.mesh);
     }
-  });
+  }
+});
+
 
   // Player finish logic
   if (!raceFinished && !finishedCars.includes(car) && car.position.z <= finishLineZ) {
@@ -335,15 +327,7 @@ function animate() {
   });
 
   // Spikes logic
-  spikes.forEach((spike, index) => {
-    if (checkGameOver(spike)) {
-      alert("Game Over! You hit a spike.");
-      window.location.reload();
-    } else if (spike.position.z - car.position.z > 20) {
-      scene.remove(spike);
-      spikes.splice(index, 1);
-    }
-  });
+
 
   renderer.render(scene, camera);
 }
