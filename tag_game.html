@@ -17,6 +17,8 @@
       display: block;
       margin: 0 auto;
       border: 5px solid #000;
+      max-width: 100%;
+      height: auto;
     }
 
     .hidden {
@@ -33,6 +35,7 @@
       padding: 30px;
       border-radius: 10px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s;
     }
 
     #homeScreen h1 {
@@ -65,22 +68,70 @@
       font-size: 24px;
       color: #008000;
     }
+
+    #menuBtn {
+      font-size: 20px;
+      margin-top: 20px;
+      cursor: pointer;
+      color: #008080;
+    }
+
+    #settingsModal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    #settingsModal h2 {
+      margin-bottom: 15px;
+    }
+
+    #settingsModal input {
+      margin: 5px;
+    }
   </style>
 </head>
 <body>
   <div id="homeScreen">
     <h1>Tag Game</h1>
-    <button onclick="startGame(1)">Play</button>
+    <button onclick="startGame()">Play</button>
+    <button onclick="openSettings()">Settings</button>
+    <button onclick="openLeaderboard()">Leaderboard</button>
   </div>
 
   <canvas id="gameCanvas" class="hidden"></canvas>
   <div id="timer" class="hidden">Time Left: 30s</div>
+
+  <div id="settingsModal" class="hidden">
+    <h2>Settings</h2>
+    <label>Difficulty: 
+      <select id="difficultySelect">
+        <option value="easy">Easy</option>
+        <option value="medium">Medium</option>
+        <option value="hard">Hard</option>
+      </select>
+    </label><br><br>
+    <label>Player 1 Speed: 
+      <input type="range" id="player1Speed" min="1" max="10" value="5"/>
+    </label><br><br>
+    <label>Player 2 Speed: 
+      <input type="range" id="player2Speed" min="1" max="10" value="5"/>
+    </label><br><br>
+    <button onclick="closeSettings()">Close</button>
+  </div>
 
   <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const homeScreen = document.getElementById('homeScreen');
     const timerElement = document.getElementById('timer');
+    const settingsModal = document.getElementById('settingsModal');
 
     canvas.width = 1200;
     canvas.height = 800;
@@ -104,12 +155,12 @@
 
     let player1 = {
       x: 100, y: 100, size: 30, color: '#FF5733',
-      speed: 2, dx: 0, dy: 0, hasShield: false
+      speed: 3, dx: 0, dy: 0, hasShield: false
     };
 
     let player2 = {
       x: 800, y: 600, size: 30, color: '#33FF57',
-      speed: 4, dx: 0, dy: 0, hasShield: false
+      speed: 3, dx: 0, dy: 0, hasShield: false
     };
 
     const players = [player1, player2];
@@ -256,8 +307,12 @@
       if (keys[controls.left]) tempDx = -player.speed;
       if (keys[controls.right]) tempDx = player.speed;
 
-      const nextX = player.x + tempDx;
-      const nextY = player.y + tempDy;
+      // Smooth acceleration and deceleration
+      player.dx += (tempDx - player.dx) * 0.1;
+      player.dy += (tempDy - player.dy) * 0.1;
+
+      const nextX = player.x + player.dx;
+      const nextY = player.y + player.dy;
 
       const collision = obstacles.some(o =>
         nextX + player.size > o.x && nextX - player.size < o.x + o.width &&
@@ -265,8 +320,6 @@
       );
 
       if (!collision) {
-        player.dx = tempDx;
-        player.dy = tempDy;
         player.x = nextX;
         player.y = nextY;
       }
@@ -322,7 +375,7 @@
 
       if (checkTag(runner, chaser)) {
         if (runner.hasShield) {
-          runner.hasShield = false; // Absorb hit
+          runner.hasShield = false;
         } else {
           teleportPlayer(runner);
           teleportPlayer(chaser);
@@ -340,6 +393,20 @@
     document.addEventListener('keyup', e => {
       if (e.key in keys) keys[e.key] = false;
     });
+
+    function openSettings() {
+      settingsModal.classList.remove('hidden');
+    }
+
+    function closeSettings() {
+      settingsModal.classList.add('hidden');
+      player1.speed = parseInt(document.getElementById('player1Speed').value);
+      player2.speed = parseInt(document.getElementById('player2Speed').value);
+    }
+
+    function openLeaderboard() {
+      alert("Leaderboard feature coming soon!");
+    }
   </script>
 </body>
 </html>
