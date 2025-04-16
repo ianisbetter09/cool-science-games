@@ -282,16 +282,41 @@ function animate() {
   // Opponent movement (bonus snippet)
 opponentCars.forEach(op => {
   if (!op.finished) {
+    // Basic forward movement
     op.mesh.position.z -= op.speed;
-    // Optional: wobble left/right a bit to make them look dynamic
-    op.mesh.position.x += Math.sin(Date.now() * 0.001 + op.mesh.position.z) * 0.01;
 
+    // Aggressive ramming logic
+    const distanceZ = car.position.z - op.mesh.position.z;
+
+    if (distanceZ < 10 && distanceZ > -20) {
+      const deltaX = car.position.x - op.mesh.position.x;
+
+      // Move toward player's X if within ramming range
+      if (Math.abs(deltaX) > 0.1) {
+        op.mesh.position.x += Math.sign(deltaX) * 0.05; // swerve toward player
+      }
+    } else {
+      // Slight random lane shifting (for realism)
+      op.mesh.position.x += Math.sin(Date.now() * 0.001 + op.mesh.position.z) * 0.01;
+    }
+
+    // Bounce if hit player
+    const dx = car.position.x - op.mesh.position.x;
+    const dz = car.position.z - op.mesh.position.z;
+    if (Math.abs(dx) < 1 && Math.abs(dz) < 2) {
+      const bounceForce = new THREE.Vector3(dx, 0, dz).normalize().multiplyScalar(0.3);
+      carVelocity.add(bounceForce);
+      op.mesh.position.add(bounceForce.clone().multiplyScalar(-0.2));
+    }
+
+    // Finish line check
     if (op.mesh.position.z <= finishLineZ) {
       op.finished = true;
       finishedCars.push(op.mesh);
     }
   }
 });
+
 
 // Player collision with opponent cars
 // Player collision with opponent cars (with bounce)
