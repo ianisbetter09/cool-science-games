@@ -92,10 +92,10 @@
   light.position.set(10, 20, 10);
   scene.add(light);
 
-  // Road segments
+  // Road setup
   const roadSegments = [];
   const roadSegmentLength = 20;
-  const roadWidth = 10; // Width of the road
+  const roadWidth = 10;
   const roadSpeed = 0.4;
 
   for (let i = 0; i < 5; i++) {
@@ -108,7 +108,7 @@
     roadSegments.push(road);
   }
 
-  // Lane dashes
+  // Dashes
   const dashes = [];
   const dashCount = 20;
   const dashSpacing = 5;
@@ -122,7 +122,7 @@
     dashes.push(dash);
   }
 
-  // Player car
+  // Car
   const carGeometry = new THREE.BoxGeometry(1, 1, 2);
   const carMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
   const car = new THREE.Mesh(carGeometry, carMaterial);
@@ -147,7 +147,6 @@
   const coins = [];
   const coinSpeed = 0.4;
   let coinCount = 0;
-
   const coinCounter = document.getElementById('coinCount');
 
   function spawnCoin() {
@@ -162,95 +161,35 @@
 
   setInterval(spawnCoin, 1000); // every 1 sec
 
-  // Road segment falling behavior (only parts of the road fall)
-  function makeRoadPortionFall(road) {
-    const fallStart = Math.random() * roadWidth - roadWidth / 2; // Random starting x position
-    const fallEnd = fallStart + Math.random() * (roadWidth / 2); // Random ending x position
-    const fallDuration = Math.random() * 2 + 2; // Random fall time duration
+  // Spikes
+  const spikes = [];
 
-    // Animate the road portion falling
-    let startTime = Date.now();
-    const fallAnimation = () => {
-      const elapsedTime = (Date.now() - startTime) / 1000; // time in seconds
-      if (elapsedTime < fallDuration) {
-        // Adjust the height of the road between the fall start and fall end positions
-        if (road.position.x >= fallStart && road.position.x <= fallEnd) {
-          road.position.y -= (roadWidth / fallDuration) * elapsedTime;
-        }
-        requestAnimationFrame(fallAnimation);
-      } else {
-        // After falling, remove the road portion
-        road.position.y = 0;
-      }
-    };
-    fallAnimation();
+  function spawnSpike() {
+    const spikeGeometry = new THREE.ConeGeometry(0.5, 1, 8);
+    const spikeMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+    const spike = new THREE.Mesh(spikeGeometry, spikeMaterial);
+    spike.position.set((Math.floor(Math.random() * 5) - 2) * 2, 0.5, -50);
+    scene.add(spike);
+    spikes.push(spike);
   }
 
-  // Scroll road segments and apply fall logic
-  function updateRoadSegments() {
-    roadSegments.forEach((road, index) => {
-      road.position.z += roadSpeed;
-      
-      // Randomly cause portions of the road to "fall off"
-      if (road.position.z > 15 && Math.random() < 0.05) {
-        makeRoadPortionFall(road);
-        road.position.z -= roadSegmentLength * roadSegments.length;
-      }
-
-      if (road.position.z > 30) {
-        road.position.z -= roadSegmentLength * roadSegments.length;
-      }
-    });
-  }
-
-  // Scroll dashes
-  function updateDashes() {
-    dashes.forEach(dash => {
-      dash.position.z += roadSpeed;
-      if (dash.position.z > 10) {
-        dash.position.z -= dashSpacing * dashCount;
-      }
-    });
-  }
-
-  // Move coins & detect collection
-  function updateCoins() {
-    coins.forEach((coin, index) => {
-      coin.position.z += coinSpeed;
-
-      // Coin collection check
-      if (
-        Math.abs(coin.position.x - car.position.x) < 0.75 &&
-        Math.abs(coin.position.z - car.position.z) < 1
-      ) {
-        coinCount++;
-        coinCounter.textContent = coinCount;
-        scene.remove(coin);
-        coins.splice(index, 1);
-        return;
-      }
-
-      // Remove if off-screen
-      if (coin.position.z > 20) {
-        scene.remove(coin);
-        coins.splice(index, 1);
-      }
-    });
-  }
-
-  // Check if car falls off the road (game over logic)
-  function checkGameOver() {
-    if (car.position.x < -roadWidth / 2 || car.position.x > roadWidth / 2) {
-      alert("Game Over! You fell off the road.");
-      window.location.reload(); // Reload the game
+  setInterval(() => {
+    if (Math.random() < 0.6) { // 60% chance to spawn
+      spawnSpike();
     }
+  }, 1500); // every 1.5 sec
+
+  function checkGameOver(spike) {
+    const dx = Math.abs(spike.position.x - car.position.x);
+    const dz = Math.abs(spike.position.z - car.position.z);
+    return dx < 0.75 && dz < 1;
   }
 
-  // Shop button functionality
+  // UI Buttons
   const shopButton = document.getElementById('shopButton');
   const shopUI = document.getElementById('shopUI');
   const closeShopBtn = document.getElementById('closeShopBtn');
-  
+
   shopButton.addEventListener('click', () => {
     shopUI.style.display = 'block';
   });
@@ -268,7 +207,6 @@
       coinCount -= 10;
       coinCounter.textContent = coinCount;
       alert('You purchased a Speed Boost!');
-      // Add actual game logic for speed boost here
     } else {
       alert('Not enough coins!');
     }
@@ -279,7 +217,6 @@
       coinCount -= 20;
       coinCounter.textContent = coinCount;
       alert('You purchased an Extra Life!');
-      // Add actual game logic for extra life here
     } else {
       alert('Not enough coins!');
     }
@@ -288,14 +225,54 @@
   function animate() {
     requestAnimationFrame(animate);
 
-    // Move car left/right (within the road limits)
-    if (moveLeft && car.position.x > -roadWidth / 2) car.position.x -= carSpeed;
-    if (moveRight && car.position.x < roadWidth / 2) car.position.x += carSpeed;
+    // Move car within bounds
+    if (moveLeft && car.position.x > -4) car.position.x -= carSpeed;
+    if (moveRight && car.position.x < 4) car.position.x += carSpeed;
 
-    updateRoadSegments();
-    updateDashes();
-    updateCoins();
-    checkGameOver(); // Check if the car has fallen off the road
+    // Scroll road
+    roadSegments.forEach(road => {
+      road.position.z += roadSpeed;
+      if (road.position.z > 30) {
+        road.position.z -= roadSegmentLength * roadSegments.length;
+      }
+    });
+
+    // Scroll dashes
+    dashes.forEach(dash => {
+      dash.position.z += roadSpeed;
+      if (dash.position.z > 10) {
+        dash.position.z -= dashSpacing * dashCount;
+      }
+    });
+
+    // Scroll coins and collect
+    coins.forEach((coin, index) => {
+      coin.position.z += coinSpeed;
+      if (
+        Math.abs(coin.position.x - car.position.x) < 0.75 &&
+        Math.abs(coin.position.z - car.position.z) < 1
+      ) {
+        coinCount++;
+        coinCounter.textContent = coinCount;
+        scene.remove(coin);
+        coins.splice(index, 1);
+      } else if (coin.position.z > 20) {
+        scene.remove(coin);
+        coins.splice(index, 1);
+      }
+    });
+
+    // Scroll and check spikes
+    spikes.forEach((spike, index) => {
+      spike.position.z += roadSpeed;
+      if (checkGameOver(spike)) {
+        alert("Game Over! You hit a spike.");
+        window.location.reload();
+      } else if (spike.position.z > 20) {
+        scene.remove(spike);
+        spikes.splice(index, 1);
+      }
+    });
 
     renderer.render(scene, camera);
   }
@@ -303,7 +280,7 @@
   animate();
 
   window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth/window.innerHeight;
+    camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
   });
