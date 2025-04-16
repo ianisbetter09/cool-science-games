@@ -17,8 +17,6 @@
       display: block;
       margin: 0 auto;
       border: 5px solid #000;
-      max-width: 100%;
-      height: auto;
     }
 
     .hidden {
@@ -35,7 +33,6 @@
       padding: 30px;
       border-radius: 10px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-      transition: all 0.3s;
     }
 
     #homeScreen h1 {
@@ -68,105 +65,29 @@
       font-size: 24px;
       color: #008000;
     }
-
-    #menuBtn {
-      font-size: 20px;
-      margin-top: 20px;
-      cursor: pointer;
-      color: #008080;
-    }
-
-    #settingsModal {
-      display: none;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background-color: #fff;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    }
-
-    #settingsModal h2 {
-      margin-bottom: 15px;
-    }
-
-    #settingsModal input {
-      margin: 5px;
-    }
-    
-    #leaderboardModal {
-      display: none;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background-color: #fff;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-      max-height: 80vh;
-      overflow-y: auto;
-    }
-
-    #leaderboardModal h2 {
-      margin-bottom: 15px;
-    }
   </style>
 </head>
 <body>
   <div id="homeScreen">
     <h1>Tag Game</h1>
-    <button onclick="startGame()">Play</button>
-    <button onclick="openSettings()">Settings</button>
-    <button onclick="openLeaderboard()">Leaderboard</button>
+    <button onclick="startGame(1)">Play</button>
   </div>
 
   <canvas id="gameCanvas" class="hidden"></canvas>
   <div id="timer" class="hidden">Time Left: 30s</div>
-
-  <div id="settingsModal" class="hidden">
-    <h2>Settings</h2>
-    <label>Difficulty: 
-      <select id="difficultySelect">
-        <option value="easy">Easy</option>
-        <option value="medium">Medium</option>
-        <option value="hard">Hard</option>
-      </select>
-    </label><br><br>
-    <label>Player 1 Speed: 
-      <input type="range" id="player1Speed" min="1" max="10" value="5"/>
-    </label><br><br>
-    <label>Player 2 Speed: 
-      <input type="range" id="player2Speed" min="1" max="10" value="5"/>
-    </label><br><br>
-    <button onclick="closeSettings()">Close</button>
-  </div>
-
-  <div id="leaderboardModal" class="hidden">
-    <h2>Leaderboard</h2>
-    <ul id="leaderboardList"></ul>
-    <button onclick="closeLeaderboard()">Close</button>
-  </div>
 
   <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const homeScreen = document.getElementById('homeScreen');
     const timerElement = document.getElementById('timer');
-    const settingsModal = document.getElementById('settingsModal');
-    const leaderboardModal = document.getElementById('leaderboardModal');
-    const leaderboardList = document.getElementById('leaderboardList');
-    
-    canvas.width = window.innerWidth * 0.8;  // Make canvas fit in screen
-    canvas.height = window.innerHeight * 0.6; // Adjust canvas height
+
+    canvas.width = 1200;
+    canvas.height = 800;
 
     let gameTime = 30;
     let timerInterval;
     let gameOver = false;
-    let difficulty = 'medium';  // Default difficulty
-    let leaderboard = [];
 
     const keys = {
       w: false, a: false, s: false, d: false,
@@ -174,23 +95,66 @@
     };
 
     const obstacles = [
-      { x: 300, y: 200, width: 200, height: 30 },
-      { x: 500, y: 400, width: 30, height: 150 },
-      { x: 200, y: 600, width: 150, height: 30 }
+      { x: 500, y: 300, width: 200, height: 30 },
+      { x: 700, y: 600, width: 30, height: 150 },
+      { x: 200, y: 500, width: 150, height: 30 }
     ];
 
+    const powerUps = [];
+
     let player1 = {
-      x: 100, y: 100, size: 20, color: '#FF5733',
-      speed: 3, dx: 0, dy: 0, hasShield: false
+      x: 100, y: 100, size: 30, color: '#FF5733',
+      speed: 2, dx: 0, dy: 0, hasShield: false
     };
 
     let player2 = {
-      x: 800, y: 600, size: 20, color: '#33FF57',
-      speed: 3, dx: 0, dy: 0, hasShield: false
+      x: 800, y: 600, size: 30, color: '#33FF57',
+      speed: 4, dx: 0, dy: 0, hasShield: false
     };
 
     const players = [player1, player2];
     let currentRunnerIndex = 1;
+
+    const powerUpTypes = [
+      {
+        name: "speed",
+        icon: "⚡",
+        effect: (player) => {
+          if (!player.hasSpeedBoost) {
+            player.speed += 2;
+            player.hasSpeedBoost = true;
+            setTimeout(() => {
+              player.speed -= 2;
+              player.hasSpeedBoost = false;
+            }, 5000);
+          }
+        }
+      },
+      {
+        name: "dash",
+        icon: "💨",
+        effect: (player) => {
+          player.x += player.dx * 20;
+          player.y += player.dy * 20;
+        }
+      },
+      {
+        name: "shield",
+        icon: "🛡️",
+        effect: (player) => {
+          player.hasShield = true;
+          setTimeout(() => player.hasShield = false, 7000);
+        }
+      },
+      {
+        name: "randomJump",
+        icon: "🎲",
+        effect: (player) => {
+          player.x = Math.random() * (canvas.width - player.size);
+          player.y = Math.random() * (canvas.height - player.size);
+        }
+      }
+    ];
 
     function startGame() {
       homeScreen.classList.add('hidden');
@@ -198,6 +162,7 @@
       timerElement.classList.remove('hidden');
       resetGame();
       startTimer();
+      spawnPowerUp();
       gameLoop();
     }
 
@@ -208,12 +173,12 @@
       player2.y = 600;
       currentRunnerIndex = 1;
       gameOver = false;
-      gameTime = 30;
-      powerUps = [];
+      powerUps.length = 0;
       obstacles.forEach(o => o.color = "#888");
     }
 
     function startTimer() {
+      gameTime = 30;
       timerElement.textContent = `Time Left: ${gameTime}s`;
       clearInterval(timerInterval);
       timerInterval = setInterval(() => {
@@ -229,62 +194,152 @@
     }
 
     function endGame() {
-      const winner = currentRunnerIndex === 0 ? 'Green' : 'Red';
-      alert(`${winner} lost!`);
-      leaderboard.push({ winner, timeLeft: gameTime });
-      leaderboard.sort((a, b) => b.timeLeft - a.timeLeft);
+      const chaserIndex = 1 - currentRunnerIndex;
+      const chaserColor = players[chaserIndex].color === '#FF5733' ? 'Red' : 'Green';
+      alert(`${chaserColor} lost!`);
       homeScreen.classList.remove('hidden');
       canvas.classList.add('hidden');
       timerElement.classList.add('hidden');
-      displayLeaderboard();
       resetGame();
     }
 
-    function displayLeaderboard() {
-      leaderboardList.innerHTML = '';
-      leaderboard.slice(0, 5).forEach((entry, index) => {
-        const listItem = document.createElement('li');
-        listItem.textContent = `${index + 1}. ${entry.winner} - Time Left: ${entry.timeLeft}s`;
-        leaderboardList.appendChild(listItem);
+    function spawnPowerUp() {
+      const type = powerUpTypes[Math.floor(Math.random() * powerUpTypes.length)];
+      powerUps.push({
+        ...type,
+        x: Math.random() * (canvas.width - 30) + 15,
+        y: Math.random() * (canvas.height - 30) + 15,
+        size: 20
       });
-      leaderboardModal.classList.remove('hidden');
+      setTimeout(spawnPowerUp, Math.random() * 5000 + 5000);
     }
 
-    function closeLeaderboard() {
-      leaderboardModal.classList.add('hidden');
+    function drawObstacles() {
+      obstacles.forEach(o => {
+        ctx.fillStyle = o.color;
+        ctx.fillRect(o.x, o.y, o.width, o.height);
+      });
     }
 
-    function openSettings() {
-      settingsModal.classList.remove('hidden');
+    function drawPlayer(player) {
+      ctx.beginPath();
+      ctx.arc(player.x, player.y, player.size, 0, Math.PI * 2);
+      ctx.fillStyle = player.hasShield ? '#00FFFF' : player.color;
+      ctx.fill();
+      ctx.closePath();
     }
 
-    function closeSettings() {
-      settingsModal.classList.add('hidden');
-      player1.speed = parseInt(document.getElementById('player1Speed').value);
-      player2.speed = parseInt(document.getElementById('player2Speed').value);
-      difficulty = document.getElementById('difficultySelect').value;
-      adjustSpeedBasedOnDifficulty();
+    function drawArrow(player) {
+      ctx.beginPath();
+      ctx.moveTo(player.x, player.y - player.size - 10);
+      ctx.lineTo(player.x - 10, player.y - player.size - 30);
+      ctx.lineTo(player.x + 10, player.y - player.size - 30);
+      ctx.closePath();
+      ctx.fillStyle = 'black';
+      ctx.fill();
     }
 
-    function adjustSpeedBasedOnDifficulty() {
-      if (difficulty === 'easy') {
-        player1.speed = 3;
-        player2.speed = 3;
-      } else if (difficulty === 'medium') {
-        player1.speed = 5;
-        player2.speed = 5;
-      } else if (difficulty === 'hard') {
-        player1.speed = 7;
-        player2.speed = 7;
+    function drawPowerUps() {
+      powerUps.forEach(p => {
+        ctx.font = "20px Arial";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(p.icon, p.x, p.y);
+      });
+    }
+
+    function movePlayer(player, controls) {
+      let tempDx = 0, tempDy = 0;
+
+      if (keys[controls.up]) tempDy = -player.speed;
+      if (keys[controls.down]) tempDy = player.speed;
+      if (keys[controls.left]) tempDx = -player.speed;
+      if (keys[controls.right]) tempDx = player.speed;
+
+      const nextX = player.x + tempDx;
+      const nextY = player.y + tempDy;
+
+      const collision = obstacles.some(o =>
+        nextX + player.size > o.x && nextX - player.size < o.x + o.width &&
+        nextY + player.size > o.y && nextY - player.size < o.y + o.height
+      );
+
+      if (!collision) {
+        player.dx = tempDx;
+        player.dy = tempDy;
+        player.x = nextX;
+        player.y = nextY;
       }
     }
 
-    function openLeaderboard() {
-      leaderboardModal.classList.remove('hidden');
+    function checkTag(runner, chaser) {
+      const dx = runner.x - chaser.x;
+      const dy = runner.y - chaser.y;
+      return Math.sqrt(dx * dx + dy * dy) < runner.size + chaser.size;
     }
 
-    // Other game logic...
+    function teleportPlayer(player) {
+      player.x = Math.random() * (canvas.width - 300) + 150;
+      player.y = Math.random() * (canvas.height - 300) + 150;
+    }
 
+    function switchRoles() {
+      currentRunnerIndex = 1 - currentRunnerIndex;
+    }
+
+    function gameLoop() {
+      if (gameOver) return;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      drawObstacles();
+      drawPowerUps();
+
+      const runner = players[currentRunnerIndex];
+      const chaser = players[1 - currentRunnerIndex];
+
+      if (currentRunnerIndex === 0) {
+        movePlayer(runner, { up: 'w', down: 's', left: 'a', right: 'd' });
+        movePlayer(chaser, { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight' });
+      } else {
+        movePlayer(runner, { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight' });
+        movePlayer(chaser, { up: 'w', down: 's', left: 'a', right: 'd' });
+      }
+
+      drawPlayer(runner);
+      drawPlayer(chaser);
+      drawArrow(chaser);
+
+      powerUps.forEach((p, index) => {
+        players.forEach(player => {
+          const dist = Math.hypot(player.x - p.x, player.y - p.y);
+          if (dist < player.size + p.size) {
+            p.effect(player);
+            powerUps.splice(index, 1);
+          }
+        });
+      });
+
+      if (checkTag(runner, chaser)) {
+        if (runner.hasShield) {
+          runner.hasShield = false; // Absorb hit
+        } else {
+          teleportPlayer(runner);
+          teleportPlayer(chaser);
+          switchRoles();
+        }
+      }
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    document.addEventListener('keydown', e => {
+      if (e.key in keys) keys[e.key] = true;
+    });
+
+    document.addEventListener('keyup', e => {
+      if (e.key in keys) keys[e.key] = false;
+    });
   </script>
 </body>
 </html>
