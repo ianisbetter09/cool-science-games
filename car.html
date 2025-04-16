@@ -60,7 +60,6 @@
 <button id="shopButton">Shop</button>
 <div id="timer" style="position:absolute;top:60px;left:10px;font-size:24px;color:white;background:rgba(0,0,0,0.5);padding:10px 15px;border-radius:8px;">Time: <span id="timeElapsed">0.0s</span></div>
 
-
 <div id="shopUI">
   <h3>Shop</h3>
   <div class="shop-item">
@@ -77,7 +76,6 @@
 <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
 
 <script>
-  // Resize handling (move this near the start of your script)
   let resizeListenerAdded = false;
 
   function handleResize() {
@@ -86,21 +84,26 @@
     renderer.setSize(window.innerWidth, window.innerHeight);
   }
 
-  // Add the resize listener only once
   if (!resizeListenerAdded) {
     window.addEventListener('resize', handleResize);
     resizeListenerAdded = true;
   }
 
-  // Scene setup
+  // Global variable to track the start time of the race
   let startTime = Date.now();
-  let timerText = document.createElement("div");
-  let finishedCars = [];
-  let raceFinished = false;
-  let carVelocity = new THREE.Vector3(0, 0, 0);
 
+  // Timer update function
+  function updateTimer() {
+    // Get the current time
+    const elapsedTime = (Date.now() - startTime) / 1000;  // Time in seconds
+    
+    // Update the timer display
+    document.getElementById("timeElapsed").textContent = elapsedTime.toFixed(1) + "s";
+  }
+
+  // Scene setup
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x87ceeb); // Sky blue
+  scene.background = new THREE.Color(0x87ceeb); 
 
   const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
   camera.position.set(0, 5, 10);
@@ -115,11 +118,13 @@
   light.position.set(10, 20, 10);
   scene.add(light);
 
+  const ambientLight = new THREE.AmbientLight(0x404040, 1);  // soft white light
+  scene.add(ambientLight);
+
   // Road setup
   const roadSegments = [];
   const roadSegmentLength = 20;
   const roadWidth = 10;
-  const roadSpeed = 0.4;
 
   for (let i = 0; i < 5; i++) {
     const roadGeometry = new THREE.PlaneGeometry(roadWidth, roadSegmentLength);
@@ -145,14 +150,14 @@
     dashes.push(dash);
   }
 
-  // Car
+  // Car setup
   const carGeometry = new THREE.BoxGeometry(1, 1, 2);
   const carMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
   const car = new THREE.Mesh(carGeometry, carMaterial);
   car.position.y = 0.5;
   scene.add(car);
 
-  // Movement
+  // Movement variables
   let moveLeft = false;
   let moveRight = false;
   const carSpeed = 0.2;
@@ -201,11 +206,10 @@
     handleResize();
   }
 
-  // The rest of your game logic goes here (animate, event listeners, etc.)
-
   function animate() {
     requestAnimationFrame(animate);
 
+    // Call updateTimer to update the timer
     updateTimer();
 
     // Handle player movement
@@ -227,55 +231,26 @@
       }
     });
 
-    // Opponent movement (bonus snippet)
+    // Opponent movement
     opponentCars.forEach(op => {
       if (!op.finished) {
-        // Basic forward movement
         op.mesh.position.z -= op.speed;
 
-        // Aggressive ramming logic
+        // Basic collision logic with player
         const distanceZ = car.position.z - op.mesh.position.z;
 
         if (distanceZ < 10 && distanceZ > -20) {
           const deltaX = car.position.x - op.mesh.position.x;
-
-          // Move toward player's X if within ramming range
           if (Math.abs(deltaX) > 0.1) {
-            op.mesh.position.x += Math.sign(deltaX) * 0.05; // swerve toward player
+            op.mesh.position.x += Math.sign(deltaX) * 0.05; 
           }
-        } else {
-          // Slight random lane shifting (for realism)
-          op.mesh.position.x += Math.sin(Date.now() * 0.001 + op.mesh.position.z) * 0.01;
-        }
-
-        // Bounce if hit player
-        const dx = car.position.x - op.mesh.position.x;
-        const dz = car.position.z - op.mesh.position.z;
-        if (Math.abs(dx) < 1 && Math.abs(dz) < 2) {
-          const bounceForce = new THREE.Vector3(dx, 0, dz).normalize().multiplyScalar(0.3);
-          carVelocity.add(bounceForce);
-          op.mesh.position.add(bounceForce.clone().multiplyScalar(-0.2));
         }
 
         if (car.position.z < op.mesh.position.z) {
-          op.speed += 0.001; // try to catch up if behind
-        }
-
-        // Finish line check
-        if (op.mesh.position.z <= finishLineZ) {
-          op.finished = true;
-          finishedCars.push(op.mesh);
+          op.speed += 0.001;
         }
       }
     });
-
-    // Check for game over condition or restart
-    if (raceFinished) {
-      setTimeout(() => {
-        alert('Race finished! Restarting...');
-        resetGame();  // Reset the game after the race ends
-      }, 1000);
-    }
 
     // Handle coin collection
     coins.forEach((coin, index) => {
@@ -298,11 +273,8 @@
   }
 
   animate();
-
   window.addEventListener('resize', handleResize);
-
 </script>
-
 
 </body>
 </html>
