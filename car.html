@@ -60,6 +60,7 @@
 <button id="shopButton">Shop</button>
 <div id="timer" style="position:absolute;top:60px;left:10px;font-size:24px;color:white;background:rgba(0,0,0,0.5);padding:10px 15px;border-radius:8px;">Time: <span id="timeElapsed">0.0s</span></div>
 
+
 <div id="shopUI">
   <h3>Shop</h3>
   <div class="shop-item">
@@ -76,33 +77,16 @@
 <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
 
 <script>
-  let resizeListenerAdded = false;
-
-  function handleResize() {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-  }
-
-  if (!resizeListenerAdded) {
-    window.addEventListener('resize', handleResize);
-    resizeListenerAdded = true;
-  }
-
-  // Global variable to track the start time of the race
-  let startTime = Date.now();
-
-  // Timer update function
-  function updateTimer() {
-    const elapsedTime = (Date.now() - startTime) / 1000;  // Time in seconds
-    document.getElementById("timeElapsed").textContent = elapsedTime.toFixed(1) + "s";
-  }
-
   // Scene setup
+  let startTime = Date.now();
+  let timerText = document.createElement("div");
+  let finishedCars = [];
+  let raceFinished = false;
+
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x87ceeb); // Sky blue
 
-  const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+  const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
   camera.position.set(0, 5, 10);
   camera.lookAt(0, 0, 0);
 
@@ -115,13 +99,11 @@
   light.position.set(10, 20, 10);
   scene.add(light);
 
-  const ambientLight = new THREE.AmbientLight(0x404040, 1);  // soft white light
-  scene.add(ambientLight);
-
   // Road setup
   const roadSegments = [];
   const roadSegmentLength = 20;
   const roadWidth = 10;
+  const roadSpeed = 0.4;
 
   for (let i = 0; i < 5; i++) {
     const roadGeometry = new THREE.PlaneGeometry(roadWidth, roadSegmentLength);
@@ -147,101 +129,178 @@
     dashes.push(dash);
   }
 
-  // Car setup
+  // Car
   const carGeometry = new THREE.BoxGeometry(1, 1, 2);
   const carMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
   const car = new THREE.Mesh(carGeometry, carMaterial);
   car.position.y = 0.5;
   scene.add(car);
 
-  // Movement variables
+  // Movement
   let moveLeft = false;
   let moveRight = false;
-  let moveForward = false;  // Define moveForward for forward movement
   const carSpeed = 0.2;
-  const opponentCars = [];
-  const carColors = [0x00ff00, 0x0000ff, 0xffff00, 0xff00ff];
+const opponentCars = [];
+const carColors = [0x00ff00, 0x0000ff, 0xffff00, 0xff00ff];
 
-  for (let i = 0; i < 4; i++) {
-    const oppGeometry = new THREE.BoxGeometry(1, 1, 2);
-    const oppMaterial = new THREE.MeshStandardMaterial({ color: carColors[i] });
-    const oppCar = new THREE.Mesh(oppGeometry, oppMaterial);
-    oppCar.position.set((i - 2) * 2, 0.5, -5);
-    const speed = 0.07 + Math.random() * 0.06;
-    scene.add(oppCar);
-    opponentCars.push({ mesh: oppCar, speed, finished: false });
+for (let i = 0; i < 4; i++) {
+  const oppGeometry = new THREE.BoxGeometry(1, 1, 2);
+  const oppMaterial = new THREE.MeshStandardMaterial({ color: carColors[i] });
+  const oppCar = new THREE.Mesh(oppGeometry, oppMaterial);
+  oppCar.position.set((i - 2) * 2, 0.5, -5);
+  scene.add(oppCar);
+  opponentCars.push(oppCar);
+}
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft') moveLeft = true;
+    if (e.key === 'ArrowRight') moveRight = true;
+  });
+  document.addEventListener('keyup', (e) => {
+    if (e.key === 'ArrowLeft') moveLeft = false;
+    if (e.key === 'ArrowRight') moveRight = false;
+  });
+
+  // Coins
+  const coins = [];
+  const coinSpeed = 0.4;
+  let coinCount = 0;
+  const coinCounter = document.getElementById('coinCount');
+
+  function spawnCoin() {
+    const coinGeometry = new THREE.CylinderGeometry(0.4, 0.4, 0.1, 32);
+    const coinMaterial = new THREE.MeshStandardMaterial({ color: 0xffd700 });
+    const coin = new THREE.Mesh(coinGeometry, coinMaterial);
+    coin.rotation.x = Math.PI / 2;
+    coin.position.set((Math.floor(Math.random() * 5) - 2) * 2, 0.5, -50);
+    scene.add(coin);
+    coins.push(coin);
+  }
+const finishLineZ = -200;
+const finishGeometry = new THREE.PlaneGeometry(roadWidth, 1);
+const finishMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff, side: THREE.DoubleSide });
+const finishLine = new THREE.Mesh(finishGeometry, finishMaterial);
+finishLine.rotation.x = -Math.PI / 2;
+finishLine.position.z = finishLineZ;
+scene.add(finishLine);
+
+  setInterval(spawnCoin, 1000); // every 1 sec
+
+  // Spikes
+  const spikes = [];
+
+  function spawnSpike() {
+    const spikeGeometry = new THREE.ConeGeometry(0.5, 1, 8);
+    const spikeMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+    const spike = new THREE.Mesh(spikeGeometry, spikeMaterial);
+    spike.position.set((Math.floor(Math.random() * 5) - 2) * 2, 0.5, -50);
+    scene.add(spike);
+    spikes.push(spike);
   }
 
-  // UI and Timer Logic (no changes needed)
+function updateTimer() {
+  if (raceFinished) return;
+  const now = Date.now();
+  const elapsed = ((now - startTime) / 1000).toFixed(1);
+  document.getElementById("timeElapsed").textContent = `${elapsed}s`;
+}
 
-  // Reset game function
-  function resetGame() {
-    car.position.set(0, 0.5, 0);
-    carVelocity.set(0, 0, 0);
+  
+  setInterval(() => {
+    if (Math.random() < 0.6) { // 60% chance to spawn
+      spawnSpike();
+    }
+  }, 1500); // every 1.5 sec
 
-    opponentCars.forEach(op => {
-      op.mesh.position.set((Math.floor(Math.random() * 4) - 2) * 2, 0.5, -5);
-      op.finished = false;
-    });
-
-    roadSegments.forEach((road, i) => {
-      road.position.z = -i * roadSegmentLength;
-    });
-
-    coins.forEach(coin => scene.remove(coin));
-    coins.length = 0;
-
-    startTime = Date.now();
-    raceFinished = false;
-    finishedCars = [];
-
-    handleResize();
+  function checkGameOver(spike) {
+    const dx = Math.abs(spike.position.x - car.position.x);
+    const dz = Math.abs(spike.position.z - car.position.z);
+    return dx < 0.75 && dz < 1;
   }
+
+  // UI Buttons
+  const shopButton = document.getElementById('shopButton');
+  const shopUI = document.getElementById('shopUI');
+  const closeShopBtn = document.getElementById('closeShopBtn');
+
+  shopButton.addEventListener('click', () => {
+    shopUI.style.display = 'block';
+  });
+
+  closeShopBtn.addEventListener('click', () => {
+    shopUI.style.display = 'none';
+  });
+
+  // Shop actions
+  const speedBoostBtn = document.getElementById('speedBoostBtn');
+  const extraLifeBtn = document.getElementById('extraLifeBtn');
+
+  speedBoostBtn.addEventListener('click', () => {
+    if (coinCount >= 10) {
+      coinCount -= 10;
+      coinCounter.textContent = coinCount;
+      alert('You purchased a Speed Boost!');
+    } else {
+      alert('Not enough coins!');
+    }
+  });
+
+  extraLifeBtn.addEventListener('click', () => {
+    if (coinCount >= 20) {
+      coinCount -= 20;
+      coinCounter.textContent = coinCount;
+      alert('You purchased an Extra Life!');
+    } else {
+      alert('Not enough coins!');
+    }
+  });
+function getOrdinal(n) {
+  const s = ["th", "st", "nd", "rd"], v = n % 100;
+  return s[(v - 20) % 10] || s[v] || s[0];
+}
 
   function animate() {
     requestAnimationFrame(animate);
 
-    // Call updateTimer to update the timer
-    updateTimer();
-
-    // Handle player movement
+    // Move car within bounds
     if (moveLeft && car.position.x > -4) car.position.x -= carSpeed;
     if (moveRight && car.position.x < 4) car.position.x += carSpeed;
-    if (moveForward && !raceFinished) car.position.z -= 0.2;
 
-    // Camera follow
-    camera.position.lerp(
-      new THREE.Vector3(car.position.x, car.position.y + 5, car.position.z + 10),
-      0.1
-    );
-    camera.lookAt(car.position);
-
-    // Scroll road segments to simulate environment
+    // Scroll road
     roadSegments.forEach(road => {
-      if (road.position.z - car.position.z > 30) {
+      road.position.z += roadSpeed;
+      if (road.position.z > 30) {
         road.position.z -= roadSegmentLength * roadSegments.length;
       }
     });
+opponentCars.forEach(car => {
+  if (!finishedCars.includes(car)) {
+    car.position.z -= 0.03 + Math.random() * 0.02;
+    if (car.position.z <= finishLineZ) {
+      finishedCars.push(car);
+    }
+  }
+});
+if (!finishedCars.includes(car) && car.position.z <= finishLineZ) {
+  finishedCars.push(car);
+  raceFinished = true;
+  const playerRank = finishedCars.indexOf(car) + 1;
+  const finalTime = ((Date.now() - startTime) / 1000).toFixed(2);
+  alert(`🏁 You finished ${playerRank}${getOrdinal(playerRank)}!\n⏱️ Time: ${finalTime}s`);
+}
+car.position.z -= roadSpeed;
 
-    opponentCars.forEach(op => {
-      if (!op.finished) {
-        op.mesh.position.z -= op.speed;
-        const distanceZ = car.position.z - op.mesh.position.z;
-
-        if (distanceZ < 10 && distanceZ > -20) {
-          const deltaX = car.position.x - op.mesh.position.x;
-          if (Math.abs(deltaX) > 0.1) {
-            op.mesh.position.x += Math.sign(deltaX) * 0.05;
-          }
-        }
-
-        if (car.position.z < op.mesh.position.z) {
-          op.speed += 0.001;
-        }
+    // Scroll dashes
+    dashes.forEach(dash => {
+      dash.position.z += roadSpeed;
+      if (dash.position.z > 10) {
+        dash.position.z -= dashSpacing * dashCount;
       }
     });
 
+    // Scroll coins and collect
     coins.forEach((coin, index) => {
+      coin.position.z += coinSpeed;
       if (
         Math.abs(coin.position.x - car.position.x) < 0.75 &&
         Math.abs(coin.position.z - car.position.z) < 1
@@ -250,9 +309,21 @@
         coinCounter.textContent = coinCount;
         scene.remove(coin);
         coins.splice(index, 1);
-      } else if (coin.position.z - car.position.z > 20) {
+      } else if (coin.position.z > 20) {
         scene.remove(coin);
         coins.splice(index, 1);
+      }
+    });
+
+    // Scroll and check spikes
+    spikes.forEach((spike, index) => {
+      spike.position.z += roadSpeed;
+      if (checkGameOver(spike)) {
+        alert("Game Over! You hit a spike.");
+        window.location.reload();
+      } else if (spike.position.z > 20) {
+        scene.remove(spike);
+        spikes.splice(index, 1);
       }
     });
 
@@ -261,19 +332,10 @@
 
   animate();
 
-  window.addEventListener('resize', handleResize);
-
-  // Add event listeners for controlling car movement
-  window.addEventListener('keydown', (event) => {
-    if (event.key === 'ArrowLeft') moveLeft = true;
-    if (event.key === 'ArrowRight') moveRight = true;
-    if (event.key === 'ArrowUp') moveForward = true;
-  });
-
-  window.addEventListener('keyup', (event) => {
-    if (event.key === 'ArrowLeft') moveLeft = false;
-    if (event.key === 'ArrowRight') moveRight = false;
-    if (event.key === 'ArrowUp') moveForward = false;
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
   });
 </script>
 
