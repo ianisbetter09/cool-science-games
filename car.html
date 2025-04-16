@@ -58,6 +58,8 @@
 
 <div id="hud">Coins: <span id="coinCount">0</span></div>
 <button id="shopButton">Shop</button>
+<div id="timer" style="position:absolute;top:60px;left:10px;font-size:24px;color:white;background:rgba(0,0,0,0.5);padding:10px 15px;border-radius:8px;">Time: <span id="timeElapsed">0.0s</span></div>
+
 
 <div id="shopUI">
   <h3>Shop</h3>
@@ -76,6 +78,11 @@
 
 <script>
   // Scene setup
+  let startTime = Date.now();
+  let timerText = document.createElement("div");
+  let finishedCars = [];
+  let raceFinished = false;
+
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x87ceeb); // Sky blue
 
@@ -133,6 +140,17 @@
   let moveLeft = false;
   let moveRight = false;
   const carSpeed = 0.2;
+const opponentCars = [];
+const carColors = [0x00ff00, 0x0000ff, 0xffff00, 0xff00ff];
+
+for (let i = 0; i < 4; i++) {
+  const oppGeometry = new THREE.BoxGeometry(1, 1, 2);
+  const oppMaterial = new THREE.MeshStandardMaterial({ color: carColors[i] });
+  const oppCar = new THREE.Mesh(oppGeometry, oppMaterial);
+  oppCar.position.set((i - 2) * 2, 0.5, -5);
+  scene.add(oppCar);
+  opponentCars.push(oppCar);
+}
 
   document.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowLeft') moveLeft = true;
@@ -158,6 +176,13 @@
     scene.add(coin);
     coins.push(coin);
   }
+const finishLineZ = -200;
+const finishGeometry = new THREE.PlaneGeometry(roadWidth, 1);
+const finishMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff, side: THREE.DoubleSide });
+const finishLine = new THREE.Mesh(finishGeometry, finishMaterial);
+finishLine.rotation.x = -Math.PI / 2;
+finishLine.position.z = finishLineZ;
+scene.add(finishLine);
 
   setInterval(spawnCoin, 1000); // every 1 sec
 
@@ -173,6 +198,14 @@
     spikes.push(spike);
   }
 
+function updateTimer() {
+  if (raceFinished) return;
+  const now = Date.now();
+  const elapsed = ((now - startTime) / 1000).toFixed(1);
+  document.getElementById("timeElapsed").textContent = `${elapsed}s`;
+}
+
+  
   setInterval(() => {
     if (Math.random() < 0.6) { // 60% chance to spawn
       spawnSpike();
@@ -221,6 +254,10 @@
       alert('Not enough coins!');
     }
   });
+function getOrdinal(n) {
+  const s = ["th", "st", "nd", "rd"], v = n % 100;
+  return s[(v - 20) % 10] || s[v] || s[0];
+}
 
   function animate() {
     requestAnimationFrame(animate);
@@ -236,6 +273,22 @@
         road.position.z -= roadSegmentLength * roadSegments.length;
       }
     });
+opponentCars.forEach(car => {
+  if (!finishedCars.includes(car)) {
+    car.position.z -= 0.03 + Math.random() * 0.02;
+    if (car.position.z <= finishLineZ) {
+      finishedCars.push(car);
+    }
+  }
+});
+if (!finishedCars.includes(car) && car.position.z <= finishLineZ) {
+  finishedCars.push(car);
+  raceFinished = true;
+  const playerRank = finishedCars.indexOf(car) + 1;
+  const finalTime = ((Date.now() - startTime) / 1000).toFixed(2);
+  alert(`🏁 You finished ${playerRank}${getOrdinal(playerRank)}!\n⏱️ Time: ${finalTime}s`);
+}
+car.position.z -= roadSpeed;
 
     // Scroll dashes
     dashes.forEach(dash => {
