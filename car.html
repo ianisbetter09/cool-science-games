@@ -83,6 +83,9 @@
   let finishedCars = [];
   let raceFinished = false;
   let carVelocity = new THREE.Vector3(0, 0, 0);
+  let gravity = -0.05;
+  let verticalSpeed = 0;
+  let isFalling = false;
 
 
   const scene = new THREE.Scene();
@@ -261,8 +264,16 @@ function animate() {
   updateTimer();
 
   // Handle player movement
-  if (moveLeft && car.position.x > -4) car.position.x -= carSpeed;
-  if (moveRight && car.position.x < 4) car.position.x += carSpeed;
+if (!isFalling) {
+  if (moveLeft) car.position.x -= carSpeed;
+  if (moveRight) car.position.x += carSpeed;
+
+  // Check if car is off the road
+  if (car.position.x < -roadWidth / 2 || car.position.x > roadWidth / 2) {
+    isFalling = true;
+  }
+}
+
   if (moveForward && !raceFinished) car.position.z -= 0.2;
 
   // Camera follow
@@ -334,7 +345,31 @@ opponentCars.forEach(op => {
 
     // Optional: Slight push to the AI car too (for effect)
     op.mesh.position.add(bounceForce.clone().multiplyScalar(-0.2));
+    
   }
+  // AI to AI repulsion
+for (let i = 0; i < opponentCars.length; i++) {
+  for (let j = i + 1; j < opponentCars.length; j++) {
+    const carA = opponentCars[i].mesh;
+    const carB = opponentCars[j].mesh;
+
+    const dx = carA.position.x - carB.position.x;
+    const dz = carA.position.z - carB.position.z;
+    const distance = Math.sqrt(dx * dx + dz * dz);
+
+    if (distance < 1.8) { // adjust this for spacing
+      const overlap = 1.8 - distance;
+      const pushX = (dx / distance) * (overlap / 2);
+      const pushZ = (dz / distance) * (overlap / 2);
+
+      carA.position.x += pushX;
+      carA.position.z += pushZ;
+      carB.position.x -= pushX;
+      carB.position.z -= pushZ;
+    }
+  }
+}
+
 });
 
 // Apply velocity to the car
@@ -353,6 +388,18 @@ carVelocity.multiplyScalar(0.9); // you can tweak this for more or less "slip"
       alert(`🏁 You finished ${playerRank}${getOrdinal(playerRank)}!\n⏱️ Time: ${finalTime}s`);
     }, 100);
   }
+if (isFalling) {
+  verticalSpeed += gravity;
+  car.position.y += verticalSpeed;
+
+  if (car.position.y < -10) {
+    raceFinished = true;
+    setTimeout(() => {
+      alert("💀 You fell off the road!\nTry to stay on next time.");
+      location.reload(); // reload the game
+    }, 100);
+  }
+}
 
   // Scroll dashes
   dashes.forEach(dash => {
