@@ -57,7 +57,7 @@
 </head>
 <body>
 
-<div id="hud">Coins: <span id="coinCount">0</span></div>
+
 <button id="shopButton">Controls</button>
 <div id="timer" style="position:absolute;top:60px;left:10px;font-size:24px;color:white;background:rgba(0,0,0,0.5);padding:10px 15px;border-radius:8px;">Time: <span id="timeElapsed">0.0s</span></div>
 
@@ -175,21 +175,7 @@ document.addEventListener('keyup', (e) => {
   if (e.code === 'ArrowUp') moveForward = false;
 });
 
-  // Coins
-  const coins = [];
-  const coinSpeed = 0.4;
-  let coinCount = 0;
-  const coinCounter = document.getElementById('coinCount');
 
-  function spawnCoin() {
-    const coinGeometry = new THREE.CylinderGeometry(0.4, 0.4, 0.1, 32);
-    const coinMaterial = new THREE.MeshStandardMaterial({ color: 0xffd700 });
-    const coin = new THREE.Mesh(coinGeometry, coinMaterial);
-    coin.rotation.x = Math.PI / 2;
-    coin.position.set((Math.floor(Math.random() * 5) - 2) * 2, 0.5, -50);
-    scene.add(coin);
-    coins.push(coin);
-  }
 const finishLineZ = -200;
 const finishGeometry = new THREE.PlaneGeometry(roadWidth, 1);
 const finishMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff, side: THREE.DoubleSide });
@@ -228,29 +214,8 @@ function updateTimer() {
     shopUI.style.display = 'none';
   });
 
-  // Shop actions
-  const speedBoostBtn = document.getElementById('speedBoostBtn');
-  const extraLifeBtn = document.getElementById('extraLifeBtn');
 
-  speedBoostBtn.addEventListener('click', () => {
-    if (coinCount >= 10) {
-      coinCount -= 10;
-      coinCounter.textContent = coinCount;
-      alert('You purchased a Speed Boost!');
-    } else {
-      alert('Not enough coins!');
-    }
-  });
-
-  extraLifeBtn.addEventListener('click', () => {
-    if (coinCount >= 20) {
-      coinCount -= 20;
-      coinCounter.textContent = coinCount;
-      alert('You purchased an Extra Life!');
-    } else {
-      alert('Not enough coins!');
-    }
-  });
+      
 function getOrdinal(n) {
   const s = ["th", "st", "nd", "rd"], v = n % 100;
   return s[(v - 20) % 10] || s[v] || s[0];
@@ -407,21 +372,7 @@ if (isFalling) {
   });
 
   // Coin logic
-  coins.forEach((coin, index) => {
-    if (
-      Math.abs(coin.position.x - car.position.x) < 0.75 &&
-      Math.abs(coin.position.z - car.position.z) < 1
-    ) {
-      coinCount++;
-      coinCounter.textContent = coinCount;
-      scene.remove(coin);
-      coins.splice(index, 1);
-    } else if (coin.position.z - car.position.z > 20) {
-      scene.remove(coin);
-      coins.splice(index, 1);
-    }
-  });
-
+  
   // Spikes logic
 
 
