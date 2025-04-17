@@ -63,15 +63,12 @@
 
 
 <div id="shopUI">
-  <h3>Shop</h3>
+  <h3>Controls</h3>
   <div class="shop-item">
-    <span>Speed Boost (10 coins)</span>
-    <button id="speedBoostBtn">Buy</button>
+    <span>Up arrow to move, reload 3 times to start new race, side arrow keys to move.</span>
+    
   </div>
-  <div class="shop-item">
-    <span>Extra Life (20 coins)</span>
-    <button id="extraLifeBtn">Buy</button>
-  </div>
+  
   <button id="closeShopBtn">Close</button>
 </div>
 
@@ -172,10 +169,10 @@ const speed = 0.07 + Math.random() * 0.06;
   });
 let moveForward = false;
 document.addEventListener('keydown', (e) => {
-  if (e.code === 'Space') moveForward = true;
+  if (e.code === 'ArrowUp') moveForward = true;
 });
 document.addEventListener('keyup', (e) => {
-  if (e.code === 'Space') moveForward = false;
+  if (e.code === 'ArrowUp') moveForward = false;
 });
 
   // Coins
