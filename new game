@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Totally Serious Page</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: black;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    iframe {
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <iframe 
+    width="100%" 
+    height="100%" 
+    src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&controls=0&rel=0" 
+    allow="autoplay; encrypted-media" 
+    allowfullscreen>
+  </iframe>
+</body>
+</html>
