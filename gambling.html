@@ -59,39 +59,40 @@
     </div>
 
     <script>
-        let coins = 100; // Starting amount of coins
+       let coins = 100; // Starting amount of coins
 
-        // Function to handle the risk action
-        document.getElementById('risk-button').addEventListener('click', function() {
-            // The player risks between 10 to 50 coins
-            const riskAmount = Math.floor(Math.random() * 41) + 10;
-            const outcome = Math.random();
+// Function to handle the risk action
+document.getElementById('risk-button').addEventListener('click', function() {
+    // The player risks between 10 to 50 coins
+    const riskAmount = Math.floor(Math.random() * 41) + 10;
+    const outcome = Math.random();
 
-            // 50% chance of winning more coins, 50% chance of losing coins
-            if (outcome < 0.5) {
-                // Player wins
-                coins += riskAmount;
-                document.getElementById('result').innerHTML = You won ${riskAmount} coins!;
-                document.getElementById('result').classList.remove('failure');
-                document.getElementById('result').classList.add('success');
-            } else {
-                // Player loses
-                coins -= riskAmount;
-                document.getElementById('result').innerHTML = You lost ${riskAmount} coins!;
-                document.getElementById('result').classList.remove('success');
-                document.getElementById('result').classList.add('failure');
-            }
+    // 50% chance of winning more coins, 50% chance of losing coins
+    if (outcome < 0.5) {
+        // Player wins
+        coins += riskAmount;
+        document.getElementById('result').innerHTML = `You won ${riskAmount} coins!`;
+        document.getElementById('result').classList.remove('failure');
+        document.getElementById('result').classList.add('success');
+    } else {
+        // Player loses
+        coins -= riskAmount;
+        document.getElementById('result').innerHTML = `You lost ${riskAmount} coins!`;
+        document.getElementById('result').classList.remove('success');
+        document.getElementById('result').classList.add('failure');
+    }
 
-            // Update coin count
-            document.getElementById('coin-count').innerText = Coins: ${coins};
+    // Update coin count
+    document.getElementById('coin-count').innerText = `Coins: ${coins}`;
 
-            // If coins go below 0, end the game
-            if (coins <= 0) {
-                document.getElementById('result').innerHTML = "Game Over! You ran out of coins.";
-                document.getElementById('result').classList.remove('success', 'failure');
-                document.getElementById('risk-button').disabled = true; // Disable risk button when game ends
-            }
-        });
+    // If coins go below 0, end the game
+    if (coins <= 0) {
+        document.getElementById('result').innerHTML = "Game Over! You ran out of coins.";
+        document.getElementById('result').classList.remove('success', 'failure');
+        document.getElementById('risk-button').disabled = true; // Disable risk button when game ends
+    }
+});
+
     </script>
 </body>
 </html>
