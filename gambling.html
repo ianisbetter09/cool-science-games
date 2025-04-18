@@ -1,109 +1,98 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dice Roll Game</title>
-  <style>
-    /* Keep existing styles for layout, only add for shop button */
-    .shop-button {
-      padding: 10px 20px;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      cursor: pointer;
-      font-size: 16px;
-      margin-top: 20px;
-    }
-
-    .shop-button:hover {
-      background-color: #45a049;
-    }
-    
-    .shop-modal {
-      display: none;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background-color: white;
-      padding: 20px;
-      border: 1px solid #000;
-      z-index: 1000;
-    }
-
-    .shop-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.5);
-      display: none;
-      z-index: 999;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coin Risk Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+            background-color: #f4f4f4;
+        }
+        .game-container {
+            margin: 20px;
+            padding: 20px;
+            border: 2px solid #333;
+            display: inline-block;
+            background-color: white;
+        }
+        h1 {
+            color: #2c3e50;
+        }
+        #coin-count {
+            font-size: 24px;
+            font-weight: bold;
+            color: #27ae60;
+        }
+        .button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+            margin: 10px;
+            border-radius: 5px;
+        }
+        .button:hover {
+            background-color: #2980b9;
+        }
+        .result {
+            margin-top: 20px;
+            font-size: 20px;
+            color: #e74c3c;
+        }
+        .success {
+            color: #2ecc71;
+        }
+    </style>
 </head>
 <body>
-  <h1>Dice Roll Game</h1>
-  
-  <button onclick="rollDice()">Roll Dice</button>
-  <button class="shop-button" onclick="openShop()">Open Shop</button>
+    <div class="game-container">
+        <h1>Coin Risk Game</h1>
+        <p>Click "Risk It" to risk your coins and see if you win or lose more!</p>
+        <div id="coin-count">Coins: 100</div>
+        <button class="button" id="risk-button">Risk It!</button>
+        <p id="result" class="result"></p>
+    </div>
 
-  <p id="result"></p>
-  <p id="coins">Coins: 100</p>
+    <script>
+       let coins = 100; // Starting amount of coins
 
-  <!-- Shop Modal -->
-  <div id="shop-overlay" class="shop-overlay" onclick="closeShop()"></div>
-  <div id="shop-modal" class="shop-modal">
-    <h2>Shop</h2>
-    <p>Buy the Rigged Dice for 50 coins to increase your chances of getting a good roll!</p>
-    <button onclick="buyRiggedDice()">Buy Rigged Dice (50 Coins)</button>
-    <button onclick="closeShop()">Close</button>
-  </div>
+// Function to handle the risk action
+document.getElementById('risk-button').addEventListener('click', function() {
+    // The player risks between 10 to 50 coins
+    const riskAmount = Math.floor(Math.random() * 41) + 10;
+    const outcome = Math.random();
 
-  <script>
-    let playerCoins = 100; // Starting coins
-    let hasRiggedDice = false; // Track if player has rigged dice
-
-    // Function to simulate rolling a dice
-    function rollDice() {
-      let roll = Math.random() * 6 + 1; // Random number between 1 and 6
-
-      // If the player has a rigged dice, boost their odds
-      if (hasRiggedDice) {
-        if (Math.random() < 0.5) {
-          roll = Math.max(roll, 5); // At least 5 if rigged
-        }
-      }
-
-      document.getElementById('result').textContent = `You rolled: ${Math.round(roll)}`;
+    // 50% chance of winning more coins, 50% chance of losing coins
+    if (outcome < 0.5) {
+        // Player wins
+        coins += riskAmount;
+        document.getElementById('result').innerHTML = `You won ${riskAmount} coins!`;
+        document.getElementById('result').classList.remove('failure');
+        document.getElementById('result').classList.add('success');
+    } else {
+        // Player loses
+        coins -= riskAmount;
+        document.getElementById('result').innerHTML = `You lost ${riskAmount} coins!`;
+        document.getElementById('result').classList.remove('success');
+        document.getElementById('result').classList.add('failure');
     }
 
-    // Open the shop modal
-    function openShop() {
-      document.getElementById('shop-modal').style.display = 'block';
-      document.getElementById('shop-overlay').style.display = 'block';
-    }
+    // Update coin count
+    document.getElementById('coin-count').innerText = `Coins: ${coins}`;
 
-    // Close the shop modal
-    function closeShop() {
-      document.getElementById('shop-modal').style.display = 'none';
-      document.getElementById('shop-overlay').style.display = 'none';
+    // If coins go below 0, end the game
+    if (coins <= 0) {
+        document.getElementById('result').innerHTML = "Game Over! You ran out of coins.";
+        document.getElementById('result').classList.remove('success', 'failure');
+        document.getElementById('risk-button').disabled = true; // Disable risk button when game ends
     }
+});
 
-    // Function to handle the purchase of Rigged Dice
-    function buyRiggedDice() {
-      if (playerCoins >= 50) {
-        playerCoins -= 50; // Deduct coins
-        hasRiggedDice = true; // Player now has rigged dice
-        document.getElementById('coins').textContent = `Coins: ${playerCoins}`;
-        alert('You have purchased the Rigged Dice!');
-        closeShop();
-      } else {
-        alert('You do not have enough coins!');
-      }
-    }
-  </script>
+    </script>
 </body>
 </html>
