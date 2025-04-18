@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>FPS with Proper Third-Person Camera</title>
+  <title>FPS with Third-Person Green Box</title>
   <style>
     body { margin: 0; overflow: hidden; }
     canvas { display: block; }
@@ -11,7 +11,7 @@
 <body>
   <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
   <script>
-    let scene, camera, renderer, player;
+    let scene, camera, renderer, player, playerMesh;
     let yaw = 0, pitch = 0;
     const move = { forward: false, backward: false, left: false, right: false };
     const velocity = new THREE.Vector3();
@@ -49,7 +49,7 @@
       ground.rotation.x = -Math.PI / 2;
       scene.add(ground);
 
-      // Obstacles
+      // Boxes
       for (let i = 0; i < 100; i++) {
         const box = new THREE.Mesh(
           new THREE.BoxGeometry(16, 24, 16),
@@ -59,10 +59,17 @@
         scene.add(box);
       }
 
-      // Player (invisible cube for now)
+      // Player (green box)
       player = new THREE.Object3D();
       player.position.set(0, 2, 0);
       scene.add(player);
+
+      playerMesh = new THREE.Mesh(
+        new THREE.BoxGeometry(1, 2, 1),
+        new THREE.MeshStandardMaterial({ color: 0x00ff00 })
+      );
+      playerMesh.position.y = 1; // Centered above ground
+      player.add(playerMesh);
 
       // Mouse Locking
       document.addEventListener('click', function handleClickOnce() {
@@ -127,14 +134,15 @@
       velocity.multiplyScalar(moveSpeed);
       player.position.add(velocity);
 
+      // Rotate the player mesh to face the direction of movement
+      player.rotation.y = yaw;
+
       // Camera positioning
       if (isThirdPerson) {
-        // Place camera behind and above the player
         const offset = thirdPersonOffset.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
         camera.position.copy(player.position.clone().add(offset));
         camera.lookAt(player.position);
       } else {
-        // First-person view
         camera.position.copy(player.position);
         camera.lookAt(player.position.clone().add(lookDir));
       }
