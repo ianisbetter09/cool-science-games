@@ -53,27 +53,38 @@
         scene.add(box);
       }
 
-      // Mouse look fallback
-      let dragging = false;
-      let prevX = 0, prevY = 0;
+      function lockMouse() {
+      // Try to request pointer lock
+      const element = document.body; // or the element you want to lock the mouse to
 
-      window.addEventListener('mousedown', e => {
-        dragging = true;
-        prevX = e.clientX;
-        prevY = e.clientY;
-      });
-      window.addEventListener('mouseup', () => dragging = false);
-      window.addEventListener('mousemove', e => {
-        if (dragging) {
-          const dx = e.clientX - prevX;
-          const dy = e.clientY - prevY;
-          yaw -= dx * 0.002;
-          pitch -= dy * 0.002;
-          pitch = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch));
-          prevX = e.clientX;
-          prevY = e.clientY;
+      // Check if the pointer lock API is available
+      if (element.requestPointerLock) {
+          element.requestPointerLock();
+      } else if (element.mozRequestPointerLock) { // For Firefox
+          element.mozRequestPointerLock();
+      } else if (element.webkitRequestPointerLock) { // For Safari
+          element.webkitRequestPointerLock();
+      } else {
+          console.error("Pointer Lock API is not supported in this browser.");
+      }
+
+      // Listen for pointer lock change events
+      document.addEventListener('pointerlockchange', onPointerLockChange, false);
+      document.addEventListener('mozpointerlockchange', onPointerLockChange, false);
+      document.addEventListener('webkitpointerlockchange', onPointerLockChange, false);
+  }
+
+    function onPointerLockChange() {
+        if (document.pointerLockElement === document.body || document.mozPointerLockElement === document.body || document.webkitPointerLockElement === document.body) {
+            console.log('Mouse is now locked');
+        } else {
+            console.log('Mouse has been unlocked');
         }
-      });
+      }
+
+    // Example usage: Triggering the function when the user clicks a button or on any specific event.
+    document.getElementById('startButton').addEventListener('click', lockMouse);
+
 
       // Movement
       window.addEventListener('keydown', e => {
@@ -123,52 +134,6 @@
         // Resize the canvas to fill the screen
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
-
-        // Function to lock the mouse to the game canvas
-        function lockMouse() {
-            // Check if the pointer lock API is available
-            if (canvas.requestPointerLock) {
-                canvas.requestPointerLock();
-            } else if (canvas.mozRequestPointerLock) {  // For Firefox
-                canvas.mozRequestPointerLock();
-            } else if (canvas.webkitRequestPointerLock) {  // For Chrome/Opera
-                canvas.webkitRequestPointerLock();
-            }
-        }
-
-        // Function to unlock the mouse from the game canvas
-        function unlockMouse() {
-            // Check if the pointer lock is currently active and release it
-            if (document.exitPointerLock) {
-                document.exitPointerLock();
-            } else if (document.mozExitPointerLock) {  // For Firefox
-                document.mozExitPointerLock();
-            } else if (document.webkitExitPointerLock) {  // For Chrome/Opera
-                document.webkitExitPointerLock();
-            }
-        }
-
-        // Event listener to handle mouse lock success
-        document.addEventListener('pointerlockchange', function() {
-            if (document.pointerLockElement === canvas || document.mozPointerLockElement === canvas || document.webkitPointerLockElement === canvas) {
-                console.log('Mouse is locked');
-                // Now you can start capturing the mouse movements to control the 3D game
-            } else {
-                console.log('Mouse unlock');
-            }
-        }, false);
-
-        // Event listener for mouse click to lock the mouse on canvas
-        canvas.addEventListener('click', function() {
-            lockMouse();
-        });
-
-        // Event listener for the Escape key to unlock the mouse
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                unlockMouse();
-            }
-        });
 
         // Game loop (you can replace this with your actual game loop)
         function gameLoop() {
