@@ -50,9 +50,18 @@
       scene.add(controls.getObject());
 
       const instructions = document.getElementById('instructions');
-      instructions.addEventListener('click', () => controls.lock());
-      controls.addEventListener('lock', () => instructions.style.display = 'none');
-      controls.addEventListener('unlock', () => instructions.style.display = 'flex');
+      instructions.addEventListener('click', () => {
+        controls.lock();  // Locks mouse
+        instructions.style.display = 'none';  // Hides instructions
+      });
+
+      controls.addEventListener('lock', () => {
+        instructions.style.display = 'none';  // Ensure instructions are hidden once locked
+      });
+
+      controls.addEventListener('unlock', () => {
+        instructions.style.display = 'flex';  // Show instructions again if unlocked
+      });
 
       // Lights
       scene.add(new THREE.AmbientLight(0x404040));
