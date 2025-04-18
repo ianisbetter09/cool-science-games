@@ -15,6 +15,13 @@
     let yaw = 0, pitch = 0;
     const move = { forward: false, backward: false, left: false, right: false };
     const velocity = new THREE.Vector3();
+    let isLocked = false;
+    let rotationX = 0;
+    let rotationY = 0;
+    const rotationSpeed = 0.002;  // Adjust speed of mouse movement
+    
+    // Initialize camera object before use (make sure it's declared first)
+    const camera = { rotation: { x: 0, y: 0 } };
 
     init();
     animate();
@@ -53,14 +60,6 @@
         scene.add(box);
       }
 
-      let isLocked = false;
-      let rotationX = 0;
-      let rotationY = 0;
-      const rotationSpeed = 0.002;  // Adjust speed of mouse movement
-      
-      // Example: A mock camera object that we'll rotate (you can replace with your 3D camera)
-      const camera = { rotation: { x: 0, y: 0 } };
-      
       // Function to lock the mouse pointer
       function lockMouse() {
         const element = document.body;
