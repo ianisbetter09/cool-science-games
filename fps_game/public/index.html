@@ -50,17 +50,19 @@
       scene.add(controls.getObject());
 
       const instructions = document.getElementById('instructions');
+
       instructions.addEventListener('click', () => {
-        controls.lock();  // Locks mouse
-        instructions.style.display = 'none';  // Hides instructions
+        // Pointer lock on click
+        document.body.requestPointerLock();
       });
 
-      controls.addEventListener('lock', () => {
-        instructions.style.display = 'none';  // Ensure instructions are hidden once locked
-      });
-
-      controls.addEventListener('unlock', () => {
-        instructions.style.display = 'flex';  // Show instructions again if unlocked
+      // When pointer lock is activated
+      document.addEventListener('pointerlockchange', () => {
+        if (document.pointerLockElement === document.body) {
+          instructions.style.display = 'none';  // Hide instructions when locked
+        } else {
+          instructions.style.display = 'flex'; // Show instructions again if unlocked
+        }
       });
 
       // Lights
