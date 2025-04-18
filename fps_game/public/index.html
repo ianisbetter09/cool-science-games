@@ -114,6 +114,9 @@
         lockMouse();
         document.removeEventListener('click', handleClickOnce);
       });
+      let rotationSpeed = 0.1; // Adjust the speed
+      camera.rotation.y += movementX * rotationSpeed;
+      camera.rotation.x -= movementY * rotationSpeed;
 
 
 
