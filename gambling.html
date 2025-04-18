@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dice Roll Game</title>
   <style>
-    /* Add your styling here */
+    /* Keep existing styles for layout, only add for shop button */
     .shop-button {
       padding: 10px 20px;
       background-color: #4CAF50;
@@ -13,29 +13,97 @@
       border: none;
       cursor: pointer;
       font-size: 16px;
+      margin-top: 20px;
     }
 
     .shop-button:hover {
       background-color: #45a049;
+    }
+    
+    .shop-modal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: white;
+      padding: 20px;
+      border: 1px solid #000;
+      z-index: 1000;
+    }
+
+    .shop-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: none;
+      z-index: 999;
     }
   </style>
 </head>
 <body>
   <h1>Dice Roll Game</h1>
   
+  <button onclick="rollDice()">Roll Dice</button>
   <button class="shop-button" onclick="openShop()">Open Shop</button>
-  
-  <div id="shop-modal" style="display: none;">
-    <h2>Welcome to the Shop</h2>
+
+  <p id="result"></p>
+  <p id="coins">Coins: 100</p>
+
+  <!-- Shop Modal -->
+  <div id="shop-overlay" class="shop-overlay" onclick="closeShop()"></div>
+  <div id="shop-modal" class="shop-modal">
+    <h2>Shop</h2>
+    <p>Buy the Rigged Dice for 50 coins to increase your chances of getting a good roll!</p>
     <button onclick="buyRiggedDice()">Buy Rigged Dice (50 Coins)</button>
-    <button onclick="closeShop()">Close Shop</button>
+    <button onclick="closeShop()">Close</button>
   </div>
 
-  <div>
-    <button onclick="rollDice()">Roll Dice</button>
-    <p id="result"></p>
-  </div>
+  <script>
+    let playerCoins = 100; // Starting coins
+    let hasRiggedDice = false; // Track if player has rigged dice
 
-  <script src="game.js"></script>
+    // Function to simulate rolling a dice
+    function rollDice() {
+      let roll = Math.random() * 6 + 1; // Random number between 1 and 6
+
+      // If the player has a rigged dice, boost their odds
+      if (hasRiggedDice) {
+        if (Math.random() < 0.5) {
+          roll = Math.max(roll, 5); // At least 5 if rigged
+        }
+      }
+
+      document.getElementById('result').textContent = `You rolled: ${Math.round(roll)}`;
+    }
+
+    // Open the shop modal
+    function openShop() {
+      document.getElementById('shop-modal').style.display = 'block';
+      document.getElementById('shop-overlay').style.display = 'block';
+    }
+
+    // Close the shop modal
+    function closeShop() {
+      document.getElementById('shop-modal').style.display = 'none';
+      document.getElementById('shop-overlay').style.display = 'none';
+    }
+
+    // Function to handle the purchase of Rigged Dice
+    function buyRiggedDice() {
+      if (playerCoins >= 50) {
+        playerCoins -= 50; // Deduct coins
+        hasRiggedDice = true; // Player now has rigged dice
+        document.getElementById('coins').textContent = `Coins: ${playerCoins}`;
+        alert('You have purchased the Rigged Dice!');
+        closeShop();
+      } else {
+        alert('You do not have enough coins!');
+      }
+    }
+  </script>
 </body>
 </html>
