@@ -24,9 +24,12 @@
 
     function init() {
       scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x87ceeb);
+      scene.background = new THREE.Color(0x87ceeb); // Sky blue background
 
+      // Set up camera
       camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+      // Set up renderer
       renderer = new THREE.WebGLRenderer();
       renderer.setSize(window.innerWidth, window.innerHeight);
       document.body.appendChild(renderer.domElement);
@@ -47,21 +50,21 @@
         }
       });
 
-      // Lights
+      // Add basic lighting
       scene.add(new THREE.AmbientLight(0x404040));
       const dirLight = new THREE.DirectionalLight(0xffffff, 1);
       dirLight.position.set(10, 20, 10);
       scene.add(dirLight);
 
-      // Ground
+      // Add a simple ground
       const ground = new THREE.Mesh(
         new THREE.PlaneGeometry(100, 100),
-        new THREE.MeshStandardMaterial({ color: 0x228B22 })
+        new THREE.MeshStandardMaterial({ color: 0x228B22 }) // Green color for ground
       );
-      ground.rotation.x = -Math.PI / 2;
+      ground.rotation.x = -Math.PI / 2; // Rotate to lay flat
       scene.add(ground);
 
-      // Buildings
+      // Add some random buildings
       for (let i = 0; i < 5; i++) {
         const box = new THREE.Mesh(
           new THREE.BoxGeometry(4, 6, 4),
