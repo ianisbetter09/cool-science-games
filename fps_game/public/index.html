@@ -53,10 +53,12 @@
         scene.add(box);
       }
 
+      let isLocked = false;
+
       function lockMouse() {
         const element = document.body;
       
-        // Check and request pointer lock
+        // Request pointer lock
         if (element.requestPointerLock) {
           element.requestPointerLock();
         } else if (element.mozRequestPointerLock) {
@@ -77,8 +79,28 @@
       
         if (lockedElement === document.body) {
           console.log('Mouse is now locked');
+          isLocked = true;
+          // Start listening for mouse movement once locked
+          document.addEventListener('mousemove', onMouseMove, false);
         } else {
           console.log('Mouse has been unlocked');
+          isLocked = false;
+          // Stop listening for mouse movement once unlocked
+          document.removeEventListener('mousemove', onMouseMove, false);
+        }
+      }
+      
+      // Handle mouse movement while the mouse is locked
+      function onMouseMove(event) {
+        if (isLocked) {
+          const movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
+          const movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
+      
+          // Example: Log mouse movements (you can update a camera or other actions)
+          console.log(`Mouse moved: X: ${movementX}, Y: ${movementY}`);
+      
+          // Update camera or control logic here using movementX and movementY
+          // Example: Update camera rotation based on movement (if you have a 3D camera setup)
         }
       }
       
@@ -87,12 +109,12 @@
       document.addEventListener('mozpointerlockchange', onPointerLockChange, false);
       document.addEventListener('webkitpointerlockchange', onPointerLockChange, false);
       
-      // Use any user interaction to trigger pointer lock
+      // Trigger pointer lock with a user click event
       document.addEventListener('click', function handleClickOnce() {
         lockMouse();
-        // Remove listener after one use to avoid spamming lock requests
         document.removeEventListener('click', handleClickOnce);
       });
+
 
 
 
