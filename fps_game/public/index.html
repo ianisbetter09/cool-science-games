@@ -6,23 +6,9 @@
   <style>
     body { margin: 0; overflow: hidden; }
     canvas { display: block; }
-    #instructions {
-      position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: rgba(0, 0, 0, 0.6);
-      color: white;
-      font-family: sans-serif;
-      font-size: 24px;
-      cursor: pointer;
-      z-index: 10;
-    }
   </style>
 </head>
 <body>
-  <div id="instructions">Click to lock mouse and play</div>
 
   <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/examples/js/controls/PointerLockControls.js"></script>
@@ -49,19 +35,15 @@
       controls = new THREE.PointerLockControls(camera, document.body);
       scene.add(controls.getObject());
 
-      const instructions = document.getElementById('instructions');
-
-      instructions.addEventListener('click', () => {
-        // Pointer lock on click
+      // Lock mouse on click
+      document.body.addEventListener('click', () => {
         document.body.requestPointerLock();
       });
 
-      // When pointer lock is activated
-      document.addEventListener('pointerlockchange', () => {
-        if (document.pointerLockElement === document.body) {
-          instructions.style.display = 'none';  // Hide instructions when locked
-        } else {
-          instructions.style.display = 'flex'; // Show instructions again if unlocked
+      // Unlock mouse on ESC key press
+      document.addEventListener('keydown', (e) => {
+        if (e.code === 'Escape') {
+          document.exitPointerLock();
         }
       });
 
