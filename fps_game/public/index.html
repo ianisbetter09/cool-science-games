@@ -54,36 +54,46 @@
       }
 
       function lockMouse() {
-        // Try to request pointer lock
-        const element = document.body; // or the element you want to lock the mouse to
-
-        // Check if the pointer lock API is available
+        const element = document.body;
+      
+        // Check and request pointer lock
         if (element.requestPointerLock) {
           element.requestPointerLock();
-        } else if (element.mozRequestPointerLock) { // For Firefox
+        } else if (element.mozRequestPointerLock) {
           element.mozRequestPointerLock();
-        } else if (element.webkitRequestPointerLock) { // For Safari
+        } else if (element.webkitRequestPointerLock) {
           element.webkitRequestPointerLock();
         } else {
           console.error("Pointer Lock API is not supported in this browser.");
         }
-
-        // Listen for pointer lock change events
-        document.addEventListener('pointerlockchange', onPointerLockChange, false);
-        document.addEventListener('mozpointerlockchange', onPointerLockChange, false);
-        document.addEventListener('webkitpointerlockchange', onPointerLockChange, false);
       }
-
+      
+      // Pointer lock change handler
       function onPointerLockChange() {
-        if (document.pointerLockElement === document.body || document.mozPointerLockElement === document.body || document.webkitPointerLockElement === document.body) {
+        const lockedElement = 
+          document.pointerLockElement || 
+          document.mozPointerLockElement || 
+          document.webkitPointerLockElement;
+      
+        if (lockedElement === document.body) {
           console.log('Mouse is now locked');
         } else {
-            console.log('Mouse has been unlocked');
+          console.log('Mouse has been unlocked');
         }
       }
+      
+      // Set up pointer lock change listeners
+      document.addEventListener('pointerlockchange', onPointerLockChange, false);
+      document.addEventListener('mozpointerlockchange', onPointerLockChange, false);
+      document.addEventListener('webkitpointerlockchange', onPointerLockChange, false);
+      
+      // Use any user interaction to trigger pointer lock
+      document.addEventListener('click', function handleClickOnce() {
+        lockMouse();
+        // Remove listener after one use to avoid spamming lock requests
+        document.removeEventListener('click', handleClickOnce);
+      });
 
-    // Example usage: Triggering the function when the user clicks a button or on any specific event.
-    document.getElementById('startButton').addEventListener('click', lockMouse);
 
 
       // Movement
