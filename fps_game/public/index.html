@@ -71,41 +71,41 @@
         }
       }
 
-      // Pointer lock change handler
-      function onPointerLockChange() {
-        const lockedElement = 
-          document.pointerLockElement || 
-          document.mozPointerLockElement || 
-          document.webkitPointerLockElement;
 
-        if (lockedElement === document.body) {
-          console.log('Mouse is now locked');
-          isLocked = true;
-          // Start listening for mouse movement once locked
-          document.addEventListener('mousemove', onMouseMove, false);
-        } else {
-          console.log('Mouse has been unlocked');
-          isLocked = false;
-          // Stop listening for mouse movement once unlocked
-          document.removeEventListener('mousemove', onMouseMove, false);
-        }
-      }
-
-      // Handle mouse movement while the mouse is locked
       function onMouseMove(event) {
         if (isLocked) {
           // Fallback for different browsers, check for movementX/movementY
           const movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
           const movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
-
-          // Update camera rotation based on mouse movement
-          yaw += movementX * rotationSpeed;  // Rotate around Y axis (horizontal)
-          pitch -= movementY * rotationSpeed;  // Rotate around X axis (vertical)
-
+      
+          // Invert horizontal movement (left-right) to fix the inversion issue
+          yaw -= movementX * rotationSpeed;  // Invert this by subtracting
+      
+          pitch -= movementY * rotationSpeed;  // Rotate up and down
+      
           // Limit vertical rotation to avoid flipping
           pitch = Math.max(Math.min(pitch, Math.PI / 2), -Math.PI / 2);
         }
       }
+
+
+      
+      function onMouseMove(event) {
+        if (isLocked) {
+          // Fallback for different browsers, check for movementX/movementY
+          const movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
+          const movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
+      
+          // Invert horizontal movement (left-right) to fix the inversion issue
+          yaw -= movementX * rotationSpeed;  // Invert this by subtracting
+      
+          pitch -= movementY * rotationSpeed;  // Rotate up and down
+      
+          // Limit vertical rotation to avoid flipping
+          pitch = Math.max(Math.min(pitch, Math.PI / 2), -Math.PI / 2);
+        }
+      }
+
 
       // Set up pointer lock change listeners
       document.addEventListener('pointerlockchange', onPointerLockChange, false);
