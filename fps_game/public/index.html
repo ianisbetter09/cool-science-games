@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>FPS with Third-Person View</title>
+  <title>FPS with Gravity & Collision</title>
   <style>
     body { margin: 0; overflow: hidden; }
     canvas { display: block; }
@@ -15,10 +15,14 @@
     let yaw = 0, pitch = 0;
     const move = { forward: false, backward: false, left: false, right: false };
     const velocity = new THREE.Vector3();
+    const verticalVelocity = { y: 0 };
     let isLocked = false;
     const rotationSpeed = 0.002;
     let isThirdPerson = false;
     const thirdPersonDistance = 10;
+    const gravity = -0.01;
+    let isOnGround = false;
+    let objects = [];
 
     init();
     animate();
@@ -48,24 +52,25 @@
 
       // Player (green box)
       player = new THREE.Object3D();
-      player.position.set(0, 1, 0); // standing on the ground
+      player.position.set(0, 1, 0);
       scene.add(player);
 
       playerMesh = new THREE.Mesh(
         new THREE.BoxGeometry(1, 2, 1),
         new THREE.MeshStandardMaterial({ color: 0x00ff00 })
       );
-      playerMesh.position.y = 1; // make box sit on ground
+      playerMesh.position.y = 1;
       player.add(playerMesh);
 
-      // Add back red boxes
-      for (let i = 0; i < 100; i++) {
+      // Add red boxes (collidable)
+      for (let i = 0; i < 50; i++) {
         const box = new THREE.Mesh(
-          new THREE.BoxGeometry(16, 24, 16),
+          new THREE.BoxGeometry(4, 8, 4),
           new THREE.MeshStandardMaterial({ color: 0x8B0000 })
         );
-        box.position.set(Math.random() * 1000 - 500, 12, Math.random() * 1000 - 500);
+        box.position.set(Math.random() * 400 - 200, 4, Math.random() * 400 - 200);
         scene.add(box);
+        objects.push(box);
       }
 
       // Pointer lock
@@ -90,13 +95,17 @@
         pitch = Math.max(Math.min(pitch, Math.PI / 2), -Math.PI / 2);
       }
 
-      // Keyboard input
+      // Input
       window.addEventListener('keydown', e => {
         if (e.code === 'KeyW') move.forward = true;
         if (e.code === 'KeyS') move.backward = true;
         if (e.code === 'KeyA') move.left = true;
         if (e.code === 'KeyD') move.right = true;
         if (e.code === 'KeyF') isThirdPerson = !isThirdPerson;
+        if (e.code === 'Space' && isOnGround) {
+          verticalVelocity.y = 0.2;
+          isOnGround = false;
+        }
       });
 
       window.addEventListener('keyup', e => {
@@ -127,16 +136,32 @@
       if (move.left) velocity.sub(right);
       if (move.right) velocity.add(right);
 
-      velocity.multiplyScalar(moveSpeed);
-      player.position.add(velocity);
+      velocity.normalize().multiplyScalar(moveSpeed);
 
-      // Rotate player box to match yaw
+      // Apply horizontal movement with collision
+      const newPos = player.position.clone().add(velocity);
+      if (!checkCollision(newPos)) {
+        player.position.copy(newPos);
+      }
+
+      // Gravity
+      verticalVelocity.y += gravity;
+      player.position.y += verticalVelocity.y;
+
+      // Ground collision
+      if (player.position.y < 1) {
+        player.position.y = 1;
+        verticalVelocity.y = 0;
+        isOnGround = true;
+      }
+
+      // Update player rotation
       player.rotation.y = yaw;
 
+      // Camera mode
       if (isThirdPerson) {
         playerMesh.visible = true;
 
-        // Position camera behind and above player
         const offsetX = Math.sin(yaw) * Math.cos(pitch) * -thirdPersonDistance;
         const offsetY = Math.sin(pitch) * thirdPersonDistance + 2;
         const offsetZ = Math.cos(yaw) * Math.cos(pitch) * -thirdPersonDistance;
@@ -149,7 +174,6 @@
 
         camera.lookAt(player.position.clone().add(new THREE.Vector3(0, 1, 0)));
       } else {
-        // First person: hide mesh so you don't see green
         playerMesh.visible = false;
 
         const cameraOffset = new THREE.Vector3(0, 1.6, 0);
@@ -161,6 +185,21 @@
       }
 
       renderer.render(scene, camera);
+    }
+
+    // Simple AABB collision
+    function checkCollision(pos) {
+      const playerBox = new THREE.Box3().setFromCenterAndSize(
+        new THREE.Vector3(pos.x, pos.y + 1, pos.z),
+        new THREE.Vector3(1, 2, 1)
+      );
+
+      for (const obj of objects) {
+        const objBox = new THREE.Box3().setFromObject(obj);
+        if (playerBox.intersectsBox(objBox)) return true;
+      }
+
+      return false;
     }
   </script>
 </body>
