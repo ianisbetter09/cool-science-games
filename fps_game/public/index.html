@@ -90,9 +90,16 @@
         if (!isLocked) return;
         const movementX = event.movementX || 0;
         const movementY = event.movementY || 0;
+      
         yaw -= movementX * rotationSpeed;
-        pitch -= movementY * rotationSpeed;
-        pitch = Math.max(Math.min(pitch, Math.PI / 2), -Math.PI / 2);
+      
+        if (isThirdPerson) {
+          pitch += movementY * rotationSpeed; // Inverted for third person
+        } else {
+          pitch -= movementY * rotationSpeed; // Normal for first person
+        }
+      
+        pitch = Math.max(Math.min(pitch, Math.PI / 2), -Math.PI / 2); // Limit vertical rotation
       }
 
       // Input
