@@ -47,6 +47,36 @@
         .success {
             color: #2ecc71;
         }
+        .failure {
+            color: #e74c3c;
+        }
+        .shop-button {
+            background-color: #f39c12;
+        }
+        .shop-button:hover {
+            background-color: #e67e22;
+        }
+        .shop-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border: 1px solid #000;
+            z-index: 1000;
+        }
+        .shop-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 999;
+        }
     </style>
 </head>
 <body>
@@ -55,44 +85,84 @@
         <p>Click "Risk It" to risk your coins and see if you win or lose more!</p>
         <div id="coin-count">Coins: 100</div>
         <button class="button" id="risk-button">Risk It!</button>
+        <button class="button shop-button" onclick="openShop()">Open Shop</button>
         <p id="result" class="result"></p>
     </div>
 
+    <!-- Shop Modal -->
+    <div id="shop-overlay" class="shop-overlay" onclick="closeShop()"></div>
+    <div id="shop-modal" class="shop-modal">
+        <h2>Shop</h2>
+        <p>Buy the Rigged Dice for 50 coins to increase your chances of winning!</p>
+        <button onclick="buyRiggedDice()">Buy Rigged Dice (50 Coins)</button>
+        <button onclick="closeShop()">Close</button>
+    </div>
+
     <script>
-       let coins = 100; // Starting amount of coins
+        let coins = 100; // Starting amount of coins
+        let hasRiggedDice = false; // Track if player has rigged dice
 
-// Function to handle the risk action
-document.getElementById('risk-button').addEventListener('click', function() {
-    // The player risks between 10 to 50 coins
-    const riskAmount = Math.floor(Math.random() * 41) + 10;
-    const outcome = Math.random();
+        // Function to handle the risk action
+        document.getElementById('risk-button').addEventListener('click', function() {
+            // The player risks between 10 to 50 coins
+            const riskAmount = Math.floor(Math.random() * 41) + 10;
+            let outcome = Math.random();
 
-    // 50% chance of winning more coins, 50% chance of losing coins
-    if (outcome < 0.5) {
-        // Player wins
-        coins += riskAmount;
-        document.getElementById('result').innerHTML = `You won ${riskAmount} coins!`;
-        document.getElementById('result').classList.remove('failure');
-        document.getElementById('result').classList.add('success');
-    } else {
-        // Player loses
-        coins -= riskAmount;
-        document.getElementById('result').innerHTML = `You lost ${riskAmount} coins!`;
-        document.getElementById('result').classList.remove('success');
-        document.getElementById('result').classList.add('failure');
-    }
+            // If the player has rigged dice, adjust the chances
+            if (hasRiggedDice) {
+                outcome = Math.random() < 0.75 ? 0 : 1; // 75% chance of winning with rigged dice
+            }
 
-    // Update coin count
-    document.getElementById('coin-count').innerText = `Coins: ${coins}`;
+            // 50% chance of winning more coins, 50% chance of losing coins
+            if (outcome < 0.5) {
+                // Player wins
+                coins += riskAmount;
+                document.getElementById('result').innerHTML = `You won ${riskAmount} coins!`;
+                document.getElementById('result').classList.remove('failure');
+                document.getElementById('result').classList.add('success');
+            } else {
+                // Player loses
+                coins -= riskAmount;
+                document.getElementById('result').innerHTML = `You lost ${riskAmount} coins!`;
+                document.getElementById('result').classList.remove('success');
+                document.getElementById('result').classList.add('failure');
+            }
 
-    // If coins go below 0, end the game
-    if (coins <= 0) {
-        document.getElementById('result').innerHTML = "Game Over! You ran out of coins.";
-        document.getElementById('result').classList.remove('success', 'failure');
-        document.getElementById('risk-button').disabled = true; // Disable risk button when game ends
-    }
-});
+            // Update coin count
+            document.getElementById('coin-count').innerText = `Coins: ${coins}`;
 
+            // If coins go below 0, end the game
+            if (coins <= 0) {
+                document.getElementById('result').innerHTML = "Game Over! You ran out of coins.";
+                document.getElementById('result').classList.remove('success', 'failure');
+                document.getElementById('risk-button').disabled = true; // Disable risk button when game ends
+            }
+        });
+
+        // Open the shop modal
+        function openShop() {
+            document.getElementById('shop-modal').style.display = 'block';
+            document.getElementById('shop-overlay').style.display = 'block';
+        }
+
+        // Close the shop modal
+        function closeShop() {
+            document.getElementById('shop-modal').style.display = 'none';
+            document.getElementById('shop-overlay').style.display = 'none';
+        }
+
+        // Function to handle the purchase of Rigged Dice
+        function buyRiggedDice() {
+            if (coins >= 50) {
+                coins -= 50; // Deduct coins
+                hasRiggedDice = true; // Player now has rigged dice
+                document.getElementById('coin-count').textContent = `Coins: ${coins}`;
+                alert('You have purchased the Rigged Dice!');
+                closeShop();
+            } else {
+                alert('You do not have enough coins!');
+            }
+        }
     </script>
 </body>
 </html>
