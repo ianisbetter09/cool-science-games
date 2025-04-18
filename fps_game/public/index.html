@@ -89,24 +89,6 @@
       }
 
 
-      
-      function onMouseMove(event) {
-        if (isLocked) {
-          // Fallback for different browsers, check for movementX/movementY
-          const movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
-          const movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
-      
-          // Invert horizontal movement (left-right) to fix the inversion issue
-          yaw -= movementX * rotationSpeed;  // Invert this by subtracting
-      
-          pitch -= movementY * rotationSpeed;  // Rotate up and down
-      
-          // Limit vertical rotation to avoid flipping
-          pitch = Math.max(Math.min(pitch, Math.PI / 2), -Math.PI / 2);
-        }
-      }
-
-
       // Set up pointer lock change listeners
       document.addEventListener('pointerlockchange', onPointerLockChange, false);
       document.addEventListener('mozpointerlockchange', onPointerLockChange, false);
