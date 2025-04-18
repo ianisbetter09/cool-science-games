@@ -47,11 +47,6 @@
         .success {
             color: #2ecc71;
         }
-        .input-range {
-            margin: 10px;
-            padding: 5px;
-            font-size: 16px;
-        }
     </style>
 </head>
 <body>
@@ -60,33 +55,31 @@
         <p>Click "Risk It" to risk your coins and see if you win or lose more!</p>
         <div id="coin-count">Coins: 100</div>
         <div id="day-info">Day 1 — Risks Left: 5</div>
-
-        
-        <!-- User-defined Max Risk -->
-        <div>
-            <label for="max-risk">Maximum Risk:</label>
-            <input type="number" id="max-risk" class="input-range" min="10" value="50">
-        </div>
-
         <button class="button" id="risk-button">Risk It!</button>
         <p id="result" class="result"></p>
     </div>
 
     <script>
-        let coins = 100;
-        let currentDay = 1;
-        let risksLeft = 5;
-        let minRisk = 10;  // Fixed minimum risk
-        let maxRisk = 50;
+        let coins = 100; // Starting amount of coins
+        let currentDay = 1; // Start on day 1
+        let risksLeft = 5; // 5 risks per day
+        let minRisk = 10; // Fixed minimum risk
+        let maxRisk = 50; // Starting maximum risk
 
         function updateUI() {
             document.getElementById('coin-count').innerText = `Coins: ${coins}`;
             document.getElementById('day-info').innerText = `Day ${currentDay} — Risks Left: ${risksLeft}`;
         }
 
+        // Function to start a new day
         function startNewDay() {
             currentDay++;
-            risksLeft = 5;
+            risksLeft = 5; // Reset risks
+            // Randomly increase or decrease the max risk by 25
+            const change = Math.random() < 0.5 ? -25 : 25;
+            maxRisk += change;
+            // Ensure maxRisk doesn't go below 10 (safety check)
+            maxRisk = Math.max(10, maxRisk);
             updateUI();
             document.getElementById('risk-button').disabled = false;
             document.getElementById('result').innerHTML = `A new day begins! Max risk: ${maxRisk} coins.`;
@@ -95,15 +88,6 @@
         }
 
         document.getElementById('risk-button').addEventListener('click', function() {
-            // Get user-defined max risk
-            maxRisk = parseInt(document.getElementById('max-risk').value);
-
-            if (maxRisk < minRisk) {
-                document.getElementById('result').innerHTML = "Maximum risk must be at least 10 coins!";
-                document.getElementById('result').classList.add('failure');
-                return;
-            }
-
             if (risksLeft <= 0) {
                 document.getElementById('result').innerHTML = "No risks left today! Wait for a new day.";
                 return;
