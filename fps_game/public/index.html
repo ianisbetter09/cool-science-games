@@ -18,7 +18,7 @@
     let isLocked = false;
     const rotationSpeed = 0.002;
     let isThirdPerson = false;
-    const thirdPersonOffset = new THREE.Vector3(0, 5, -10);
+    const thirdPersonDistance = 10;
 
     init();
     animate();
@@ -112,50 +112,48 @@
 
     function animate() {
       requestAnimationFrame(animate);
-    
+
       // Direction the player is facing
       const lookDir = new THREE.Vector3(
         Math.cos(pitch) * Math.sin(yaw),
         Math.sin(pitch),
         Math.cos(pitch) * Math.cos(yaw)
       );
-    
+
       // Movement
       velocity.set(0, 0, 0);
       const moveSpeed = 0.2;
       const forward = new THREE.Vector3(Math.sin(yaw), 0, Math.cos(yaw));
       const right = new THREE.Vector3(Math.sin(yaw - Math.PI / 2), 0, Math.cos(yaw - Math.PI / 2));
-    
+
       if (move.forward) velocity.add(forward);
       if (move.backward) velocity.sub(forward);
       if (move.left) velocity.sub(right);
       if (move.right) velocity.add(right);
-    
+
       velocity.multiplyScalar(moveSpeed);
       player.position.add(velocity);
-    
+
       // Rotate the player mesh to face yaw (horizontal look)
       player.rotation.y = yaw;
-    
+
       if (isThirdPerson) {
-        // Third-person camera offset with pitch and yaw
-        const distance = 10;
-        const offset = new THREE.Vector3(
-          Math.sin(yaw) * Math.cos(pitch) * -distance,
-          Math.sin(pitch) * distance + 3, // +3 to lift camera above ground a bit
-          Math.cos(yaw) * Math.cos(pitch) * -distance
+        // Calculate offset from pitch and yaw
+        const offsetX = Math.sin(yaw) * Math.cos(pitch) * -thirdPersonDistance;
+        const offsetY = Math.sin(pitch) * thirdPersonDistance + 2;
+        const offsetZ = Math.cos(yaw) * Math.cos(pitch) * -thirdPersonDistance;
+
+        camera.position.set(
+          player.position.x + offsetX,
+          player.position.y + offsetY,
+          player.position.z + offsetZ
         );
-        camera.position.copy(player.position.clone().add(offset));
-        camera.lookAt(player.position);
+
+        camera.lookAt(player.position.clone().add(new THREE.Vector3(0, 1, 0)));
       } else {
-        // First-person camera at player's head
-        camera.position.copy(player.position);
+        camera.position.copy(player.position.clone().add(new THREE.Vector3(0, 1.6, 0)));
         camera.lookAt(player.position.clone().add(lookDir));
       }
-    
-      renderer.render(scene, camera);
-    }
-
 
       renderer.render(scene, camera);
     }
