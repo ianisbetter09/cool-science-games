@@ -110,7 +110,7 @@
 
             // If the player has rigged dice, adjust the chances
             if (hasRiggedDice) {
-                outcome = Math.random() < 0.75 ? 0 : 1; // 75% chance of winning with rigged dice
+                outcome = Math.random() < 0.65 ? 0 : 1; // 75% chance of winning with rigged dice
             }
 
             // 50% chance of winning more coins, 50% chance of losing coins
@@ -153,11 +153,11 @@
 
         // Function to handle the purchase of Rigged Dice
         function buyRiggedDice() {
-            if (coins >= 50) {
-                coins -= 50; // Deduct coins
+            if (coins >= 1000) {
+                coins -= 1000; // Deduct coins
                 hasRiggedDice = true; // Player now has rigged dice
                 document.getElementById('coin-count').textContent = `Coins: ${coins}`;
-                alert('You have purchased the Rigged Dice!');
+                alert('You have purchased the Rigged Dice! Odds of a good role is more common now!');
                 closeShop();
             } else {
                 alert('You do not have enough coins!');
