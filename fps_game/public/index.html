@@ -117,6 +117,70 @@
 
       renderer.render(scene, camera);
     }
+    const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Resize the canvas to fill the screen
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // Function to lock the mouse to the game canvas
+        function lockMouse() {
+            // Check if the pointer lock API is available
+            if (canvas.requestPointerLock) {
+                canvas.requestPointerLock();
+            } else if (canvas.mozRequestPointerLock) {  // For Firefox
+                canvas.mozRequestPointerLock();
+            } else if (canvas.webkitRequestPointerLock) {  // For Chrome/Opera
+                canvas.webkitRequestPointerLock();
+            }
+        }
+
+        // Function to unlock the mouse from the game canvas
+        function unlockMouse() {
+            // Check if the pointer lock is currently active and release it
+            if (document.exitPointerLock) {
+                document.exitPointerLock();
+            } else if (document.mozExitPointerLock) {  // For Firefox
+                document.mozExitPointerLock();
+            } else if (document.webkitExitPointerLock) {  // For Chrome/Opera
+                document.webkitExitPointerLock();
+            }
+        }
+
+        // Event listener to handle mouse lock success
+        document.addEventListener('pointerlockchange', function() {
+            if (document.pointerLockElement === canvas || document.mozPointerLockElement === canvas || document.webkitPointerLockElement === canvas) {
+                console.log('Mouse is locked');
+                // Now you can start capturing the mouse movements to control the 3D game
+            } else {
+                console.log('Mouse unlock');
+            }
+        }, false);
+
+        // Event listener for mouse click to lock the mouse on canvas
+        canvas.addEventListener('click', function() {
+            lockMouse();
+        });
+
+        // Event listener for the Escape key to unlock the mouse
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                unlockMouse();
+            }
+        });
+
+        // Game loop (you can replace this with your actual game loop)
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Simulate 3D game rendering here
+            ctx.fillStyle = 'skyblue';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Request the next frame
+            requestAnimationFrame(gameLoop);
+        }
   </script>
 </body>
 </html>
