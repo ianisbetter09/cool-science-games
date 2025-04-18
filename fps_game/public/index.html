@@ -54,29 +54,29 @@
       }
 
       function lockMouse() {
-      // Try to request pointer lock
-      const element = document.body; // or the element you want to lock the mouse to
+        // Try to request pointer lock
+        const element = document.body; // or the element you want to lock the mouse to
 
-      // Check if the pointer lock API is available
-      if (element.requestPointerLock) {
+        // Check if the pointer lock API is available
+        if (element.requestPointerLock) {
           element.requestPointerLock();
-      } else if (element.mozRequestPointerLock) { // For Firefox
+        } else if (element.mozRequestPointerLock) { // For Firefox
           element.mozRequestPointerLock();
-      } else if (element.webkitRequestPointerLock) { // For Safari
+        } else if (element.webkitRequestPointerLock) { // For Safari
           element.webkitRequestPointerLock();
-      } else {
+        } else {
           console.error("Pointer Lock API is not supported in this browser.");
+        }
+
+        // Listen for pointer lock change events
+        document.addEventListener('pointerlockchange', onPointerLockChange, false);
+        document.addEventListener('mozpointerlockchange', onPointerLockChange, false);
+        document.addEventListener('webkitpointerlockchange', onPointerLockChange, false);
       }
 
-      // Listen for pointer lock change events
-      document.addEventListener('pointerlockchange', onPointerLockChange, false);
-      document.addEventListener('mozpointerlockchange', onPointerLockChange, false);
-      document.addEventListener('webkitpointerlockchange', onPointerLockChange, false);
-  }
-
-    function onPointerLockChange() {
+      function onPointerLockChange() {
         if (document.pointerLockElement === document.body || document.mozPointerLockElement === document.body || document.webkitPointerLockElement === document.body) {
-            console.log('Mouse is now locked');
+          console.log('Mouse is now locked');
         } else {
             console.log('Mouse has been unlocked');
         }
