@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Basic FPS No PointerLock</title>
+  <title>Basic FPS with Third-Person Toggle</title>
   <style>
     body { margin: 0; overflow: hidden; }
     canvas { display: block; }
@@ -16,7 +16,10 @@
     const move = { forward: false, backward: false, left: false, right: false };
     const velocity = new THREE.Vector3();
     let isLocked = false;
-    const rotationSpeed = 0.002;  // Adjust speed of mouse movement
+    const rotationSpeed = 0.002;
+
+    let isThirdPerson = false;
+    const thirdPersonOffset = new THREE.Vector3(0, 5, -10);
 
     init();
     animate();
@@ -25,7 +28,6 @@
       scene = new THREE.Scene();
       scene.background = new THREE.Color(0x87ceeb);
 
-      // Initialize the camera object only once here, no redeclaration
       camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
       camera.position.set(0, 2, 0);
 
@@ -38,7 +40,6 @@
       dirLight.position.set(10, 20, 10);
       scene.add(dirLight);
 
-      // Ground
       const ground = new THREE.Mesh(
         new THREE.PlaneGeometry(10000, 10000),
         new THREE.MeshStandardMaterial({ color: 0x228B22 })
@@ -46,7 +47,6 @@
       ground.rotation.x = -Math.PI / 2;
       scene.add(ground);
 
-      // Boxes
       for (let i = 0; i < 100; i++) {
         const box = new THREE.Mesh(
           new THREE.BoxGeometry(16, 24, 16),
@@ -56,10 +56,8 @@
         scene.add(box);
       }
 
-      // Function to lock the mouse pointer
       function lockMouse() {
         const element = document.body;
-
         if (element.requestPointerLock) {
           element.requestPointerLock();
         } else if (element.mozRequestPointerLock) {
@@ -72,48 +70,42 @@
       }
 
       function onPointerLockChange() {
-        if (document.pointerLockElement === document.body || document.mozPointerLockElement === document.body || document.webkitPointerLockElement === document.body) {
-          isLocked = true;
+        isLocked =
+          document.pointerLockElement === document.body ||
+          document.mozPointerLockElement === document.body ||
+          document.webkitPointerLockElement === document.body;
+
+        if (isLocked) {
           document.addEventListener('mousemove', onMouseMove);
         } else {
-          isLocked = false;
           document.removeEventListener('mousemove', onMouseMove);
         }
       }
 
       function onMouseMove(event) {
-        if (isLocked) {
-          // Fallback for different browsers, check for movementX/movementY
-          const movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
-          const movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
-      
-          // Invert horizontal movement (left-right) to fix the inversion issue
-          yaw -= movementX * rotationSpeed;  // Invert this by subtracting
-      
-          pitch -= movementY * rotationSpeed;  // Rotate up and down
-      
-          // Limit vertical rotation to avoid flipping
-          pitch = Math.max(Math.min(pitch, Math.PI / 2), -Math.PI / 2);
-        }
+        if (!isLocked) return;
+        const movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
+        const movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
+        yaw -= movementX * rotationSpeed;
+        pitch -= movementY * rotationSpeed;
+        pitch = Math.max(Math.min(pitch, Math.PI / 2), -Math.PI / 2);
       }
 
-      // Set up pointer lock change listeners
       document.addEventListener('pointerlockchange', onPointerLockChange, false);
       document.addEventListener('mozpointerlockchange', onPointerLockChange, false);
       document.addEventListener('webkitpointerlockchange', onPointerLockChange, false);
 
-      // Trigger pointer lock with a user click event
       document.addEventListener('click', function handleClickOnce() {
         lockMouse();
         document.removeEventListener('click', handleClickOnce);
       });
 
-      // Movement controls
       window.addEventListener('keydown', e => {
         if (e.code === 'KeyW') move.forward = true;
         if (e.code === 'KeyS') move.backward = true;
         if (e.code === 'KeyA') move.left = true;
         if (e.code === 'KeyD') move.right = true;
+        if (e.code === 'KeyF') isThirdPerson = !isThirdPerson;
       });
 
       window.addEventListener('keyup', e => {
@@ -127,19 +119,16 @@
     function animate() {
       requestAnimationFrame(animate);
 
-      // Update camera direction based on yaw and pitch
-      const direction = new THREE.Vector3();
-      direction.x = Math.cos(pitch) * Math.sin(yaw);
-      direction.y = Math.sin(pitch);
-      direction.z = Math.cos(pitch) * Math.cos(yaw);
-      camera.lookAt(camera.position.clone().add(direction));
+      const lookDir = new THREE.Vector3(
+        Math.cos(pitch) * Math.sin(yaw),
+        Math.sin(pitch),
+        Math.cos(pitch) * Math.cos(yaw)
+      );
 
-      // Movement handling
+      velocity.set(0, 0, 0);
       const moveSpeed = 0.1;
       const forward = new THREE.Vector3(Math.sin(yaw), 0, Math.cos(yaw));
       const right = new THREE.Vector3(Math.sin(yaw - Math.PI / 2), 0, Math.cos(yaw - Math.PI / 2));
-
-      velocity.set(0, 0, 0); // Reset velocity at the start of each frame
 
       if (move.forward) velocity.add(forward);
       if (move.backward) velocity.sub(forward);
@@ -148,6 +137,15 @@
 
       velocity.multiplyScalar(moveSpeed);
       camera.position.add(velocity);
+
+      if (isThirdPerson) {
+        const offset = thirdPersonOffset.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
+        const target = camera.position.clone().add(lookDir);
+        camera.position.sub(offset); // Move camera back and up
+        camera.lookAt(target);
+      } else {
+        camera.lookAt(camera.position.clone().add(lookDir));
+      }
 
       renderer.render(scene, camera);
     }
