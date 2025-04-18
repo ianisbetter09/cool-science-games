@@ -54,44 +54,69 @@
         <h1>Coin Risk Game</h1>
         <p>Click "Risk It" to risk your coins and see if you win or lose more!</p>
         <div id="coin-count">Coins: 100</div>
+        <div id="day-info">Day 1 — Risks Left: 5</div>
         <button class="button" id="risk-button">Risk It!</button>
         <p id="result" class="result"></p>
     </div>
 
     <script>
-        let coins = 100; // Starting amount of coins
+        let coins = 100;
+        let currentDay = 1;
+        let risksLeft = 5;
+        let minRisk = 10;
+        let maxRisk = 50;
 
-        // Function to handle the risk action
+        function updateUI() {
+            document.getElementById('coin-count').innerText = `Coins: ${coins}`;
+            document.getElementById('day-info').innerText = `Day ${currentDay} — Risks Left: ${risksLeft}`;
+        }
+
+        function startNewDay() {
+            currentDay++;
+            risksLeft = 5;
+            minRisk = Math.floor(Math.random() * 21) + 5; // 5 to 25
+            maxRisk = Math.floor(Math.random() * 31) + 30; // 30 to 60
+            updateUI();
+            document.getElementById('risk-button').disabled = false;
+            document.getElementById('result').innerHTML = `A new day begins! Risk range: ${minRisk}-${maxRisk} coins.`;
+            document.getElementById('result').classList.remove('failure');
+            document.getElementById('result').classList.add('success');
+        }
+
         document.getElementById('risk-button').addEventListener('click', function() {
-            // The player risks between 10 to 50 coins
-            const riskAmount = Math.floor(Math.random() * 41) + 10;
+            if (risksLeft <= 0) {
+                document.getElementById('result').innerHTML = "No risks left today! Wait for a new day.";
+                return;
+            }
+
+            const riskAmount = Math.floor(Math.random() * (maxRisk - minRisk + 1)) + minRisk;
             const outcome = Math.random();
 
-            // 50% chance of winning more coins, 50% chance of losing coins
             if (outcome < 0.5) {
-                // Player wins
                 coins += riskAmount;
                 document.getElementById('result').innerHTML = `You won ${riskAmount} coins!`;
                 document.getElementById('result').classList.remove('failure');
                 document.getElementById('result').classList.add('success');
             } else {
-                // Player loses
                 coins -= riskAmount;
                 document.getElementById('result').innerHTML = `You lost ${riskAmount} coins!`;
                 document.getElementById('result').classList.remove('success');
                 document.getElementById('result').classList.add('failure');
             }
 
-            // Update coin count
-            document.getElementById('coin-count').innerText = `Coins: ${coins}`;
+            risksLeft--;
+            updateUI();
 
-            // If coins go below 0, end the game
             if (coins <= 0) {
                 document.getElementById('result').innerHTML = "Game Over! You ran out of coins.";
-                document.getElementById('result').classList.remove('success', 'failure');
-                document.getElementById('risk-button').disabled = true; // Disable risk button when game ends
+                document.getElementById('risk-button').disabled = true;
+            } else if (risksLeft === 0) {
+                document.getElementById('risk-button').disabled = true;
+                setTimeout(startNewDay, 3000); // Simulate a new day in 3 seconds
             }
         });
+
+        updateUI(); // Initialize UI
     </script>
 </body>
 </html>
