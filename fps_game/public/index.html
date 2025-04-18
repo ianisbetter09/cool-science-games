@@ -44,12 +44,12 @@
       scene.add(ground);
 
       // Boxes
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < 100; i++) {
         const box = new THREE.Mesh(
           new THREE.BoxGeometry(16, 24, 16),
           new THREE.MeshStandardMaterial({ color: 0x8B0000 })
         );
-        box.position.set(Math.random( -5) * 100, 3, Math.random( -5) * 100);
+        box.position.set(Math.random( -5) * 1000, 3, Math.random( -5) * 1000);
         scene.add(box);
       }
 
