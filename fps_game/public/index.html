@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>FPS with Third-Person Green Box</title>
+  <title>FPS with Third-Person View</title>
   <style>
     body { margin: 0; overflow: hidden; }
     canvas { display: block; }
@@ -49,26 +49,16 @@
       ground.rotation.x = -Math.PI / 2;
       scene.add(ground);
 
-      // Boxes
-      for (let i = 0; i < 100; i++) {
-        const box = new THREE.Mesh(
-          new THREE.BoxGeometry(16, 24, 16),
-          new THREE.MeshStandardMaterial({ color: 0x8B0000 })
-        );
-        box.position.set(Math.random() * 1000 - 500, 12, Math.random() * 1000 - 500);
-        scene.add(box);
-      }
-
       // Player (green box)
       player = new THREE.Object3D();
-      player.position.set(0, 2, 0);
+      player.position.set(0, 1, 0); // y=1 so the bottom of player is on the ground
       scene.add(player);
 
       playerMesh = new THREE.Mesh(
         new THREE.BoxGeometry(1, 2, 1),
         new THREE.MeshStandardMaterial({ color: 0x00ff00 })
       );
-      playerMesh.position.y = 1; // Centered above ground
+      playerMesh.position.y = 1; // Move box up so it's centered on player origin
       player.add(playerMesh);
 
       // Mouse Locking
@@ -137,8 +127,11 @@
       // Rotate the player mesh to face yaw (horizontal look)
       player.rotation.y = yaw;
 
+      // Toggle mesh visibility depending on view
+      playerMesh.visible = isThirdPerson;
+
       if (isThirdPerson) {
-        // Calculate offset from pitch and yaw
+        // Camera offset based on yaw and pitch
         const offsetX = Math.sin(yaw) * Math.cos(pitch) * -thirdPersonDistance;
         const offsetY = Math.sin(pitch) * thirdPersonDistance + 2;
         const offsetZ = Math.cos(yaw) * Math.cos(pitch) * -thirdPersonDistance;
@@ -151,6 +144,7 @@
 
         camera.lookAt(player.position.clone().add(new THREE.Vector3(0, 1, 0)));
       } else {
+        // First-person: slightly above player's eyes
         camera.position.copy(player.position.clone().add(new THREE.Vector3(0, 1.6, 0)));
         camera.lookAt(player.position.clone().add(lookDir));
       }
