@@ -23,7 +23,6 @@
     animate();
 
     function init() {
-      // Create a scene
       scene = new THREE.Scene();
       scene.background = new THREE.Color(0x87ceeb); // Sky blue background
 
@@ -35,7 +34,7 @@
       renderer.setSize(window.innerWidth, window.innerHeight);
       document.body.appendChild(renderer.domElement);
 
-      // Create pointer lock controls
+      // Pointer lock controls
       controls = new THREE.PointerLockControls(camera, document.body);
       scene.add(controls.getObject());
 
