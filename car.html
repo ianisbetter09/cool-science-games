@@ -330,7 +330,7 @@ for (let i = 0; i < opponentCars.length; i++) {
 car.position.add(carVelocity);
 
 // Gradually reduce the velocity (friction)
-carVelocity.multiplyScalar(0.9); // you can tweak this for more or less "slip"
+carVelocity.multiplyScalar(0.6); // you can tweak this for more or less "slip"
 
   // Player finish logic
   if (!raceFinished && !finishedCars.includes(car) && car.position.z <= finishLineZ) {
