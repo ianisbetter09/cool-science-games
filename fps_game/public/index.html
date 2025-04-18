@@ -2,31 +2,36 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>FPS Drag Look</title>
+  <title>FPS with Pointer Lock</title>
   <style>
     body { margin: 0; overflow: hidden; }
     canvas { display: block; }
-    #tip {
+    #instructions {
       position: absolute;
-      top: 10px;
-      left: 10px;
+      top: 0; left: 0; right: 0; bottom: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.6);
       color: white;
       font-family: sans-serif;
-      background: rgba(0,0,0,0.4);
-      padding: 6px 10px;
-      border-radius: 6px;
+      font-size: 24px;
+      cursor: pointer;
+      z-index: 10;
     }
   </style>
 </head>
 <body>
-  <div id="tip">Use WASD to move, drag mouse to look</div>
+  <div id="instructions">Click to lock mouse and play</div>
 
   <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/examples/js/controls/PointerLockControls.js"></script>
+
   <script>
-    let scene, camera, renderer;
-    let yaw = 0, pitch = 0;
+    let camera, scene, renderer, controls;
     const move = { forward: false, backward: false, left: false, right: false };
     const velocity = new THREE.Vector3();
+    const speed = 5;
 
     init();
     animate();
@@ -36,17 +41,26 @@
       scene.background = new THREE.Color(0x87ceeb);
 
       camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-      camera.position.set(0, 2, 5);
-
       renderer = new THREE.WebGLRenderer();
       renderer.setSize(window.innerWidth, window.innerHeight);
       document.body.appendChild(renderer.domElement);
 
+      // Pointer lock controls
+      controls = new THREE.PointerLockControls(camera, document.body);
+      scene.add(controls.getObject());
+
+      const instructions = document.getElementById('instructions');
+      instructions.addEventListener('click', () => controls.lock());
+      controls.addEventListener('lock', () => instructions.style.display = 'none');
+      controls.addEventListener('unlock', () => instructions.style.display = 'flex');
+
+      // Lights
       scene.add(new THREE.AmbientLight(0x404040));
       const dirLight = new THREE.DirectionalLight(0xffffff, 1);
       dirLight.position.set(10, 20, 10);
       scene.add(dirLight);
 
+      // Ground
       const ground = new THREE.Mesh(
         new THREE.PlaneGeometry(100, 100),
         new THREE.MeshStandardMaterial({ color: 0x228B22 })
@@ -54,6 +68,7 @@
       ground.rotation.x = -Math.PI / 2;
       scene.add(ground);
 
+      // Buildings
       for (let i = 0; i < 5; i++) {
         const box = new THREE.Mesh(
           new THREE.BoxGeometry(4, 6, 4),
@@ -63,65 +78,38 @@
         scene.add(box);
       }
 
-      // Mouse drag look
-      let isDragging = false;
-      let prevX = 0, prevY = 0;
-
-      window.addEventListener('mousedown', e => {
-        isDragging = true;
-        prevX = e.clientX;
-        prevY = e.clientY;
+      // Movement controls
+      document.addEventListener('keydown', (e) => {
+        switch (e.code) {
+          case 'KeyW': move.forward = true; break;
+          case 'KeyS': move.backward = true; break;
+          case 'KeyA': move.left = true; break;
+          case 'KeyD': move.right = true; break;
+        }
       });
-      window.addEventListener('mouseup', () => isDragging = false);
-      window.addEventListener('mousemove', e => {
-        if (!isDragging) return;
-        const dx = e.clientX - prevX;
-        const dy = e.clientY - prevY;
-        yaw -= dx * 0.002;
-        pitch -= dy * 0.002;
-        pitch = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch));
-        prevX = e.clientX;
-        prevY = e.clientY;
-      });
-
-      // Movement
-      window.addEventListener('keydown', e => {
-        if (e.code === 'KeyW') move.forward = true;
-        if (e.code === 'KeyS') move.backward = true;
-        if (e.code === 'KeyA') move.left = true;
-        if (e.code === 'KeyD') move.right = true;
-      });
-      window.addEventListener('keyup', e => {
-        if (e.code === 'KeyW') move.forward = false;
-        if (e.code === 'KeyS') move.backward = false;
-        if (e.code === 'KeyA') move.left = false;
-        if (e.code === 'KeyD') move.right = false;
+      document.addEventListener('keyup', (e) => {
+        switch (e.code) {
+          case 'KeyW': move.forward = false; break;
+          case 'KeyS': move.backward = false; break;
+          case 'KeyA': move.left = false; break;
+          case 'KeyD': move.right = false; break;
+        }
       });
     }
 
     function animate() {
       requestAnimationFrame(animate);
 
-      // Look direction
-      const direction = new THREE.Vector3();
-      direction.x = Math.cos(pitch) * Math.sin(yaw);
-      direction.y = Math.sin(pitch);
-      direction.z = Math.cos(pitch) * Math.cos(yaw);
-      camera.lookAt(camera.position.clone().add(direction));
-
-      // Move
+      const delta = 0.016;
       velocity.set(0, 0, 0);
-      const moveSpeed = 0.1;
-      const forward = new THREE.Vector3(Math.sin(yaw), 0, Math.cos(yaw));
-      const right = new THREE.Vector3(Math.sin(yaw - Math.PI / 2), 0, Math.cos(yaw - Math.PI / 2));
 
-      if (move.forward) velocity.add(forward);
-      if (move.backward) velocity.sub(forward);
-      if (move.left) velocity.sub(right);
-      if (move.right) velocity.add(right);
+      if (move.forward) velocity.z -= speed * delta;
+      if (move.backward) velocity.z += speed * delta;
+      if (move.left) velocity.x -= speed * delta;
+      if (move.right) velocity.x += speed * delta;
 
-      velocity.multiplyScalar(moveSpeed);
-      camera.position.add(velocity);
+      controls.moveRight(velocity.x);
+      controls.moveForward(velocity.z);
 
       renderer.render(scene, camera);
     }
