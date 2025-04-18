@@ -27,10 +27,7 @@
       scene = new THREE.Scene();
       scene.background = new THREE.Color(0x87ceeb);
 
-      // Camera
       camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-
-      // Renderer
       renderer = new THREE.WebGLRenderer();
       renderer.setSize(window.innerWidth, window.innerHeight);
       document.body.appendChild(renderer.domElement);
@@ -51,17 +48,27 @@
 
       // Player (green box)
       player = new THREE.Object3D();
-      player.position.set(0, 1, 0); // y=1 so the bottom of player is on the ground
+      player.position.set(0, 1, 0); // standing on the ground
       scene.add(player);
 
       playerMesh = new THREE.Mesh(
         new THREE.BoxGeometry(1, 2, 1),
         new THREE.MeshStandardMaterial({ color: 0x00ff00 })
       );
-      playerMesh.position.y = 1; // Move box up so it's centered on player origin
+      playerMesh.position.y = 1; // make box sit on ground
       player.add(playerMesh);
 
-      // Mouse Locking
+      // Add back red boxes
+      for (let i = 0; i < 100; i++) {
+        const box = new THREE.Mesh(
+          new THREE.BoxGeometry(16, 24, 16),
+          new THREE.MeshStandardMaterial({ color: 0x8B0000 })
+        );
+        box.position.set(Math.random() * 1000 - 500, 12, Math.random() * 1000 - 500);
+        scene.add(box);
+      }
+
+      // Pointer lock
       document.addEventListener('click', function handleClickOnce() {
         const element = document.body;
         if (element.requestPointerLock) element.requestPointerLock();
@@ -83,7 +90,7 @@
         pitch = Math.max(Math.min(pitch, Math.PI / 2), -Math.PI / 2);
       }
 
-      // Key Controls
+      // Keyboard input
       window.addEventListener('keydown', e => {
         if (e.code === 'KeyW') move.forward = true;
         if (e.code === 'KeyS') move.backward = true;
@@ -103,7 +110,6 @@
     function animate() {
       requestAnimationFrame(animate);
 
-      // Direction the player is facing
       const lookDir = new THREE.Vector3(
         Math.cos(pitch) * Math.sin(yaw),
         Math.sin(pitch),
@@ -124,14 +130,13 @@
       velocity.multiplyScalar(moveSpeed);
       player.position.add(velocity);
 
-      // Rotate the player mesh to face yaw (horizontal look)
+      // Rotate player box to match yaw
       player.rotation.y = yaw;
 
-      // Toggle mesh visibility depending on view
-      playerMesh.visible = isThirdPerson;
-
       if (isThirdPerson) {
-        // Camera offset based on yaw and pitch
+        playerMesh.visible = true;
+
+        // Position camera behind and above player
         const offsetX = Math.sin(yaw) * Math.cos(pitch) * -thirdPersonDistance;
         const offsetY = Math.sin(pitch) * thirdPersonDistance + 2;
         const offsetZ = Math.cos(yaw) * Math.cos(pitch) * -thirdPersonDistance;
@@ -144,9 +149,15 @@
 
         camera.lookAt(player.position.clone().add(new THREE.Vector3(0, 1, 0)));
       } else {
-        // First-person: slightly above player's eyes
-        camera.position.copy(player.position.clone().add(new THREE.Vector3(0, 1.6, 0)));
-        camera.lookAt(player.position.clone().add(lookDir));
+        // First person: hide mesh so you don't see green
+        playerMesh.visible = false;
+
+        const cameraOffset = new THREE.Vector3(0, 1.6, 0);
+        const cameraPosition = player.position.clone().add(cameraOffset);
+        const cameraTarget = cameraPosition.clone().add(lookDir);
+
+        camera.position.copy(cameraPosition);
+        camera.lookAt(cameraTarget);
       }
 
       renderer.render(scene, camera);
