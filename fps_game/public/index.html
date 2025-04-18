@@ -58,7 +58,7 @@
       let rotationY = 0;
       const rotationSpeed = 0.002;  // Adjust speed of mouse movement
       
-      // Example: A mock camera object that we'll rotate
+      // Example: A mock camera object that we'll rotate (you can replace with your 3D camera)
       const camera = { rotation: { x: 0, y: 0 } };
       
       // Function to lock the mouse pointer
@@ -99,6 +99,7 @@
       // Handle mouse movement while the mouse is locked
       function onMouseMove(event) {
         if (isLocked) {
+          // Fallback for different browsers, check for movementX/movementY
           const movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
           const movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
       
@@ -128,9 +129,6 @@
         lockMouse();
         document.removeEventListener('click', handleClickOnce);
       });
-
-
-
 
 
       // Movement
