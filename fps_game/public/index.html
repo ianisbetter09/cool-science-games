@@ -71,6 +71,15 @@
         }
       }
 
+      function onPointerLockChange() {
+        if (document.pointerLockElement === document.body || document.mozPointerLockElement === document.body || document.webkitPointerLockElement === document.body) {
+          isLocked = true;
+          document.addEventListener('mousemove', onMouseMove);
+        } else {
+          isLocked = false;
+          document.removeEventListener('mousemove', onMouseMove);
+        }
+      }
 
       function onMouseMove(event) {
         if (isLocked) {
@@ -87,7 +96,6 @@
           pitch = Math.max(Math.min(pitch, Math.PI / 2), -Math.PI / 2);
         }
       }
-
 
       // Set up pointer lock change listeners
       document.addEventListener('pointerlockchange', onPointerLockChange, false);
@@ -127,10 +135,11 @@
       camera.lookAt(camera.position.clone().add(direction));
 
       // Movement handling
-      velocity.set(0, 0, 0);
       const moveSpeed = 0.1;
       const forward = new THREE.Vector3(Math.sin(yaw), 0, Math.cos(yaw));
       const right = new THREE.Vector3(Math.sin(yaw - Math.PI / 2), 0, Math.cos(yaw - Math.PI / 2));
+
+      velocity.set(0, 0, 0); // Reset velocity at the start of each frame
 
       if (move.forward) velocity.add(forward);
       if (move.backward) velocity.sub(forward);
