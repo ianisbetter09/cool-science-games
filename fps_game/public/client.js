@@ -1,122 +1,43 @@
 const socket = io();
+const players = {};
 
-let scene, camera, renderer;
-let localPlayer;
-let players = {};
-
-init();
-
-function init() {
-  scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x87ceeb); // Sky blue
-
-  camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-  camera.position.y = 1.6;
-
-  renderer = new THREE.WebGLRenderer();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  document.body.appendChild(renderer.domElement);
-
-  // Lighting
-  const ambientLight = new THREE.AmbientLight(0x404040);
-  const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-  directionalLight.position.set(10, 20, 10);
-  scene.add(ambientLight, directionalLight);
-
-  // Ground
-  const groundGeo = new THREE.PlaneGeometry(100, 100);
-  const groundMat = new THREE.MeshStandardMaterial({ color: 0x228B22 }); // Forest green
-  const ground = new THREE.Mesh(groundGeo, groundMat);
-  ground.rotation.x = -Math.PI / 2;
-  ground.receiveShadow = true;
-  scene.add(ground);
-
-  // Add some "buildings"
-  for (let i = 0; i < 5; i++) {
-    const box = new THREE.Mesh(
-      new THREE.BoxGeometry(4, 6, 4),
-      new THREE.MeshStandardMaterial({ color: 0x8B0000 }) // Dark red
-    );
-    box.position.set(
-      (Math.random() - 0.5) * 80,
-      3,
-      (Math.random() - 0.5) * 80
-    );
-    scene.add(box);
-  }
-
-  // Local player
-  localPlayer = { mesh: createPlayerMesh(), id: null };
-  scene.add(localPlayer.mesh);
-
-  animate();
-}
-
-
-function createPlayerMesh(color = 0x00ff00) {
-  const geometry = new THREE.BoxGeometry(1, 2, 1);
-  const material = new THREE.MeshStandardMaterial({ color });
-  const mesh = new THREE.Mesh(geometry, material);
-  mesh.position.y = 1;
-  return mesh;
-}
-
-function animate() {
-  requestAnimationFrame(animate);
-  renderer.render(scene, camera);
-
-  // Send position
-  if (localPlayer.id) {
-    socket.emit('move', {
-      x: localPlayer.mesh.position.x,
-      y: localPlayer.mesh.position.y,
-      z: localPlayer.mesh.position.z,
-      rotation: localPlayer.mesh.rotation
-    });
-  }
-
-  // WASD movement
-  const speed = 0.1;
-  if (keys['w']) localPlayer.mesh.position.z -= speed;
-  if (keys['s']) localPlayer.mesh.position.z += speed;
-  if (keys['a']) localPlayer.mesh.position.x -= speed;
-  if (keys['d']) localPlayer.mesh.position.x += speed;
-}
-
-const keys = {};
-window.addEventListener('keydown', (e) => keys[e.key.toLowerCase()] = true);
-window.addEventListener('keyup', (e) => keys[e.key.toLowerCase()] = false);
-
-// Handle Socket Events
-socket.on('currentPlayers', (data) => {
-  for (let id in data) {
+socket.on('currentPlayers', (serverPlayers) => {
+  for (const id in serverPlayers) {
     if (id !== socket.id) {
-      const other = createPlayerMesh(0xff0000);
-      players[id] = { mesh: other };
-      scene.add(other);
-    } else {
-      localPlayer.id = id;
+      players[id] = serverPlayers[id];
+      // render other player
     }
   }
 });
 
-socket.on('newPlayer', (data) => {
-  const newMesh = createPlayerMesh(0xff0000);
-  players[data.id] = { mesh: newMesh };
-  scene.add(newMesh);
+socket.on('newPlayer', (player) => {
+  players[player.id] = player;
+  // render new player
 });
 
-socket.on('playerMoved', (data) => {
-  const player = players[data.id];
-  if (player) {
-    player.mesh.position.set(data.x, data.y, data.z);
-    player.mesh.rotation.copy(data.rotation);
+socket.on('playerMoved', (player) => {
+  if (players[player.id]) {
+    players[player.id].x = player.x;
+    players[player.id].y = player.y;
+    // update position
   }
 });
 
 socket.on('playerDisconnected', (id) => {
-  if (players[id]) {
-    scene.remove(players[id].mesh);
-    delete players[id];
-  }
+  delete players[id];
+  // remove from screen
+});
+
+// Send movement to server
+document.addEventListener('keydown', (e) => {
+  // replace with your own input logic
+  let move = { x: 0, y: 0 };
+  if (e.key === 'ArrowUp') move.y -= 1;
+  if (e.key === 'ArrowDown') move.y += 1;
+  if (e.key === 'ArrowLeft') move.x -= 1;
+  if (e.key === 'ArrowRight') move.x += 1;
+
+  // update local player movement
+  // send to server
+  socket.emit('playerMovement', move);
 });
