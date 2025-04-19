@@ -2,13 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>FPS Game with House</title>
+  <title>Multiplayer FPS Game</title>
   <style>
     body { margin: 0; overflow: hidden; }
     canvas { display: block; }
   </style>
 </head>
 <body>
+
+<script src="/socket.io/socket.io.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
 <script>
 let scene, camera, renderer;
@@ -21,6 +23,8 @@ const gravity = -0.3;
 const jumpStrength = .03;
 let isThirdPerson = false;
 let collidables = [];
+let socket = io();
+const otherPlayers = {};
 
 init();
 animate();
@@ -37,7 +41,6 @@ function init() {
   renderer.shadowMap.enabled = true;
   document.body.appendChild(renderer.domElement);
 
-  // Lighting
   const ambientLight = new THREE.AmbientLight(0x404040, 2);
   scene.add(ambientLight);
 
@@ -46,7 +49,6 @@ function init() {
   dirLight.castShadow = true;
   scene.add(dirLight);
 
-  // Ground
   const ground = new THREE.Mesh(
     new THREE.PlaneGeometry(1000, 1000),
     new THREE.MeshStandardMaterial({ color: 0x228B22 })
@@ -57,7 +59,6 @@ function init() {
   scene.add(ground);
   collidables.push(ground);
 
-  // Player (green box)
   playerMesh = new THREE.Mesh(
     new THREE.BoxGeometry(1, 2, 1),
     new THREE.MeshStandardMaterial({ color: 0x00ff00 })
@@ -67,9 +68,7 @@ function init() {
   playerMesh.receiveShadow = true;
   scene.add(playerMesh);
 
-  // Build a simple house
   const wallMaterial = new THREE.MeshStandardMaterial({ color: 0xaaaaaa });
-
   function createWall(x, y, z, w, h, d) {
     const wall = new THREE.Mesh(
       new THREE.BoxGeometry(w, h, d),
@@ -82,18 +81,14 @@ function init() {
     collidables.push(wall);
   }
 
-  // Floor and roof
-  createWall(0, 0.1, 0, 20, 0.2, 20); // floor
-  createWall(0, 5, 0, 20, 0.2, 20); // roof
+  createWall(0, 0.1, 0, 20, 0.2, 20);
+  createWall(0, 5, 0, 20, 0.2, 20);
+  createWall(-10, 2.5, 0, 0.2, 5, 20);
+  createWall(10, 2.5, 0, 0.2, 5, 20);
+  createWall(0, 2.5, -10, 20, 5, 0.2);
+  createWall(-5, 2.5, 10, 10, 5, 0.2);
+  createWall(5, 2.5, 10, 10, 5, 0.2);
 
-  // Walls
-  createWall(-10, 2.5, 0, 0.2, 5, 20); // left
-  createWall(10, 2.5, 0, 0.2, 5, 20); // right
-  createWall(0, 2.5, -10, 20, 5, 0.2); // back
-  createWall(-5, 2.5, 10, 10, 5, 0.2); // front-left
-  createWall(5, 2.5, 10, 10, 5, 0.2); // front-right
-
-  // Controls
   document.addEventListener('pointerlockchange', () => isLocked = document.pointerLockElement === document.body);
   document.addEventListener('click', () => document.body.requestPointerLock());
   document.addEventListener('mousemove', onMouseMove);
@@ -116,22 +111,19 @@ function init() {
     if (e.code === 'KeyA') move.left = false;
     if (e.code === 'KeyD') move.right = false;
   });
+}
 
-  function onMouseMove(event) {
-    if (!document.pointerLockElement) return;
-    yaw -= event.movementX * 0.002;
-    pitch += event.movementY * 0.002; // Invert pitch for third person
-    pitch = Math.max(Math.min(pitch, Math.PI / 2), -Math.PI / 2);
-  }
+function onMouseMove(event) {
+  if (!document.pointerLockElement) return;
+  yaw -= event.movementX * 0.002;
+  pitch += event.movementY * 0.002;
+  pitch = Math.max(Math.min(pitch, Math.PI / 2), -Math.PI / 2);
 }
 
 function animate() {
   requestAnimationFrame(animate);
 
-  // Apply gravity
   velocity.y += gravity * 0.1;
-
-  // Movement
   direction.set(0, 0, 0);
   const angle = yaw;
   const forward = new THREE.Vector3(Math.sin(angle), 0, Math.cos(angle));
@@ -141,15 +133,13 @@ function animate() {
   if (move.backward) direction.sub(forward);
   if (move.left) direction.sub(right);
   if (move.right) direction.add(right);
-  direction.normalize();
-  direction.multiplyScalar(0.2);
+  direction.normalize().multiplyScalar(0.2);
 
   velocity.x = direction.x;
   velocity.z = direction.z;
 
   playerMesh.position.add(velocity);
 
-  // Basic collision detection
   isOnGround = false;
   for (const obj of collidables) {
     const box1 = new THREE.Box3().setFromObject(playerMesh);
@@ -164,7 +154,6 @@ function animate() {
     }
   }
 
-  // Update camera
   if (isThirdPerson) {
     const offset = new THREE.Vector3(0, 2, -5)
       .applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw)
@@ -181,7 +170,46 @@ function animate() {
     camera.lookAt(camera.position.clone().add(view));
   }
 
+  socket.emit('playerMovement', {
+    x: playerMesh.position.x,
+    y: playerMesh.position.y,
+    z: playerMesh.position.z
+  });
+
   renderer.render(scene, camera);
+}
+
+// Multiplayer logic
+socket.on('currentPlayers', (players) => {
+  for (const id in players) {
+    if (id !== socket.id) addOtherPlayer(id, players[id]);
+  }
+});
+
+socket.on('newPlayer', (data) => {
+  if (data.id !== socket.id) addOtherPlayer(data.id, data);
+});
+
+socket.on('playerMoved', (data) => {
+  const other = otherPlayers[data.id];
+  if (other) other.position.set(data.x, data.y, data.z);
+});
+
+socket.on('playerDisconnected', (id) => {
+  if (otherPlayers[id]) {
+    scene.remove(otherPlayers[id]);
+    delete otherPlayers[id];
+  }
+});
+
+function addOtherPlayer(id, data) {
+  const other = new THREE.Mesh(
+    new THREE.BoxGeometry(1, 2, 1),
+    new THREE.MeshStandardMaterial({ color: 0xff0000 })
+  );
+  other.position.set(data.x, data.y, data.z);
+  scene.add(other);
+  otherPlayers[id] = other;
 }
 </script>
 </body>
