@@ -2,33 +2,37 @@ const express = require('express');
 const app = express();
 const http = require('http').createServer(app);
 const io = require('socket.io')(http);
-const PORT = process.env.PORT || 3000;
 
 app.use(express.static('public'));
 
-let players = {};
+const players = {};
 
 io.on('connection', (socket) => {
   console.log(`Player connected: ${socket.id}`);
 
+  // Add new player
   players[socket.id] = {
     x: 0,
     y: 0,
-    z: 0,
-    rotation: { x: 0, y: 0, z: 0 },
     id: socket.id
   };
 
+  // Send existing players to the new player
   socket.emit('currentPlayers', players);
+
+  // Notify others about the new player
   socket.broadcast.emit('newPlayer', players[socket.id]);
 
-  socket.on('move', (data) => {
+  // Listen for movement
+  socket.on('playerMovement', (data) => {
     if (players[socket.id]) {
-      players[socket.id] = { ...players[socket.id], ...data };
+      players[socket.id].x = data.x;
+      players[socket.id].y = data.y;
       socket.broadcast.emit('playerMoved', players[socket.id]);
     }
   });
 
+  // Handle disconnect
   socket.on('disconnect', () => {
     console.log(`Player disconnected: ${socket.id}`);
     delete players[socket.id];
@@ -36,6 +40,7 @@ io.on('connection', (socket) => {
   });
 });
 
+const PORT = process.env.PORT || 3000;
 http.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Server listening on port ${PORT}`);
 });
