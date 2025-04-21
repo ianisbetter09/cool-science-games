@@ -4,7 +4,78 @@
     <meta charset="UTF-8">
     <title>Gambling Game</title>
     <style>
-        /* your original CSS stays the same */
+          body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+            background-color: #f4f4f4;
+        }
+        .game-container {
+            margin: 20px;
+            padding: 20px;
+            border: 2px solid #333;
+            display: inline-block;
+            background-color: white;
+        }
+        h1 {
+            color: #2c3e50;
+        }
+        #coin-count {
+            font-size: 24px;
+            font-weight: bold;
+            color: #27ae60;
+        }
+        .button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+            margin: 10px;
+            border-radius: 5px;
+        }
+        .button:hover {
+            background-color: #2980b9;
+        }
+        .result {
+            margin-top: 20px;
+            font-size: 20px;
+            color: #e74c3c;
+        }
+        .success {
+            color: #2ecc71;
+        }
+        .failure {
+            color: #e74c3c;
+        }
+        .shop-button {
+            background-color: #f39c12;
+        }
+        .shop-button:hover {
+            background-color: #e67e22;
+        }
+        .shop-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border: 1px solid #000;
+            z-index: 1000;
+        }
+        .shop-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 999;
+        }
     </style>
 </head>
 <body>
