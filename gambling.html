@@ -76,6 +76,12 @@
             display: none;
             z-index: 999;
         }
+        #reset-button {
+            background-color: #e74c3c;
+        }
+        #reset-button:hover {
+            background-color: #c0392b;
+        }
     </style>
 </head>
 <body>
@@ -86,6 +92,7 @@
         <button class="button" id="risk-button">Risk It!</button>
         <button class="button shop-button" onclick="openShop()">Open Shop</button>
         <p id="result" class="result"></p>
+        <button id="reset-button" class="button" onclick="resetGame()" style="display: none;">Reset Game</button>
     </div>
 
     <!-- Shop Modal -->
@@ -125,10 +132,12 @@
 
         document.getElementById('coin-count').innerText = `Coins: ${coins}`;
 
+        // Check if the player has run out of coins
         if (coins <= 0) {
             document.getElementById('result').innerHTML = "Game Over! You ran out of coins.";
             document.getElementById('result').classList.remove('success', 'failure');
             document.getElementById('risk-button').disabled = true;
+            document.getElementById('reset-button').style.display = 'inline-block'; // Show reset button
         }
     });
 
@@ -159,6 +168,17 @@
         } else {
             alert('You do not have enough coins!');
         }
+    }
+
+    // Function to reset the game
+    function resetGame() {
+        coins = 100; // Reset coins to 100
+        luckyClovers = 0; // Reset Lucky Clovers
+        document.getElementById('coin-count').textContent = `Coins: ${coins}`;
+        document.getElementById('clover-count').textContent = `Lucky Clovers Owned: ${luckyClovers}`;
+        document.getElementById('result').textContent = '';
+        document.getElementById('risk-button').disabled = false; // Enable the risk button again
+        document.getElementById('reset-button').style.display = 'none'; // Hide reset button
     }
 </script>
 
