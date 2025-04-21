@@ -112,7 +112,7 @@
 
     // Function to handle the risk action
     document.getElementById('risk-button').addEventListener('click', function() {
-        const riskAmount = Math.floor(Math.random() * 41) + 10;
+        const riskAmount = Math.floor(Math.random() * 31) + 10;
         let winChance = 0.5 + (luckyClovers * 0.05); // Base 50% + 5% per clover
         if (winChance > 0.95) winChance = 0.95; // Optional: Cap win chance at 95%
 
