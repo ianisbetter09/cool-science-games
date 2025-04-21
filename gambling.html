@@ -165,204 +165,145 @@
 </div>
 
 
-    <script>
-    let coins = 100; // Starting amount of coins
-    let luckyClovers = 0; // Track number of Lucky Clovers
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    let coins = 100;
+    let luckyClovers = 0;
+    let lastSpin = localStorage.getItem("lastSpinDate");
+    let spinning = false;
 
-    // Function to handle the risk action
-    document.getElementById('risk-button').addEventListener('click', function() {
+    const riskBtn = document.getElementById('risk-button');
+    const resetBtn = document.getElementById('reset-button');
+    const resultEl = document.getElementById('result');
+    const coinCountEl = document.getElementById('coin-count');
+    const cloverCountEl = document.getElementById('clover-count');
+
+    riskBtn.addEventListener('click', () => {
         const riskAmount = Math.floor(Math.random() * 41) + 10;
-        let winChance = 0.5 + (luckyClovers * 0.05); // Base 50% + 5% per clover
-        if (winChance > 0.95) winChance = 0.95; // Optional: Cap win chance at 95%
+        let winChance = 0.5 + (luckyClovers * 0.05);
+        if (winChance > 0.95) winChance = 0.95;
 
-        let outcome = Math.random();
+        const outcome = Math.random();
 
         if (outcome < winChance) {
             coins += riskAmount;
-            document.getElementById('result').innerHTML = `You won ${riskAmount} coins!`;
-            document.getElementById('result').classList.remove('failure');
-            document.getElementById('result').classList.add('success');
+            resultEl.innerHTML = `You won ${riskAmount} coins!`;
+            resultEl.classList.remove('failure');
+            resultEl.classList.add('success');
         } else {
             coins -= riskAmount;
-            document.getElementById('result').innerHTML = `You lost ${riskAmount} coins!`;
-            document.getElementById('result').classList.remove('success');
-            document.getElementById('result').classList.add('failure');
+            resultEl.innerHTML = `You lost ${riskAmount} coins!`;
+            resultEl.classList.remove('success');
+            resultEl.classList.add('failure');
         }
 
-        document.getElementById('coin-count').innerText = `Coins: ${coins}`;
+        coinCountEl.innerText = `Coins: ${coins}`;
 
-        // Check if the player has run out of coins
         if (coins <= 0) {
-            document.getElementById('result').innerHTML = "Game Over! You ran out of coins.";
-            document.getElementById('result').classList.remove('success', 'failure');
-            document.getElementById('risk-button').disabled = true;
-            document.getElementById('reset-button').style.display = 'inline-block'; // Show reset button
+            resultEl.innerHTML = "Game Over! You ran out of coins.";
+            resultEl.classList.remove('success', 'failure');
+            riskBtn.disabled = true;
+            resetBtn.style.display = 'inline-block';
         }
     });
-let lastSpin = null;
 
-function openWheel() {
-    if (canSpinToday()) {
-        document.getElementById('wheel-modal').style.display = 'block';
-        document.getElementById('wheel-overlay').style.display = 'block';
-        document.getElementById('wheel-result').textContent = '';
-    } else {
-        alert('You can only spin once per day! Come back tomorrow.');
-    }
-}
-
-function closeWheel() {
-    document.getElementById('wheel-modal').style.display = 'none';
-    document.getElementById('wheel-overlay').style.display = 'none';
-}
-
-function canSpinToday() {
-    const now = new Date().toDateString();
-    if (lastSpin !== now) {
-        return true;
-    }
-    return false;
-}
-
-function spinWheel() {
-    const prizes = [
-        { type: 'coins', value: 100, text: 'You won 100 coins!' },
-        { type: 'coins', value: 200, text: 'Jackpot! You won 200 coins!' },
-        { type: 'clover', value: 1, text: 'Lucky you! You got 1 Lucky Clover!' },
-        { type: 'mystery', value: 0, text: 'Mystery prize: No reward... this time!' },
-    ];
-
-    const prize = prizes[Math.floor(Math.random() * prizes.length)];
-
-    if (prize.type === 'coins') {
-        coins += prize.value;
-    } else if (prize.type === 'clover') {
-        luckyClovers += prize.value;
-    }
-
-    lastSpin = new Date().toDateString();
-
-    document.getElementById('coin-count').textContent = `Coins: ${coins}`;
-    document.getElementById('clover-count').textContent = `Lucky Clovers Owned: ${luckyClovers}`;
-    document.getElementById('wheel-result').textContent = prize.text;
-    updateCloverPrice();
-}
-
-    // Open the shop modal
-    function openShop() {
+    window.openShop = function () {
         document.getElementById('shop-modal').style.display = 'block';
         document.getElementById('shop-overlay').style.display = 'block';
-        updateCloverPrice(); // Ensure the clover price is updated when the shop opens
-    }
+        updateCloverPrice();
+    };
 
-    // Close the shop modal
-    function closeShop() {
+    window.closeShop = function () {
         document.getElementById('shop-modal').style.display = 'none';
         document.getElementById('shop-overlay').style.display = 'none';
-    }
+    };
 
-    // Function to handle the purchase of Lucky Clover
-    function buyLuckyClover() {
-        const cloverPrice = 200 + luckyClovers * 50; // Starting price 200, increasing by 50 per clover
-
+    window.buyLuckyClover = function () {
+        const cloverPrice = 200 + luckyClovers * 50;
         if (coins >= cloverPrice) {
             coins -= cloverPrice;
-            luckyClovers += 1;
-            document.getElementById('coin-count').textContent = `Coins: ${coins}`;
-            document.getElementById('clover-count').textContent = `Lucky Clovers Owned: ${luckyClovers}`;
-            updateCloverPrice(); // Update the clover price in the shop modal
-            alert(`You bought a Lucky Clover! Each one boosts your win chance by 5%.`);
+            luckyClovers++;
+            coinCountEl.textContent = `Coins: ${coins}`;
+            cloverCountEl.textContent = `Lucky Clovers Owned: ${luckyClovers}`;
+            updateCloverPrice();
+            alert(`You bought a Lucky Clover!`);
             closeShop();
         } else {
             alert('You do not have enough coins!');
         }
-    }
+    };
 
-    // Update the clover price in the shop modal
     function updateCloverPrice() {
         const cloverPrice = 200 + luckyClovers * 50;
         document.getElementById('clover-price').textContent = cloverPrice;
     }
 
-    // Function to reset the game
-    function resetGame() {
-        coins = 100; // Reset coins to 100
-        luckyClovers = 0; // Reset Lucky Clovers
-        document.getElementById('coin-count').textContent = `Coins: ${coins}`;
-        document.getElementById('clover-count').textContent = `Lucky Clovers Owned: ${luckyClovers}`;
-        document.getElementById('result').textContent = '';
-        document.getElementById('risk-button').disabled = false; // Enable the risk button again
-        document.getElementById('reset-button').style.display = 'none'; // Hide reset button
-        updateCloverPrice(); // Reset the clover price to 200
-    }
-        let lastSpin = localStorage.getItem("lastSpinDate");
-let spinning = false;
+    window.openWheel = function () {
+        const today = new Date().toDateString();
+        const wheelResult = document.getElementById('wheel-result');
+        const spinBtn = document.querySelector('#wheel-modal button[onclick="spinWheel()"]');
+        
+        document.getElementById('wheel-modal').style.display = 'block';
+        document.getElementById('wheel-overlay').style.display = 'block';
+        wheelResult.textContent = '';
 
-function openWheel() {
-    const today = new Date().toDateString();
-    document.getElementById('wheel-modal').style.display = 'block';
-    document.getElementById('wheel-overlay').style.display = 'block';
-    document.getElementById('wheel-result').textContent = '';
-
-    if (lastSpin === today) {
-        document.getElementById('spin-btn').disabled = true;
-        document.getElementById('wheel-result').textContent = 'You already spun today!';
-    } else {
-        document.getElementById('spin-btn').disabled = false;
-    }
-}
-
-function closeWheel() {
-    document.getElementById('wheel-modal').style.display = 'none';
-    document.getElementById('wheel-overlay').style.display = 'none';
-}
-
-function spinWheel() {
-    if (spinning) return;
-    spinning = true;
-    document.getElementById('spin-btn').disabled = true;
-
-    const wheel = document.getElementById('wheel');
-    const segments = ['100', '200', 'clover', 'none'];
-    const segmentDegrees = 360 / segments.length;
-
-    const selectedIndex = Math.floor(Math.random() * segments.length);
-    const fullSpins = 5;
-    const degreesToRotate = fullSpins * 360 + (selectedIndex * segmentDegrees);
-
-    wheel.style.transform = `rotate(${degreesToRotate}deg)`;
-
-    setTimeout(() => {
-        const prize = segments[selectedIndex];
-        let message = '';
-
-        if (prize === '100') {
-            coins += 100;
-            message = 'You won 100 coins!';
-        } else if (prize === '200') {
-            coins += 200;
-            message = 'Jackpot! 200 coins!';
-        } else if (prize === 'clover') {
-            luckyClovers += 1;
-            message = 'You won a Lucky Clover!';
+        if (lastSpin === today) {
+            spinBtn.disabled = true;
+            wheelResult.textContent = 'You already spun today!';
         } else {
-            message = 'No prize this time 😢';
+            spinBtn.disabled = false;
         }
+    };
 
-        document.getElementById('coin-count').textContent = `Coins: ${coins}`;
-        document.getElementById('clover-count').textContent = `Lucky Clovers Owned: ${luckyClovers}`;
-        document.getElementById('wheel-result').textContent = message;
+    window.closeWheel = function () {
+        document.getElementById('wheel-modal').style.display = 'none';
+        document.getElementById('wheel-overlay').style.display = 'none';
+    };
+
+    window.spinWheel = function () {
+        if (spinning) return;
+        spinning = true;
+
+        const prizes = [
+            { type: 'coins', value: 100, text: 'You won 100 coins!' },
+            { type: 'coins', value: 200, text: 'Jackpot! You won 200 coins!' },
+            { type: 'clover', value: 1, text: 'Lucky you! You got 1 Lucky Clover!' },
+            { type: 'mystery', value: 0, text: 'Mystery prize: No reward... this time!' },
+        ];
+
+        const prize = prizes[Math.floor(Math.random() * prizes.length)];
+
+        setTimeout(() => {
+            if (prize.type === 'coins') {
+                coins += prize.value;
+            } else if (prize.type === 'clover') {
+                luckyClovers += prize.value;
+            }
+
+            lastSpin = new Date().toDateString();
+            localStorage.setItem("lastSpinDate", lastSpin);
+
+            coinCountEl.textContent = `Coins: ${coins}`;
+            cloverCountEl.textContent = `Lucky Clovers Owned: ${luckyClovers}`;
+            document.getElementById('wheel-result').textContent = prize.text;
+            updateCloverPrice();
+            spinning = false;
+        }, 1000);
+    };
+
+    window.resetGame = function () {
+        coins = 100;
+        luckyClovers = 0;
+        coinCountEl.textContent = `Coins: ${coins}`;
+        cloverCountEl.textContent = `Lucky Clovers Owned: ${luckyClovers}`;
+        resultEl.textContent = '';
+        riskBtn.disabled = false;
+        resetBtn.style.display = 'none';
         updateCloverPrice();
-
-        // Lock out until tomorrow
-        lastSpin = new Date().toDateString();
-        localStorage.setItem("lastSpinDate", lastSpin);
-
-        spinning = false;
-    }, 3000);
-}
-
+    };
+});
 </script>
+
 
 </body>
 </html>
