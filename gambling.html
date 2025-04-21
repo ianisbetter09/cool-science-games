@@ -161,6 +161,11 @@
     <p>Buy a Lucky Clover for <span id="clover-price">200</span> coins. Each clover gives +5% increased chance to win!</p>
     <button onclick="buyLuckyClover()">Buy Lucky Clover</button>
     <p id="clover-count">Lucky Clovers Owned: 0</p>
+    <hr>
+    <p>Buy the "Wheel Cooldown Halver" for 5000 coins. Allows spinning every 12 hours!</p>
+    <button onclick="buyCooldownHalver()" id="halver-button">Buy Cooldown Halver</button>
+    <p id="halver-status"></p>
+
     <button onclick="closeShop()">Close</button>
 </div>
 
@@ -171,6 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let luckyClovers = 0;
     let lastSpin = localStorage.getItem("lastSpinDate");
     let spinning = false;
+    let hasHalver = localStorage.getItem("hasCooldownHalver") === "true";
 
     const riskBtn = document.getElementById('risk-button');
     const resetBtn = document.getElementById('reset-button');
@@ -210,6 +216,9 @@ document.addEventListener('DOMContentLoaded', () => {
     window.openShop = function () {
         document.getElementById('shop-modal').style.display = 'block';
         document.getElementById('shop-overlay').style.display = 'block';
+        document.getElementById('halver-status').textContent = hasHalver ? "✅ Cooldown Halver purchased!" : "";
+    document.getElementById('halver-button').disabled = hasHalver;
+
         updateCloverPrice();
     };
 
@@ -247,12 +256,18 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('wheel-overlay').style.display = 'block';
         wheelResult.textContent = '';
 
-        if (lastSpin === today) {
-            spinBtn.disabled = true;
-            wheelResult.textContent = 'You already spun today!';
-        } else {
-            spinBtn.disabled = false;
-        }
+     const now = Date.now();
+const lastSpinTime = localStorage.getItem("lastSpinTimestamp");
+const cooldown = hasHalver ? 12 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000;
+
+if (lastSpinTime && now - lastSpinTime < cooldown) {
+    spinBtn.disabled = true;
+    const hoursLeft = Math.ceil((cooldown - (now - lastSpinTime)) / (60 * 60 * 1000));
+    wheelResult.textContent = `You can spin again in ${hoursLeft} hour(s)!`;
+} else {
+    spinBtn.disabled = false;
+}
+
     };
 
     window.closeWheel = function () {
@@ -280,8 +295,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 luckyClovers += prize.value;
             }
 
-            lastSpin = new Date().toDateString();
+            lastSpin = new Date().toDateString(); // optional for legacy
             localStorage.setItem("lastSpinDate", lastSpin);
+            localStorage.setItem("lastSpinTimestamp", Date.now());
+
 
             coinCountEl.textContent = `Coins: ${coins}`;
             cloverCountEl.textContent = `Lucky Clovers Owned: ${luckyClovers}`;
@@ -290,6 +307,25 @@ document.addEventListener('DOMContentLoaded', () => {
             spinning = false;
         }, 86400000 );
     };
+window.buyCooldownHalver = function () {
+    if (hasHalver) {
+        alert("You've already bought this upgrade!");
+        return;
+    }
+
+    if (coins >= 5000) {
+        coins -= 5000;
+        hasHalver = true;
+        localStorage.setItem("hasCooldownHalver", "true");
+        coinCountEl.textContent = `Coins: ${coins}`;
+        document.getElementById('halver-status').textContent = "✅ Cooldown Halver purchased!";
+        document.getElementById('halver-button').disabled = true;
+        alert("You can now spin the wheel every 12 hours!");
+        closeShop();
+    } else {
+        alert("Not enough coins for this upgrade!");
+    }
+};
 
     window.resetGame = function () {
         coins = 100;
