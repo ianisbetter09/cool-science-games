@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Gambling Game</title>
     <style>
-          body {
+        body {
             font-family: Arial, sans-serif;
             text-align: center;
             padding: 50px;
@@ -92,8 +92,8 @@
 <div id="shop-overlay" class="shop-overlay" onclick="closeShop()"></div>
 <div id="shop-modal" class="shop-modal">
     <h2>Shop</h2>
-    <p>Buy a Lucky Clover for 500 coins. Each clover gives +5% increased chance to win!</p>
-    <button onclick="buyLuckyClover()">Buy Lucky Clover (500 Coins)</button>
+    <p>Buy a Lucky Clover for <span id="clover-price">200</span> coins. Each clover gives +5% increased chance to win!</p>
+    <button onclick="buyLuckyClover()">Buy Lucky Clover</button>
     <p id="clover-count">Lucky Clovers Owned: 0</p>
     <button onclick="closeShop()">Close</button>
 </div>
@@ -146,11 +146,14 @@
 
     // Function to handle the purchase of Lucky Clover
     function buyLuckyClover() {
-        if (coins >= 500) {
-            coins -= 500;
+        const cloverPrice = 200 + luckyClovers * 50; // Starting price 200, increasing by 50 per clover
+
+        if (coins >= cloverPrice) {
+            coins -= cloverPrice;
             luckyClovers += 1;
             document.getElementById('coin-count').textContent = `Coins: ${coins}`;
             document.getElementById('clover-count').textContent = `Lucky Clovers Owned: ${luckyClovers}`;
+            document.getElementById('clover-price').textContent = cloverPrice; // Update the price for the next clover
             alert(`You bought a Lucky Clover! Each one boosts your win chance by 5%.`);
             closeShop();
         } else {
