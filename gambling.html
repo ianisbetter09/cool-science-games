@@ -112,7 +112,7 @@
 
     // Function to handle the risk action
     document.getElementById('risk-button').addEventListener('click', function() {
-        const riskAmount = Math.floor(Math.random() * 31) + 10;
+        const riskAmount = Math.floor(Math.random() * 41) + 10;
         let winChance = 0.5 + (luckyClovers * 0.05); // Base 50% + 5% per clover
         if (winChance > 0.95) winChance = 0.95; // Optional: Cap win chance at 95%
 
@@ -145,6 +145,7 @@
     function openShop() {
         document.getElementById('shop-modal').style.display = 'block';
         document.getElementById('shop-overlay').style.display = 'block';
+        updateCloverPrice(); // Ensure the clover price is updated when the shop opens
     }
 
     // Close the shop modal
@@ -162,12 +163,18 @@
             luckyClovers += 1;
             document.getElementById('coin-count').textContent = `Coins: ${coins}`;
             document.getElementById('clover-count').textContent = `Lucky Clovers Owned: ${luckyClovers}`;
-            document.getElementById('clover-price').textContent = cloverPrice; // Update the price for the next clover
+            updateCloverPrice(); // Update the clover price in the shop modal
             alert(`You bought a Lucky Clover! Each one boosts your win chance by 5%.`);
             closeShop();
         } else {
             alert('You do not have enough coins!');
         }
+    }
+
+    // Update the clover price in the shop modal
+    function updateCloverPrice() {
+        const cloverPrice = 200 + luckyClovers * 50;
+        document.getElementById('clover-price').textContent = cloverPrice;
     }
 
     // Function to reset the game
@@ -179,6 +186,7 @@
         document.getElementById('result').textContent = '';
         document.getElementById('risk-button').disabled = false; // Enable the risk button again
         document.getElementById('reset-button').style.display = 'none'; // Hide reset button
+        updateCloverPrice(); // Reset the clover price to 200
     }
 </script>
 
