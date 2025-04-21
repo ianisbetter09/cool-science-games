@@ -18,71 +18,75 @@
     </div>
 
     <!-- Shop Modal -->
-    <div id="shop-overlay" class="shop-overlay" onclick="closeShop()"></div>
-    <div id="shop-modal" class="shop-modal">
-        <h2>Shop</h2>
-        <p>Buy a Lucky Clover for 500 coins. Each one gives +5% chance to win!</p>
-        <button onclick="buyLuckyClover()">Buy Lucky Clover (500 Coins)</button>
-        <p id="clover-count">Lucky Clovers Owned: 0</p>
-        <button onclick="closeShop()">Close</button>
-    </div>
+<div id="shop-overlay" class="shop-overlay" onclick="closeShop()"></div>
+<div id="shop-modal" class="shop-modal">
+    <h2>Shop</h2>
+    <p>Buy a Lucky Clover for 500 coins. Each clover gives +5% increased chance to win!</p>
+    <button onclick="buyLuckyClover()">Buy Lucky Clover (500 Coins)</button>
+    <p id="clover-count">Lucky Clovers Owned: 0</p>
+    <button onclick="closeShop()">Close</button>
+</div>
+
 
     <script>
-        let coins = 100;
-        let luckyClovers = 0;
+    let coins = 100; // Starting amount of coins
+    let luckyClovers = 0; // Track number of Lucky Clovers
 
-        document.getElementById('risk-button').addEventListener('click', function () {
-            const riskAmount = Math.floor(Math.random() * 41) + 10;
+    // Function to handle the risk action
+    document.getElementById('risk-button').addEventListener('click', function() {
+        const riskAmount = Math.floor(Math.random() * 41) + 10;
+        let winChance = 0.5 + (luckyClovers * 0.05); // Base 50% + 5% per clover
+        if (winChance > 0.95) winChance = 0.95; // Optional: Cap win chance at 95%
 
-            // Calculate winning chance
-            let winChance = 0.5 + (luckyClovers * 0.05); // 5% per clover
-            if (winChance > 0.95) winChance = 0.95; // Cap at 95%
+        let outcome = Math.random();
 
-            const outcome = Math.random();
-
-            if (outcome < winChance) {
-                coins += riskAmount;
-                document.getElementById('result').innerHTML = `You won ${riskAmount} coins!`;
-                document.getElementById('result').classList.remove('failure');
-                document.getElementById('result').classList.add('success');
-            } else {
-                coins -= riskAmount;
-                document.getElementById('result').innerHTML = `You lost ${riskAmount} coins!`;
-                document.getElementById('result').classList.remove('success');
-                document.getElementById('result').classList.add('failure');
-            }
-
-            document.getElementById('coin-count').innerText = `Coins: ${coins}`;
-
-            if (coins <= 0) {
-                document.getElementById('result').innerHTML = "Game Over! You ran out of coins.";
-                document.getElementById('result').classList.remove('success', 'failure');
-                document.getElementById('risk-button').disabled = true;
-            }
-        });
-
-        function openShop() {
-            document.getElementById('shop-modal').style.display = 'block';
-            document.getElementById('shop-overlay').style.display = 'block';
+        if (outcome < winChance) {
+            coins += riskAmount;
+            document.getElementById('result').innerHTML = `You won ${riskAmount} coins!`;
+            document.getElementById('result').classList.remove('failure');
+            document.getElementById('result').classList.add('success');
+        } else {
+            coins -= riskAmount;
+            document.getElementById('result').innerHTML = `You lost ${riskAmount} coins!`;
+            document.getElementById('result').classList.remove('success');
+            document.getElementById('result').classList.add('failure');
         }
 
-        function closeShop() {
-            document.getElementById('shop-modal').style.display = 'none';
-            document.getElementById('shop-overlay').style.display = 'none';
-        }
+        document.getElementById('coin-count').innerText = `Coins: ${coins}`;
 
-        function buyLuckyClover() {
-            if (coins >= 500) {
-                coins -= 500;
-                luckyClovers += 1;
-                document.getElementById('coin-count').textContent = `Coins: ${coins}`;
-                document.getElementById('clover-count').textContent = `Lucky Clovers Owned: ${luckyClovers}`;
-                alert(`You bought a Lucky Clover! You now have ${luckyClovers}.`);
-                closeShop();
-            } else {
-                alert('You do not have enough coins!');
-            }
+        if (coins <= 0) {
+            document.getElementById('result').innerHTML = "Game Over! You ran out of coins.";
+            document.getElementById('result').classList.remove('success', 'failure');
+            document.getElementById('risk-button').disabled = true;
         }
-    </script>
+    });
+
+    // Open the shop modal
+    function openShop() {
+        document.getElementById('shop-modal').style.display = 'block';
+        document.getElementById('shop-overlay').style.display = 'block';
+    }
+
+    // Close the shop modal
+    function closeShop() {
+        document.getElementById('shop-modal').style.display = 'none';
+        document.getElementById('shop-overlay').style.display = 'none';
+    }
+
+    // Function to handle the purchase of Lucky Clover
+    function buyLuckyClover() {
+        if (coins >= 500) {
+            coins -= 500;
+            luckyClovers += 1;
+            document.getElementById('coin-count').textContent = `Coins: ${coins}`;
+            document.getElementById('clover-count').textContent = `Lucky Clovers Owned: ${luckyClovers}`;
+            alert(`You bought a Lucky Clover! Each one boosts your win chance by 5%.`);
+            closeShop();
+        } else {
+            alert('You do not have enough coins!');
+        }
+    }
+</script>
+
 </body>
 </html>
