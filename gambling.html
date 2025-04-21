@@ -95,6 +95,18 @@
         <button id="reset-button" class="button" onclick="resetGame()" style="display: none;">Reset Game</button>
     </div>
 
+<button class="button" onclick="openWheel()">Spin Daily Bonus Wheel</button>
+
+<div id="wheel-overlay" class="shop-overlay" onclick="closeWheel()"></div>
+<div id="wheel-modal" class="shop-modal">
+    <h2>Daily Bonus Wheel</h2>
+    <p>Spin to win a prize!</p>
+    <button onclick="spinWheel()">🎉 Spin</button>
+    <p id="wheel-result"></p>
+    <button onclick="closeWheel()">Close</button>
+</div>
+
+    
     <!-- Shop Modal -->
 <div id="shop-overlay" class="shop-overlay" onclick="closeShop()"></div>
 <div id="shop-modal" class="shop-modal">
@@ -140,6 +152,54 @@
             document.getElementById('reset-button').style.display = 'inline-block'; // Show reset button
         }
     });
+let lastSpin = null;
+
+function openWheel() {
+    if (canSpinToday()) {
+        document.getElementById('wheel-modal').style.display = 'block';
+        document.getElementById('wheel-overlay').style.display = 'block';
+        document.getElementById('wheel-result').textContent = '';
+    } else {
+        alert('You can only spin once per day! Come back tomorrow.');
+    }
+}
+
+function closeWheel() {
+    document.getElementById('wheel-modal').style.display = 'none';
+    document.getElementById('wheel-overlay').style.display = 'none';
+}
+
+function canSpinToday() {
+    const now = new Date().toDateString();
+    if (lastSpin !== now) {
+        return true;
+    }
+    return false;
+}
+
+function spinWheel() {
+    const prizes = [
+        { type: 'coins', value: 100, text: 'You won 100 coins!' },
+        { type: 'coins', value: 200, text: 'Jackpot! You won 200 coins!' },
+        { type: 'clover', value: 1, text: 'Lucky you! You got 1 Lucky Clover!' },
+        { type: 'mystery', value: 0, text: 'Mystery prize: No reward... this time!' },
+    ];
+
+    const prize = prizes[Math.floor(Math.random() * prizes.length)];
+
+    if (prize.type === 'coins') {
+        coins += prize.value;
+    } else if (prize.type === 'clover') {
+        luckyClovers += prize.value;
+    }
+
+    lastSpin = new Date().toDateString();
+
+    document.getElementById('coin-count').textContent = `Coins: ${coins}`;
+    document.getElementById('clover-count').textContent = `Lucky Clovers Owned: ${luckyClovers}`;
+    document.getElementById('wheel-result').textContent = prize.text;
+    updateCloverPrice();
+}
 
     // Open the shop modal
     function openShop() {
