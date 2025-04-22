@@ -98,6 +98,7 @@
     let wealth = 1000;
     let happiness = 75;
     let efficiency = 50;
+    let wealthGenerationRate = 0;
 
     // Function to update the display values
     function updateDisplay() {
@@ -113,14 +114,18 @@
 
     // Redistribute wealth function
     document.getElementById('redistributeButton').addEventListener('click', function() {
-        let redistributionAmount = wealth * 0.1; // Redistribute 10% of wealth
-        wealth -= redistributionAmount;
-        happiness += 10; // Happiness increases due to redistribution
+        if (wealth > 0) {
+            let redistributionAmount = wealth * 0.1; // Redistribute 10% of wealth
+            wealth -= redistributionAmount;
+            happiness += 10; // Happiness increases due to redistribution
 
-        // Ensure happiness doesn't exceed 100%
-        if (happiness > 100) happiness = 100;
+            // Ensure happiness doesn't exceed 100%
+            if (happiness > 100) happiness = 100;
 
-        showEvent("Redistributed wealth! Happiness increased.");
+            showEvent("Redistributed wealth! Happiness increased.");
+        } else {
+            showEvent("You don't have enough wealth to redistribute!");
+        }
         updateDisplay();
     });
 
@@ -170,11 +175,26 @@
         }, 4000); // Hide message after 4 seconds
     }
 
+    // Passive wealth generation function
+    function generateWealth() {
+        // The lower the happiness, the faster the wealth generation (inverse relationship)
+        wealthGenerationRate = (100 - happiness) * 0.2; // wealth increases faster with lower happiness
+        wealth += wealthGenerationRate;
+
+        // Prevent wealth from going negative
+        if (wealth < 0) wealth = 0;
+
+        updateDisplay();
+    }
+
     // Initialize the game display
     updateDisplay();
 
     // Trigger random events every 10 seconds
-    setInterval(triggerRandomEvent, 60000);
+    setInterval(triggerRandomEvent, 10000);
+
+    // Generate passive wealth every second
+    setInterval(generateWealth, 1000);
 </script>
 
 </body>
