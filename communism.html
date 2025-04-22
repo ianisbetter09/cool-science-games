@@ -45,6 +45,25 @@
         button:hover {
             background-color: #45a049;
         }
+        .event {
+            margin-top: 20px;
+            font-size: 1.2em;
+            color: #FF5733;
+            text-align: center;
+        }
+        .progress-bar-container {
+            width: 100%;
+            height: 20px;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-bar {
+            height: 100%;
+            width: 0;
+            background-color: #4CAF50;
+        }
     </style>
 </head>
 <body>
@@ -53,15 +72,25 @@
     <div class="header">Communism Simulator</div>
     <div class="stat">
         <p>Wealth Distribution: <span id="wealth">1000</span> coins</p>
+        <div class="progress-bar-container">
+            <div id="wealthBar" class="progress-bar"></div>
+        </div>
     </div>
     <div class="stat">
         <p>Citizen Happiness: <span id="happiness">75</span>%</p>
+        <div class="progress-bar-container">
+            <div id="happinessBar" class="progress-bar"></div>
+        </div>
     </div>
     <div class="stat">
         <p>Government Efficiency: <span id="efficiency">50</span>%</p>
+        <div class="progress-bar-container">
+            <div id="efficiencyBar" class="progress-bar"></div>
+        </div>
     </div>
     <button id="redistributeButton">Redistribute Wealth</button>
     <button id="boostButton">Boost Government Efficiency</button>
+    <div id="eventMessage" class="event"></div>
 </div>
 
 <script>
@@ -75,6 +104,11 @@
         document.getElementById('wealth').textContent = wealth;
         document.getElementById('happiness').textContent = happiness;
         document.getElementById('efficiency').textContent = efficiency;
+
+        // Update progress bars
+        document.getElementById('wealthBar').style.width = wealth / 10 + '%';
+        document.getElementById('happinessBar').style.width = happiness + '%';
+        document.getElementById('efficiencyBar').style.width = efficiency + '%';
     }
 
     // Redistribute wealth function
@@ -86,6 +120,7 @@
         // Ensure happiness doesn't exceed 100%
         if (happiness > 100) happiness = 100;
 
+        showEvent("Redistributed wealth! Happiness increased.");
         updateDisplay();
     });
 
@@ -96,14 +131,50 @@
             efficiency += efficiencyBoost;
             wealth -= 100; // Spend wealth to increase efficiency
             if (efficiency > 100) efficiency = 100;
+
+            showEvent("Boosted government efficiency!");
         } else {
-            alert("Not enough wealth to boost efficiency!");
+            showEvent("Not enough wealth to boost efficiency!");
         }
         updateDisplay();
     });
 
+    // Random event function
+    function triggerRandomEvent() {
+        const events = [
+            { message: "A natural disaster struck! Wealth decreased.", wealthChange: -100, happinessChange: -5, efficiencyChange: -2 },
+            { message: "Economic boom! Wealth increased.", wealthChange: 200, happinessChange: 5, efficiencyChange: 3 },
+            { message: "Corruption scandal! Efficiency decreased.", wealthChange: -50, happinessChange: -10, efficiencyChange: -5 }
+        ];
+
+        const randomEvent = events[Math.floor(Math.random() * events.length)];
+        wealth += randomEvent.wealthChange;
+        happiness += randomEvent.happinessChange;
+        efficiency += randomEvent.efficiencyChange;
+
+        if (happiness < 0) happiness = 0;
+        if (happiness > 100) happiness = 100;
+        if (efficiency < 0) efficiency = 0;
+        if (efficiency > 100) efficiency = 100;
+
+        showEvent(randomEvent.message);
+        updateDisplay();
+    }
+
+    // Show event message
+    function showEvent(message) {
+        const eventMessage = document.getElementById('eventMessage');
+        eventMessage.textContent = message;
+        setTimeout(() => {
+            eventMessage.textContent = '';
+        }, 4000); // Hide message after 4 seconds
+    }
+
     // Initialize the game display
     updateDisplay();
+
+    // Trigger random events every 10 seconds
+    setInterval(triggerRandomEvent, 60000);
 </script>
 
 </body>
