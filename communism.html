@@ -209,6 +209,12 @@
             population -= 5; // Decrease population if efficiency is at 100%
         }
 
+        if (population > 1100) {
+            efficiency -= 10; // Decrease efficiency by 10% if population is greater than 1100
+            if (efficiency < 0) efficiency = 0; // Ensure efficiency doesn't go below 0
+            showEvent("Population exceeded 1100! Government efficiency decreased by 10%.");
+        }
+
         if (population <= 0) {
             showEvent("The population has collapsed. Game Over!");
             endGame();
