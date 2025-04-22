@@ -96,6 +96,8 @@
     </div>
     <button id="redistributeButton">Redistribute Wealth</button>
     <button id="boostButton">Boost Government Efficiency</button>
+    <button id="conquestButton">Launch Conquest</button>
+
     <div id="eventMessage" class="event"></div>
 </div>
 
@@ -152,6 +154,28 @@
         }
         updateDisplay();
     });
+// Conquest button logic
+document.getElementById('conquestButton').addEventListener('click', function() {
+    const countries = [
+        "Canada", "Brazil", "Germany", "Japan", "Australia",
+        "South Africa", "India", "Russia", "France", "Mexico",
+        "Italy", "China", "Argentina", "Egypt", "Norway",
+        "South Korea", "United Kingdom", "Spain", "Thailand", "New Zealand"
+    ];
+
+    const randomCountry = countries[Math.floor(Math.random() * countries.length)];
+
+    wealth += 150; // War spoils
+    efficiency += 5;
+    happiness -= 8;
+
+    if (efficiency > 100) efficiency = 100;
+    if (happiness < 0) happiness = 0;
+
+    showEvent(`You have invaded ${randomCountry}! Wealth and efficiency increased, but happiness dropped.`);
+    updateDisplay();
+    checkGameOver();
+});
 
     // Random event function
     function triggerRandomEvent() {
