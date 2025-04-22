@@ -88,6 +88,12 @@
             <div id="efficiencyBar" class="progress-bar"></div>
         </div>
     </div>
+    <div class="stat">
+        <p>Population: <span id="population">1000</span></p>
+        <div class="progress-bar-container">
+            <div id="populationBar" class="progress-bar"></div>
+        </div>
+    </div>
     <button id="redistributeButton">Redistribute Wealth</button>
     <button id="boostButton">Boost Government Efficiency</button>
     <div id="eventMessage" class="event"></div>
@@ -98,6 +104,7 @@
     let wealth = 1000;
     let happiness = 75;
     let efficiency = 50;
+    let population = 1000;
     let wealthGenerationRate = 0;
 
     // Function to update the display values
@@ -105,11 +112,13 @@
         document.getElementById('wealth').textContent = wealth;
         document.getElementById('happiness').textContent = happiness;
         document.getElementById('efficiency').textContent = efficiency;
+        document.getElementById('population').textContent = population;
 
         // Update progress bars
         document.getElementById('wealthBar').style.width = wealth / 10 + '%';
         document.getElementById('happinessBar').style.width = happiness + '%';
         document.getElementById('efficiencyBar').style.width = efficiency + '%';
+        document.getElementById('populationBar').style.width = population / 10 + '%';
     }
 
     // Redistribute wealth function
@@ -147,23 +156,26 @@
     // Random event function
     function triggerRandomEvent() {
         const events = [
-            { message: "A natural disaster struck! Wealth decreased.", wealthChange: -100, happinessChange: -5, efficiencyChange: -2 },
-            { message: "Economic boom! Wealth increased.", wealthChange: 200, happinessChange: 5, efficiencyChange: 3 },
-            { message: "Corruption scandal! Efficiency decreased.", wealthChange: -50, happinessChange: -10, efficiencyChange: -5 }
+            { message: "A natural disaster struck! Wealth decreased.", wealthChange: -100, happinessChange: -5, efficiencyChange: -2, populationChange: -50 },
+            { message: "Economic boom! Wealth increased.", wealthChange: 200, happinessChange: 5, efficiencyChange: 3, populationChange: 20 },
+            { message: "Corruption scandal! Efficiency decreased.", wealthChange: -50, happinessChange: -10, efficiencyChange: -5, populationChange: -20 }
         ];
 
         const randomEvent = events[Math.floor(Math.random() * events.length)];
         wealth += randomEvent.wealthChange;
         happiness += randomEvent.happinessChange;
         efficiency += randomEvent.efficiencyChange;
+        population += randomEvent.populationChange;
 
         if (happiness < 0) happiness = 0;
         if (happiness > 100) happiness = 100;
         if (efficiency < 0) efficiency = 0;
         if (efficiency > 100) efficiency = 100;
+        if (population < 0) population = 0;
 
         showEvent(randomEvent.message);
         updateDisplay();
+        checkGameOver();
     }
 
     // Show event message
@@ -187,14 +199,51 @@
         updateDisplay();
     }
 
+    // Population growth function
+    function updatePopulation() {
+        if (happiness >= 85) {
+            population += 10; // Increase population if happiness is 85% or above
+        }
+
+        if (efficiency === 100) {
+            population -= 5; // Decrease population if efficiency is at 100%
+        }
+
+        if (population <= 0) {
+            showEvent("The population has collapsed. Game Over!");
+            endGame();
+        }
+    }
+
+    // Check if the game is over
+    function checkGameOver() {
+        if (population <= 0) {
+            showEvent("The population has collapsed. Game Over!");
+            endGame();
+        }
+    }
+
+    // End the game
+    function endGame() {
+        clearInterval(wealthGenerationInterval);
+        clearInterval(populationInterval);
+        clearInterval(eventInterval);
+    }
+
     // Initialize the game display
     updateDisplay();
 
     // Trigger random events every 10 seconds
-    setInterval(triggerRandomEvent, 10000);
+    const eventInterval = setInterval(triggerRandomEvent, 10000);
 
     // Generate passive wealth every second
-    setInterval(generateWealth, 1000);
+    const wealthGenerationInterval = setInterval(generateWealth, 1000);
+
+    // Update population every 2 seconds
+    const populationInterval = setInterval(function() {
+        updatePopulation();
+        updateDisplay();
+    }, 2000);
 </script>
 
 </body>
