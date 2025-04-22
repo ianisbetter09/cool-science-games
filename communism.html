@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Communism Simulator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+        .stat {
+            margin: 15px 0;
+            font-size: 1.2em;
+        }
+        .stat span {
+            font-weight: bold;
+        }
+        button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">Communism Simulator</div>
+    <div class="stat">
+        <p>Wealth Distribution: <span id="wealth">1000</span> coins</p>
+    </div>
+    <div class="stat">
+        <p>Citizen Happiness: <span id="happiness">75</span>%</p>
+    </div>
+    <div class="stat">
+        <p>Government Efficiency: <span id="efficiency">50</span>%</p>
+    </div>
+    <button id="redistributeButton">Redistribute Wealth</button>
+    <button id="boostButton">Boost Government Efficiency</button>
+</div>
+
+<script>
+    // Game variables
+    let wealth = 1000;
+    let happiness = 75;
+    let efficiency = 50;
+
+    // Function to update the display values
+    function updateDisplay() {
+        document.getElementById('wealth').textContent = wealth;
+        document.getElementById('happiness').textContent = happiness;
+        document.getElementById('efficiency').textContent = efficiency;
+    }
+
+    // Redistribute wealth function
+    document.getElementById('redistributeButton').addEventListener('click', function() {
+        let redistributionAmount = wealth * 0.1; // Redistribute 10% of wealth
+        wealth -= redistributionAmount;
+        happiness += 10; // Happiness increases due to redistribution
+
+        // Ensure happiness doesn't exceed 100%
+        if (happiness > 100) happiness = 100;
+
+        updateDisplay();
+    });
+
+    // Boost government efficiency function
+    document.getElementById('boostButton').addEventListener('click', function() {
+        if (wealth > 100) {
+            let efficiencyBoost = 5; // Boost government efficiency by 5%
+            efficiency += efficiencyBoost;
+            wealth -= 100; // Spend wealth to increase efficiency
+            if (efficiency > 100) efficiency = 100;
+        } else {
+            alert("Not enough wealth to boost efficiency!");
+        }
+        updateDisplay();
+    });
+
+    // Initialize the game display
+    updateDisplay();
+</script>
+
+</body>
+</html>
