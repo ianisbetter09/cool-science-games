@@ -70,7 +70,9 @@
 <body>
   <div id="homeScreen">
     <h1>Tag Game</h1>
-    <button onclick="startGame(1)">Play</button>
+    <p><strong>Player 1:</strong> W = Jump, A = Left, D = Right</p>
+    <p><strong>Player 2:</strong> ↑ = Jump, ← = Left, → = Right</p>
+    <button onclick="startGame()">Play</button>
   </div>
 
   <canvas id="gameCanvas" class="hidden"></canvas>
@@ -88,32 +90,39 @@
     let gameTime = 30;
     let timerInterval;
     let gameOver = false;
+    const gravity = 0.5;
+    const jumpForce = -10;
 
     const keys = {
-      w: false, a: false, s: false, d: false,
-      ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false
+      a: false, d: false, w: false,
+      ArrowLeft: false, ArrowRight: false, ArrowUp: false
     };
 
     const obstacles = [
-      { x: 500, y: 300, width: 200, height: 30, color: "#8B4513" },
-      { x: 700, y: 600, width: 30, height: 150, color: "#8B4513" },
-      { x: 200, y: 500, width: 150, height: 30, color: "#8B4513" },
-      { x: 400, y: 100, width: 100, height: 30, color: "#8B4513" },
-      { x: 900, y: 200, width: 30, height: 100, color: "#8B4513" }
+      { x: 0, y: 750, width: canvas.width, height: 50 }, // Ground
+      { x: 300, y: 600, width: 200, height: 20 },
+      { x: 600, y: 450, width: 200, height: 20 },
+      { x: 900, y: 300, width: 150, height: 20 }
     ];
 
     const powerUps = [];
 
-    let player1 = {
-      x: 100, y: 100, size: 30, color: '#FF5733',
-      speed: 4, dx: 0, dy: 0, hasShield: false
-    };
+    function createPlayer(color, x, y) {
+      return {
+        x, y,
+        size: 30,
+        color,
+        dx: 0,
+        dy: 0,
+        speed: 4,
+        onGround: false,
+        hasShield: false,
+        hasSpeedBoost: false
+      };
+    }
 
-    let player2 = {
-      x: 800, y: 600, size: 30, color: '#33FF57',
-      speed: 4, dx: 0, dy: 0, hasShield: false
-    };
-
+    let player1 = createPlayer('#FF5733', 100, 100);
+    let player2 = createPlayer('#33FF57', 800, 100);
     const players = [player1, player2];
     let currentRunnerIndex = 1;
 
@@ -137,7 +146,6 @@
         icon: "💨",
         effect: (player) => {
           player.x += player.dx * 20;
-          player.y += player.dy * 20;
         }
       },
       {
@@ -153,7 +161,7 @@
         icon: "🎲",
         effect: (player) => {
           player.x = Math.random() * (canvas.width - player.size);
-          player.y = Math.random() * (canvas.height - player.size);
+          player.y = 0;
         }
       }
     ];
@@ -169,10 +177,8 @@
     }
 
     function resetGame() {
-      player1.x = 100;
-      player1.y = 100;
-      player2.x = 800;
-      player2.y = 600;
+      player1.x = 100; player1.y = 100; player1.dy = 0;
+      player2.x = 800; player2.y = 100; player2.dy = 0;
       currentRunnerIndex = 1;
       gameOver = false;
       powerUps.length = 0;
@@ -209,28 +215,15 @@
       powerUps.push({
         ...type,
         x: Math.random() * (canvas.width - 30) + 15,
-        y: Math.random() * (canvas.height - 30) + 15,
+        y: Math.random() * (canvas.height / 2),
         size: 20
       });
       setTimeout(spawnPowerUp, Math.random() * 5000 + 5000);
     }
 
-    function drawGrass() {
-      ctx.fillStyle = '#6B8E23'; // grass color
-      ctx.fillRect(0, canvas.height - 50, canvas.width, 50); // Draw bottom grass
-    }
-
-    function drawWalls() {
-      ctx.fillStyle = '#D3D3D3'; // Light grey walls
-      ctx.fillRect(0, 0, canvas.width, 20);  // Top border wall
-      ctx.fillRect(0, canvas.height - 20, canvas.width, 20);  // Bottom border wall
-      ctx.fillRect(0, 0, 20, canvas.height);  // Left border wall
-      ctx.fillRect(canvas.width - 20, 0, 20, canvas.height);  // Right border wall
-    }
-
     function drawObstacles() {
+      ctx.fillStyle = '#8B4513';
       obstacles.forEach(o => {
-        ctx.fillStyle = o.color;
         ctx.fillRect(o.x, o.y, o.width, o.height);
       });
     }
@@ -243,16 +236,6 @@
       ctx.closePath();
     }
 
-    function drawArrow(player) {
-      ctx.beginPath();
-      ctx.moveTo(player.x, player.y - player.size - 10);
-      ctx.lineTo(player.x - 10, player.y - player.size - 30);
-      ctx.lineTo(player.x + 10, player.y - player.size - 30);
-      ctx.closePath();
-      ctx.fillStyle = 'black';
-      ctx.fill();
-    }
-
     function drawPowerUps() {
       powerUps.forEach(p => {
         ctx.font = "20px Arial";
@@ -262,28 +245,34 @@
       });
     }
 
+    function applyGravity(player) {
+      player.dy += gravity;
+      player.onGround = false;
+      obstacles.forEach(o => {
+        const bottom = player.y + player.size;
+        const nextBottom = player.y + player.dy + player.size;
+        const isOnPlatform = (
+          player.x + player.size > o.x &&
+          player.x - player.size < o.x + o.width &&
+          bottom <= o.y &&
+          nextBottom >= o.y
+        );
+        if (isOnPlatform) {
+          player.dy = 0;
+          player.y = o.y - player.size;
+          player.onGround = true;
+        }
+      });
+      player.y += player.dy;
+    }
+
     function movePlayer(player, controls) {
-      let tempDx = 0, tempDy = 0;
-
-      if (keys[controls.up]) tempDy = -player.speed;
-      if (keys[controls.down]) tempDy = player.speed;
-      if (keys[controls.left]) tempDx = -player.speed;
-      if (keys[controls.right]) tempDx = player.speed;
-
-      const nextX = player.x + tempDx;
-      const nextY = player.y + tempDy;
-
-      const collision = obstacles.some(o =>
-        nextX + player.size > o.x && nextX - player.size < o.x + o.width &&
-        nextY + player.size > o.y && nextY - player.size < o.y + o.height
-      );
-
-      if (!collision) {
-        player.dx = tempDx;
-        player.dy = tempDy;
-        player.x = nextX;
-        player.y = nextY;
+      if (keys[controls.left]) player.x -= player.speed;
+      if (keys[controls.right]) player.x += player.speed;
+      if (keys[controls.jump] && player.onGround) {
+        player.dy = jumpForce;
       }
+      applyGravity(player);
     }
 
     function checkTag(runner, chaser) {
@@ -294,7 +283,8 @@
 
     function teleportPlayer(player) {
       player.x = Math.random() * (canvas.width - 300) + 150;
-      player.y = Math.random() * (canvas.height - 300) + 150;
+      player.y = 0;
+      player.dy = 0;
     }
 
     function switchRoles() {
@@ -305,26 +295,17 @@
       if (gameOver) return;
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      drawGrass();
-      drawWalls();
       drawObstacles();
       drawPowerUps();
 
       const runner = players[currentRunnerIndex];
       const chaser = players[1 - currentRunnerIndex];
 
-      if (currentRunnerIndex === 0) {
-        movePlayer(runner, { up: 'w', down: 's', left: 'a', right: 'd' });
-        movePlayer(chaser, { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight' });
-      } else {
-        movePlayer(runner, { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight' });
-        movePlayer(chaser, { up: 'w', down: 's', left: 'a', right: 'd' });
-      }
+      movePlayer(runner, { left: 'a', right: 'd', jump: 'w' });
+      movePlayer(chaser, { left: 'ArrowLeft', right: 'ArrowRight', jump: 'ArrowUp' });
 
       drawPlayer(runner);
       drawPlayer(chaser);
-      drawArrow(chaser);
 
       powerUps.forEach((p, index) => {
         players.forEach(player => {
@@ -338,7 +319,7 @@
 
       if (checkTag(runner, chaser)) {
         if (runner.hasShield) {
-          runner.hasShield = false; // Absorb hit
+          runner.hasShield = false;
         } else {
           teleportPlayer(runner);
           teleportPlayer(chaser);
