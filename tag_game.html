@@ -65,6 +65,30 @@
       font-size: 24px;
       color: #008000;
     }
+
+    .time-select-button {
+      margin-top: 10px;
+      background-color: #FF6347;
+      font-size: 18px;
+    }
+
+    .time-select-button:hover {
+      background-color: #FF4500;
+    }
+
+    .time-option {
+      margin: 10px;
+      font-size: 20px;
+      background-color: #4CAF50;
+      color: white;
+      border-radius: 5px;
+      padding: 10px;
+      cursor: pointer;
+    }
+
+    .time-option:hover {
+      background-color: #45a049;
+    }
   </style>
 </head>
 <body>
@@ -72,6 +96,15 @@
     <h1>Tag Game</h1>
     <p><strong>Player 1:</strong> W = Jump, A = Left, D = Right</p>
     <p><strong>Player 2:</strong> ↑ = Jump, ← = Left, → = Right</p>
+
+    <div id="timeSelector">
+      <h2>Select Game Time</h2>
+      <button class="time-option" onclick="setGameTime(30)">30 Seconds</button>
+      <button class="time-option" onclick="setGameTime(60)">1 Minute</button>
+      <button class="time-option" onclick="setGameTime(90)">1 Minute 30 Seconds</button>
+      <button class="time-option" onclick="setGameTime(120)">2 Minutes</button>
+    </div>
+    
     <button onclick="startGame()">Play</button>
   </div>
 
@@ -83,11 +116,12 @@
     const ctx = canvas.getContext('2d');
     const homeScreen = document.getElementById('homeScreen');
     const timerElement = document.getElementById('timer');
+    const timeSelector = document.getElementById('timeSelector');
 
     canvas.width = 1200;
     canvas.height = 800;
 
-    let gameTime = 30;
+    let gameTime = 30; // Default time
     let timerInterval;
     let gameOver = false;
     const gravity = 0.5;
@@ -168,6 +202,11 @@
       }
     ];
 
+    function setGameTime(time) {
+      gameTime = time;
+      timerElement.textContent = `Time Left: ${gameTime}s`;
+    }
+
     function startGame() {
       homeScreen.classList.add('hidden');
       canvas.classList.remove('hidden');
@@ -187,7 +226,6 @@
     }
 
     function startTimer() {
-      gameTime = 90;
       timerElement.textContent = `Time Left: ${gameTime}s`;
       clearInterval(timerInterval);
       timerInterval = setInterval(() => {
