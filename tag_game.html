@@ -91,7 +91,7 @@
     let timerInterval;
     let gameOver = false;
     const gravity = 0.5;
-    const jumpForce = -10;
+    const jumpForce = -12; // Slightly higher jump
 
     const keys = {
       a: false, d: false, w: false,
@@ -102,7 +102,9 @@
       { x: 0, y: 750, width: canvas.width, height: 50 }, // Ground
       { x: 300, y: 600, width: 200, height: 20 },
       { x: 600, y: 450, width: 200, height: 20 },
-      { x: 900, y: 300, width: 150, height: 20 }
+      { x: 900, y: 300, width: 150, height: 20 },
+      { x: 400, y: 200, width: 150, height: 20 }, // More platforms
+      { x: 500, y: 100, width: 100, height: 20 }
     ];
 
     const powerUps = [];
