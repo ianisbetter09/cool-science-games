@@ -65,6 +65,30 @@
       font-size: 24px;
       color: #008000;
     }
+
+    .time-select-button {
+      margin-top: 10px;
+      background-color: #FF6347;
+      font-size: 18px;
+    }
+
+    .time-select-button:hover {
+      background-color: #FF4500;
+    }
+
+    .time-option {
+      margin: 10px;
+      font-size: 20px;
+      background-color: #4CAF50;
+      color: white;
+      border-radius: 5px;
+      padding: 10px;
+      cursor: pointer;
+    }
+
+    .time-option:hover {
+      background-color: #45a049;
+    }
   </style>
 </head>
 <body>
@@ -73,6 +97,14 @@
     <p><strong>Player 1:</strong> W = Jump, A = Left, D = Right</p>
     <p><strong>Player 2:</strong> ↑ = Jump, ← = Left, → = Right</p>
 
+    <div id="timeSelector">
+      <h2>Select Game Time</h2>
+      <button class="time-option" onclick="setGameTime(30)">30 Seconds</button>
+      <button class="time-option" onclick="setGameTime(60)">1 Minute</button>
+      <button class="time-option" onclick="setGameTime(90)">1 Minute 30 Seconds</button>
+      <button class="time-option" onclick="setGameTime(120)">2 Minutes</button>
+    </div>
+    
     <button onclick="startGame()">Play</button>
   </div>
 
@@ -84,6 +116,7 @@
     const ctx = canvas.getContext('2d');
     const homeScreen = document.getElementById('homeScreen');
     const timerElement = document.getElementById('timer');
+    const timeSelector = document.getElementById('timeSelector');
 
     canvas.width = 1200;
     canvas.height = 800;
@@ -108,6 +141,8 @@
       { x: 500, y: 200, width: 100, height: 20 }
     ];
 
+    const powerUps = [];
+
     function createPlayer(color, x, y) {
       return {
         x, y,
@@ -117,13 +152,60 @@
         dy: 0,
         speed: 4,
         onGround: false,
+        hasShield: false,
+        hasSpeedBoost: false
       };
     }
 
-    let player1 = createPlayer('#FF5733', 100, 100); // Player 1 (Red)
-    let player2 = createPlayer('#33FF57', 800, 100); // Player 2 (Green)
+    let player1 = createPlayer('#FF5733', 100, 100);
+    let player2 = createPlayer('#33FF57', 800, 100);
     const players = [player1, player2];
     let currentRunnerIndex = 1;
+
+    const powerUpTypes = [
+      {
+        name: "speed",
+        icon: "⚡",
+        effect: (player) => {
+          if (!player.hasSpeedBoost) {
+            player.speed += 2;
+            player.hasSpeedBoost = true;
+            setTimeout(() => {
+              player.speed -= 2;
+              player.hasSpeedBoost = false;
+            }, 5000);
+          }
+        }
+      },
+      {
+        name: "dash",
+        icon: "💨",
+        effect: (player) => {
+          player.x += player.dx * 20;
+        }
+      },
+      {
+        name: "shield",
+        icon: "🛡️",
+        effect: (player) => {
+          player.hasShield = true;
+          setTimeout(() => player.hasShield = false, 7000);
+        }
+      },
+      {
+        name: "randomJump",
+        icon: "🎲",
+        effect: (player) => {
+          player.x = Math.random() * (canvas.width - player.size);
+          player.y = 0;
+        }
+      }
+    ];
+
+    function setGameTime(time) {
+      gameTime = time;
+      timerElement.textContent = Time Left: ${gameTime}s;
+    }
 
     function startGame() {
       homeScreen.classList.add('hidden');
@@ -131,6 +213,7 @@
       timerElement.classList.remove('hidden');
       resetGame();
       startTimer();
+      spawnPowerUp();
       gameLoop();
     }
 
@@ -139,15 +222,16 @@
       player2.x = 800; player2.y = 100; player2.dy = 0;
       currentRunnerIndex = 1;
       gameOver = false;
+      powerUps.length = 0;
     }
 
     function startTimer() {
-      timerElement.textContent = `Time Left: ${gameTime}s`;
+      timerElement.textContent = Time Left: ${gameTime}s;
       clearInterval(timerInterval);
       timerInterval = setInterval(() => {
         if (gameOver) return;
         gameTime--;
-        timerElement.textContent = `Time Left: ${gameTime}s`;
+        timerElement.textContent = Time Left: ${gameTime}s;
         if (gameTime <= 0) {
           clearInterval(timerInterval);
           gameOver = true;
@@ -159,11 +243,22 @@
     function endGame() {
       const chaserIndex = 1 - currentRunnerIndex;
       const chaserColor = players[chaserIndex].color === '#FF5733' ? 'Red' : 'Green';
-      alert(`${chaserColor} lost!`);
+      alert(${chaserColor} lost!);
       homeScreen.classList.remove('hidden');
       canvas.classList.add('hidden');
       timerElement.classList.add('hidden');
       resetGame();
+    }
+
+    function spawnPowerUp() {
+      const type = powerUpTypes[Math.floor(Math.random() * powerUpTypes.length)];
+      powerUps.push({
+        ...type,
+        x: Math.random() * (canvas.width - 30) + 15,
+        y: Math.random() * (canvas.height / 2),
+        size: 20
+      });
+      setTimeout(spawnPowerUp, Math.random() * 5000 + 5000);
     }
 
     function drawBackground() {
@@ -186,6 +281,11 @@
       ctx.arc(110, 440, 30, 0, Math.PI * 2);
       ctx.fillStyle = "#228B22"; // Tree leaves
       ctx.fill();
+      
+      ctx.fillRect(600, 400, 20, 50);
+      ctx.beginPath();
+      ctx.arc(610, 390, 30, 0, Math.PI * 2);
+      ctx.fill();
     }
 
     function drawObstacles() {
@@ -196,8 +296,20 @@
     }
 
     function drawPlayer(player) {
-      ctx.fillStyle = player.color;
-      ctx.fillRect(player.x, player.y, player.size, player.size); // Solid color block for testing
+      ctx.beginPath();
+      ctx.arc(player.x, player.y, player.size, 0, Math.PI * 2);
+      ctx.fillStyle = player.hasShield ? '#00FFFF' : player.color;
+      ctx.fill();
+      ctx.closePath();
+    }
+
+    function drawPowerUps() {
+      powerUps.forEach(p => {
+        ctx.font = "20px Arial";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(p.icon, p.x, p.y);
+      });
     }
 
     function applyGravity(player) {
@@ -242,6 +354,12 @@
       return Math.sqrt(dx * dx + dy * dy) < runner.size + chaser.size;
     }
 
+    function teleportPlayer(player) {
+      player.x = Math.random() * (canvas.width - 300) + 150;
+      player.y = 0;
+      player.dy = 0;
+    }
+
     function switchRoles() {
       currentRunnerIndex = 1 - currentRunnerIndex;
     }
@@ -257,6 +375,9 @@
       // Draw the obstacles (platforms)
       drawObstacles();
 
+      // Draw power-ups
+      drawPowerUps();
+
       // Get the current runner and chaser
       const runner = players[currentRunnerIndex];
       const chaser = players[1 - currentRunnerIndex];
@@ -269,11 +390,26 @@
       drawPlayer(runner);
       drawPlayer(chaser);
 
+      // Handle power-ups
+      powerUps.forEach((p, index) => {
+        players.forEach(player => {
+          const dist = Math.hypot(player.x - p.x, player.y - p.y);
+          if (dist < player.size + p.size) {
+            p.effect(player);
+            powerUps.splice(index, 1);
+          }
+        });
+      });
+
       // Check for tag (collision)
       if (checkTag(runner, chaser)) {
-        teleportPlayer(runner);
-        teleportPlayer(chaser);
-        switchRoles();
+        if (runner.hasShield) {
+          runner.hasShield = false;
+        } else {
+          teleportPlayer(runner);
+          teleportPlayer(chaser);
+          switchRoles();
+        }
       }
 
       requestAnimationFrame(gameLoop);
