@@ -65,30 +65,6 @@
       font-size: 24px;
       color: #008000;
     }
-
-    .time-select-button {
-      margin-top: 10px;
-      background-color: #FF6347;
-      font-size: 18px;
-    }
-
-    .time-select-button:hover {
-      background-color: #FF4500;
-    }
-
-    .time-option {
-      margin: 10px;
-      font-size: 20px;
-      background-color: #4CAF50;
-      color: white;
-      border-radius: 5px;
-      padding: 10px;
-      cursor: pointer;
-    }
-
-    .time-option:hover {
-      background-color: #45a049;
-    }
   </style>
 </head>
 <body>
@@ -97,14 +73,6 @@
     <p><strong>Player 1:</strong> W = Jump, A = Left, D = Right</p>
     <p><strong>Player 2:</strong> ↑ = Jump, ← = Left, → = Right</p>
 
-    <div id="timeSelector">
-      <h2>Select Game Time</h2>
-      <button class="time-option" onclick="setGameTime(30)">30 Seconds</button>
-      <button class="time-option" onclick="setGameTime(60)">1 Minute</button>
-      <button class="time-option" onclick="setGameTime(90)">1 Minute 30 Seconds</button>
-      <button class="time-option" onclick="setGameTime(120)">2 Minutes</button>
-    </div>
-    
     <button onclick="startGame()">Play</button>
   </div>
 
@@ -116,7 +84,6 @@
     const ctx = canvas.getContext('2d');
     const homeScreen = document.getElementById('homeScreen');
     const timerElement = document.getElementById('timer');
-    const timeSelector = document.getElementById('timeSelector');
 
     canvas.width = 1200;
     canvas.height = 800;
@@ -141,9 +108,7 @@
       { x: 500, y: 200, width: 100, height: 20 }
     ];
 
-    const powerUps = [];
-
-    function createPlayer(color, x, y, spriteSheet) {
+    function createPlayer(color, x, y) {
       return {
         x, y,
         size: 30,
@@ -152,66 +117,13 @@
         dy: 0,
         speed: 4,
         onGround: false,
-        hasShield: false,
-        hasSpeedBoost: false,
-        spriteSheet,
-        currentFrame: 0,
-        lastFrameTime: 0,
       };
     }
 
-    let spriteSheet = new Image();
-    spriteSheet.src = 'path_to_sprite_sheet.png'; // Replace with actual sprite sheet path
-
-    let player1 = createPlayer('#FF5733', 100, 100, spriteSheet);
-    let player2 = createPlayer('#33FF57', 800, 100, spriteSheet);
+    let player1 = createPlayer('#FF5733', 100, 100); // Player 1 (Red)
+    let player2 = createPlayer('#33FF57', 800, 100); // Player 2 (Green)
     const players = [player1, player2];
     let currentRunnerIndex = 1;
-
-    const powerUpTypes = [
-      {
-        name: "speed",
-        icon: "⚡",
-        effect: (player) => {
-          if (!player.hasSpeedBoost) {
-            player.speed += 2;
-            player.hasSpeedBoost = true;
-            setTimeout(() => {
-              player.speed -= 2;
-              player.hasSpeedBoost = false;
-            }, 5000);
-          }
-        }
-      },
-      {
-        name: "dash",
-        icon: "💨",
-        effect: (player) => {
-          player.x += player.dx * 20;
-        }
-      },
-      {
-        name: "shield",
-        icon: "🛡️",
-        effect: (player) => {
-          player.hasShield = true;
-          setTimeout(() => player.hasShield = false, 7000);
-        }
-      },
-      {
-        name: "randomJump",
-        icon: "🎲",
-        effect: (player) => {
-          player.x = Math.random() * (canvas.width - player.size);
-          player.y = 0;
-        }
-      }
-    ];
-
-    function setGameTime(time) {
-      gameTime = time;
-      timerElement.textContent = `Time Left: ${gameTime}s`;
-    }
 
     function startGame() {
       homeScreen.classList.add('hidden');
@@ -219,7 +131,6 @@
       timerElement.classList.remove('hidden');
       resetGame();
       startTimer();
-      spawnPowerUp();
       gameLoop();
     }
 
@@ -228,7 +139,6 @@
       player2.x = 800; player2.y = 100; player2.dy = 0;
       currentRunnerIndex = 1;
       gameOver = false;
-      powerUps.length = 0;
     }
 
     function startTimer() {
@@ -256,17 +166,6 @@
       resetGame();
     }
 
-    function spawnPowerUp() {
-      const type = powerUpTypes[Math.floor(Math.random() * powerUpTypes.length)];
-      powerUps.push({
-        ...type,
-        x: Math.random() * (canvas.width - 30) + 15,
-        y: Math.random() * (canvas.height / 2),
-        size: 20
-      });
-      setTimeout(spawnPowerUp, Math.random() * 5000 + 5000);
-    }
-
     function drawBackground() {
       ctx.fillStyle = "#87CEEB"; // Sky blue
       ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -279,6 +178,14 @@
       ctx.quadraticCurveTo(1200, 300, 1200, 500);
       ctx.closePath();
       ctx.fill();
+
+      // Draw trees
+      ctx.fillStyle = "#8B4513"; // Tree trunk color
+      ctx.fillRect(100, 450, 20, 50);
+      ctx.beginPath();
+      ctx.arc(110, 440, 30, 0, Math.PI * 2);
+      ctx.fillStyle = "#228B22"; // Tree leaves
+      ctx.fill();
     }
 
     function drawObstacles() {
@@ -289,30 +196,8 @@
     }
 
     function drawPlayer(player) {
-      const now = Date.now();
-      if (now - player.lastFrameTime > 200) { // Adjust frame rate for animation speed
-        player.currentFrame = (player.currentFrame + 1) % 4; // Assuming 4 frames for walking
-        player.lastFrameTime = now;
-      }
-      
-      const frameX = player.currentFrame * 32;
-      const frameY = 0; // For the first row of sprite sheet (adjust if different)
-      ctx.drawImage(player.spriteSheet, frameX, frameY, 32, 32, player.x, player.y, 32, 32);
-
-      // Draw arrow above the "it" player
-      if (currentRunnerIndex === players.indexOf(player)) {
-        drawArrow(player.x, player.y - 40);
-      }
-    }
-
-    function drawArrow(x, y) {
-      ctx.beginPath();
-      ctx.moveTo(x, y);
-      ctx.lineTo(x - 10, y - 20); // Left point
-      ctx.lineTo(x + 10, y - 20); // Right point
-      ctx.closePath();
-      ctx.fillStyle = 'red';
-      ctx.fill();
+      ctx.fillStyle = player.color;
+      ctx.fillRect(player.x, player.y, player.size, player.size); // Solid color block for testing
     }
 
     function applyGravity(player) {
@@ -334,6 +219,7 @@
         }
       });
 
+      // Prevent players from falling below the ground
       if (player.y > canvas.height - player.size) {
         player.y = canvas.height - player.size;
         player.dy = 0;
@@ -347,28 +233,57 @@
       if (keys[controls.jump] && player.onGround) {
         player.dy = jumpForce;
       }
+      applyGravity(player);
+    }
+
+    function checkTag(runner, chaser) {
+      const dx = runner.x - chaser.x;
+      const dy = runner.y - chaser.y;
+      return Math.sqrt(dx * dx + dy * dy) < runner.size + chaser.size;
+    }
+
+    function switchRoles() {
+      currentRunnerIndex = 1 - currentRunnerIndex;
     }
 
     function gameLoop() {
       if (gameOver) return;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      drawBackground();
-      drawObstacles();
-      players.forEach(player => drawPlayer(player));
 
-      applyGravity(player1);
-      applyGravity(player2);
-      movePlayer(player1, { left: 'a', right: 'd', jump: 'w' });
-      movePlayer(player2, { left: 'ArrowLeft', right: 'ArrowRight', jump: 'ArrowUp' });
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Draw the background
+      drawBackground();
+
+      // Draw the obstacles (platforms)
+      drawObstacles();
+
+      // Get the current runner and chaser
+      const runner = players[currentRunnerIndex];
+      const chaser = players[1 - currentRunnerIndex];
+
+      // Move players
+      movePlayer(runner, { left: 'a', right: 'd', jump: 'w' });
+      movePlayer(chaser, { left: 'ArrowLeft', right: 'ArrowRight', jump: 'ArrowUp' });
+
+      // Draw players
+      drawPlayer(runner);
+      drawPlayer(chaser);
+
+      // Check for tag (collision)
+      if (checkTag(runner, chaser)) {
+        teleportPlayer(runner);
+        teleportPlayer(chaser);
+        switchRoles();
+      }
+
       requestAnimationFrame(gameLoop);
     }
 
-    // Event Listeners
-    window.addEventListener('keydown', e => {
+    document.addEventListener('keydown', e => {
       if (e.key in keys) keys[e.key] = true;
     });
 
-    window.addEventListener('keyup', e => {
+    document.addEventListener('keyup', e => {
       if (e.key in keys) keys[e.key] = false;
     });
   </script>
