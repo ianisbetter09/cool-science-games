@@ -3,18 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Play Chess vs Bot</title>
+  <title>Chessboard</title>
   <!-- Include Chessboard.js CSS -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboardjs/1.0.0/chessboard-1.0.0.min.css">
   <style>
     body {
       font-family: Arial, sans-serif;
       text-align: center;
+      margin-top: 20px;
     }
-    #board {
+    #board1 {
       margin: 20px auto;
     }
-    #startBtn, #clearBtn, #moveBtn {
+    #startBtn, #clearBtn {
       margin: 10px;
       padding: 10px 20px;
       font-size: 16px;
@@ -25,11 +26,6 @@
       color: white;
       border: none;
     }
-    #moveBtn {
-      background-color: #008CBA;
-      color: white;
-      border: none;
-    }
     button:hover {
       opacity: 0.8;
     }
@@ -37,7 +33,7 @@
 </head>
 <body>
 
-  <h1>Play Chess vs Bot</h1>
+  <h1>Play Chess</h1>
 
   <!-- Container for the Chessboard -->
   <div id="board1" style="width: 400px"></div>
@@ -45,93 +41,28 @@
   <!-- Buttons to control the game -->
   <button id="startBtn">Start Game</button>
   <button id="clearBtn">Clear Board</button>
-  <button id="moveBtn">Move for Bot</button>
 
-  <!-- Include Chess.js, Chessboard.js, and Stockfish.js -->
+  <!-- Include Chess.js and Chessboard.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboardjs/1.0.0/chessboard-1.0.0.min.js"></script>
-  <script src="https://unpkg.com/stockfish@latest/stockfish.js"></script>
 
   <script>
     // Initialize Chessboard.js and Chess.js
     const board = Chessboard('board1', {
       draggable: true,
-      dropOffBoard: 'trash',
-      sparePieces: false,
-      onDrop: handleMove
+      dropOffBoard: 'trash', // Pieces that are dragged off the board will be discarded
+      sparePieces: true
     });
 
-    const game = new Chess();
-    const stockfish = Stockfish();
-
-    // Stockfish's move function
-    function makeBotMove() {
-      if (game.game_over()) return;
-
-      stockfish.postMessage('position fen ' + game.fen());
-      stockfish.postMessage('go depth 10');
-
-      stockfish.onmessage = function(event) {
-        const message = event.data;
-        if (message && message.includes('bestmove')) {
-          const move = message.split(' ')[1];
-          game.ugly_move(game.move(move));
-          renderMoveHistory(game.history());
-          renderMoveBot(move);
-          board.position(game.fen());
-        }
-      };
-    }
-
-    // Handle player's move
-    function handleMove(source, target) {
-      const move = game.move({
-        from: source,
-        to: target,
-        promotion: 'q' // Always promote to queen for simplicity
-      });
-
-      renderMoveHistory(game.history());
-      board.position(game.fen());
-
-      // Check if the game is over after the player's move
-      if (game.game_over()) {
-        alert("Game Over");
-      } else {
-        // Make the bot move after the player's move
-        setTimeout(makeBotMove, 500); // Delay for a more natural feeling
-      }
-    }
-
-    // Render move history
-    function renderMoveHistory(moves) {
-      console.log('Move History: ', moves);
-    }
-
-    // Render the bot's move
-    function renderMoveBot(move) {
-      console.log("Bot Move: ", move);
-    }
-
-    // Start button event
+    // Event listeners for buttons
     document.getElementById('startBtn').addEventListener('click', function() {
-      game.reset();
-      board.start();
-      renderMoveHistory(game.history());
+      board.start();  // Reset board to initial position
     });
 
-    // Clear button event
     document.getElementById('clearBtn').addEventListener('click', function() {
-      game.clear();
-      board.clear();
+      board.clear();  // Clear the board
     });
-
-    // Move button event (manual bot move)
-    document.getElementById('moveBtn').addEventListener('click', makeBotMove);
-
-    // Initialize board
-    board.position(game.fen());
-
   </script>
+
 </body>
 </html>
