@@ -17,6 +17,21 @@
     #startBtn, #clearBtn, #moveBtn {
       margin: 10px;
       padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #startBtn, #clearBtn {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+    }
+    #moveBtn {
+      background-color: #008CBA;
+      color: white;
+      border: none;
+    }
+    button:hover {
+      opacity: 0.8;
     }
   </style>
 </head>
@@ -32,7 +47,7 @@
   <button id="clearBtn">Clear Board</button>
   <button id="moveBtn">Move for Bot</button>
 
-  <!-- Include Chess.js and Stockfish.js -->
+  <!-- Include Chess.js, Chessboard.js, and Stockfish.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboardjs/1.0.0/chessboard-1.0.0.min.js"></script>
   <script src="https://unpkg.com/stockfish@latest/stockfish.js"></script>
@@ -42,11 +57,11 @@
     const board = Chessboard('board1', {
       draggable: true,
       dropOffBoard: 'trash',
-      sparePieces: false
+      sparePieces: false,
+      onDrop: handleMove
     });
 
     const game = new Chess();
-
     const stockfish = Stockfish();
 
     // Stockfish's move function
@@ -66,6 +81,26 @@
           board.position(game.fen());
         }
       };
+    }
+
+    // Handle player's move
+    function handleMove(source, target) {
+      const move = game.move({
+        from: source,
+        to: target,
+        promotion: 'q' // Always promote to queen for simplicity
+      });
+
+      renderMoveHistory(game.history());
+      board.position(game.fen());
+
+      // Check if the game is over after the player's move
+      if (game.game_over()) {
+        alert("Game Over");
+      } else {
+        // Make the bot move after the player's move
+        setTimeout(makeBotMove, 500); // Delay for a more natural feeling
+      }
     }
 
     // Render move history
@@ -91,7 +126,7 @@
       board.clear();
     });
 
-    // Move button event
+    // Move button event (manual bot move)
     document.getElementById('moveBtn').addEventListener('click', makeBotMove);
 
     // Initialize board
