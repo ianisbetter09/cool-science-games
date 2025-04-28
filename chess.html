@@ -4,8 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chessboard</title>
-  <!-- Include Chessboard.js CSS -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboardjs/1.0.0/chessboard-1.0.0.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chessboardjs@1.0.0/dist/chessboard.min.css">
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -13,6 +12,7 @@
       margin-top: 20px;
     }
     #board1 {
+      width: 400px;
       margin: 20px auto;
     }
     #startBtn, #clearBtn {
@@ -20,8 +20,6 @@
       padding: 10px 20px;
       font-size: 16px;
       cursor: pointer;
-    }
-    #startBtn, #clearBtn {
       background-color: #4CAF50;
       color: white;
       border: none;
@@ -34,33 +32,26 @@
 <body>
 
   <h1>Play Chess</h1>
-
-  <!-- Container for the Chessboard -->
-  <div id="board1" style="width: 400px"></div>
-
-  <!-- Buttons to control the game -->
+  <div id="board1"></div>
   <button id="startBtn">Start Game</button>
   <button id="clearBtn">Clear Board</button>
 
-  <!-- Include Chess.js and Chessboard.js -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboardjs/1.0.0/chessboard-1.0.0.min.js"></script>
-
+  <script src="https://cdn.jsdelivr.net/npm/chessboardjs@1.0.0/dist/chessboard.min.js"></script>
   <script>
-    // Initialize Chessboard.js and Chess.js
-    const board = Chessboard('board1', {
-      draggable: true,
-      dropOffBoard: 'trash', // Pieces that are dragged off the board will be discarded
-      sparePieces: true
-    });
+    document.addEventListener('DOMContentLoaded', function () {
+      const board = Chessboard('board1', {
+        draggable: true,
+        dropOffBoard: 'trash',
+        sparePieces: true
+      });
 
-    // Event listeners for buttons
-    document.getElementById('startBtn').addEventListener('click', function() {
-      board.start();  // Reset board to initial position
-    });
+      document.getElementById('startBtn').addEventListener('click', function() {
+        board.start();
+      });
 
-    document.getElementById('clearBtn').addEventListener('click', function() {
-      board.clear();  // Clear the board
+      document.getElementById('clearBtn').addEventListener('click', function() {
+        board.clear();
+      });
     });
   </script>
 
