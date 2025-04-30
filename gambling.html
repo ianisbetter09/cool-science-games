@@ -152,7 +152,7 @@
     document.addEventListener('DOMContentLoaded', () => {
         let coins = 100;
         let luckyClovers = 0;
-        let stockPortfolio = [];
+        let stockPortfolio = {};
 
         const riskBtn = document.getElementById('risk-button');
         const resetBtn = document.getElementById('reset-button');
@@ -185,10 +185,12 @@
             stockListEl.innerHTML = '';
             stocks.forEach((stock, index) => {
                 const stockItem = document.createElement('div');
+                const stockOwned = stockPortfolio[stock.name] || 0; // Get number of stocks owned for this company
                 stockItem.classList.add('stock-item');
                 stockItem.innerHTML = `
                     <div class="stock-name">${stock.name}</div>
                     <div class="stock-price">Price: ${stock.price} Coins</div>
+                    <div class="stock-owned">Owned: ${stockOwned}</div>
                     <button class="button buy-button" onclick="buyStock(${index})">Buy</button>
                     <button class="button sell-button" onclick="sellStock(${index})">Sell</button>
                 `;
@@ -201,8 +203,9 @@
             const stock = stocks[index];
             if (coins >= stock.price) {
                 coins -= stock.price;
-                stockPortfolio.push(stock);
+                stockPortfolio[stock.name] = (stockPortfolio[stock.name] || 0) + 1;
                 coinCountEl.textContent = `Coins: ${coins}`;
+                renderStockMarket();
                 alert(`You bought 1 share of ${stock.name}!`);
             } else {
                 alert("You don't have enough coins to buy this stock.");
@@ -212,11 +215,15 @@
         // Sell stock
         window.sellStock = function (index) {
             const stock = stocks[index];
-            const stockIndex = stockPortfolio.indexOf(stock);
-            if (stockIndex !== -1) {
+            const stockCount = stockPortfolio[stock.name] || 0;
+            if (stockCount > 0) {
                 coins += stock.price;
-                stockPortfolio.splice(stockIndex, 1);
+                stockPortfolio[stock.name] -= 1;
+                if (stockPortfolio[stock.name] === 0) {
+                    delete stockPortfolio[stock.name];
+                }
                 coinCountEl.textContent = `Coins: ${coins}`;
+                renderStockMarket();
                 alert(`You sold 1 share of ${stock.name}!`);
             } else {
                 alert("You don't own any shares of this stock.");
@@ -290,7 +297,7 @@
         function resetGame() {
             coins = 100;
             luckyClovers = 0;
-            stockPortfolio = [];
+            stockPortfolio = {};
             coinCountEl.textContent = `Coins: ${coins}`;
             cloverCountEl.textContent = `Lucky Clovers Owned: ${luckyClovers}`;
             resultEl.innerHTML = '';
@@ -309,8 +316,8 @@
             renderStockMarket();
         }
 
-       
-        setInterval(fluctuateStockPrices, 30000);
+        // Start stock price fluctuation every 5 seconds
+        setInterval(fluctuateStockPrices, 5000);
 
         renderStockMarket();
     });
