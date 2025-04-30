@@ -135,24 +135,6 @@
         <button id="reset-button" class="button" onclick="resetGame()" style="display: none;">Reset Game</button>
     </div>
 
-<button class="button" onclick="openWheel()">Spin Daily Bonus Wheel</button>
-
-<div id="wheel-overlay" class="shop-overlay" onclick="closeWheel()"></div>
-<div id="wheel-modal" class="shop-modal">
-    <h2>Daily Bonus Wheel</h2>
-    <div id="wheel-container">
-        <div id="wheel">
-            <div class="segment">100💰</div>
-            <div class="segment">200💰</div>
-            <div class="segment">🍀</div>
-            <div class="segment">😢</div>
-        </div>
-    </div>
-    <button id="spin-btn" onclick="spinWheel()">🎉 Spin</button>
-    <p id="wheel-result"></p>
-    <button onclick="closeWheel()">Close</button>
-</div>
-
 
     
     <!-- Shop Modal -->
@@ -163,9 +145,7 @@
     <button onclick="buyLuckyClover()">Buy Lucky Clover</button>
     <p id="clover-count">Lucky Clovers Owned: 0</p>
     <hr>
-    <p>Buy the "Wheel Cooldown Halver" for 5000 coins. Allows spinning every 12 hours!</p>
-    <button onclick="buyCooldownHalver()" id="halver-button">Buy Cooldown Halver</button>
-    <p id="halver-status"></p>
+  
 
     <button onclick="closeShop()">Close</button>
 </div>
@@ -175,9 +155,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     let coins = 100;
     let luckyClovers = 0;
-    let lastSpin = localStorage.getItem("lastSpinDate");
-    let spinning = false;
-    let hasHalver = localStorage.getItem("hasCooldownHalver") === "true";
+  
 
     const riskBtn = document.getElementById('risk-button');
     const resetBtn = document.getElementById('reset-button');
@@ -214,14 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    window.openShop = function () {
-        document.getElementById('shop-modal').style.display = 'block';
-        document.getElementById('shop-overlay').style.display = 'block';
-        document.getElementById('halver-status').textContent = hasHalver ? "✅ Cooldown Halver purchased!" : "";
-    document.getElementById('halver-button').disabled = hasHalver;
-
-        updateCloverPrice();
-    };
+   
 
     window.closeShop = function () {
         document.getElementById('shop-modal').style.display = 'none';
@@ -248,111 +219,10 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('clover-price').textContent = cloverPrice;
     }
 
-    window.openWheel = function () {
-    const today = new Date().toDateString();
-    const wheelResult = document.getElementById('wheel-result');
-    const spinBtn = document.querySelector('#wheel-modal button[onclick="spinWheel()"]');
-
-    document.getElementById('wheel-modal').style.display = 'block';
-    document.getElementById('wheel-overlay').style.display = 'block';
-    wheelResult.textContent = '';
-
-    const now = Date.now();
-    const lastSpinTime = localStorage.getItem("lastSpinTimestamp");
-    const cooldown = hasHalver ? 12 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000;
-
-    if (lastSpinTime && now - lastSpinTime < cooldown) {
-        spinBtn.disabled = true;
-        const hoursLeft = Math.ceil((cooldown - (now - lastSpinTime)) / (60 * 60 * 1000));
-        wheelResult.textContent = `You can spin again in ${hoursLeft} hour(s)!`;
-    } else {
-        spinBtn.disabled = false;
-    }
-};
+ 
 
 
-    window.closeWheel = function () {
-        document.getElementById('wheel-modal').style.display = 'none';
-        document.getElementById('wheel-overlay').style.display = 'none';
-    };
-
-   window.spinWheel = function () {
-    if (spinning) return;  // Prevent multiple spins at once
-    spinning = true;
-
-    // Array of possible prizes
-    const prizes = [
-        { type: 'coins', value: 100, text: 'You won 100 coins!' },
-        { type: 'coins', value: 200, text: 'Jackpot! You won 200 coins!' },
-        { type: 'clover', value: 1, text: 'Lucky you! You got 1 Lucky Clover!' },
-        { type: 'mystery', value: 0, text: 'Mystery prize: No reward... this time!' },
-    ];
-
-    // Randomly choose a prize
-    const prize = prizes[Math.floor(Math.random() * prizes.length)];
-
-    // Apply a random rotation between 3 and 5 full spins (to simulate the spinning)
-    const randomRotation = Math.floor(Math.random() * 2) + 3;  // 3 to 5 full rotations
-
-    const wheel = document.getElementById('wheel');
-    const wheelResult = document.getElementById('wheel-result');
-    const spinBtn = document.querySelector('#wheel-modal button[onclick="spinWheel()"]');
-
-    // Triggering the spin animation with CSS transform
-    wheel.style.transition = 'transform 3s cubic-bezier(0.33, 1, 0.68, 1)';
-    wheel.style.transform = `rotate(${randomRotation * 360}deg)`;  // Rotate the wheel
-
-    setTimeout(() => {
-        // Determine the result of the spin and update the game state
-        if (prize.type === 'coins') {
-            coins += prize.value;
-        } else if (prize.type === 'clover') {
-            luckyClovers += prize.value;
-        }
-
-        // Update localStorage to track last spin time and spin timestamp
-        lastSpin = new Date().toDateString();
-        localStorage.setItem("lastSpinDate", lastSpin);
-        localStorage.setItem("lastSpinTimestamp", Date.now());
-
-        // Display the result of the wheel spin
-        coinCountEl.textContent = `Coins: ${coins}`;
-        cloverCountEl.textContent = `Lucky Clovers Owned: ${luckyClovers}`;
-        wheelResult.textContent = prize.text;
-
-        // Reset wheel spin state and update the UI
-        spinning = false;
-
-        // Ensure the spin button is enabled again
-        spinBtn.disabled = false;
-
-        // Hide the result after 3 seconds (optional)
-        setTimeout(() => {
-            wheelResult.textContent = '';
-        }, 3000);
-    }, 3000); // Time corresponds to the wheel rotation duration (3s)
-};
-
-window.buyCooldownHalver = function () {
-    if (hasHalver) {
-        alert("You've already bought this upgrade!");
-        return;
-    }
-
-    if (coins >= 5000) {
-        coins -= 5000;
-        hasHalver = true;
-        localStorage.setItem("hasCooldownHalver", "true");
-        coinCountEl.textContent = `Coins: ${coins}`;
-        document.getElementById('halver-status').textContent = "✅ Cooldown Halver purchased!";
-        document.getElementById('halver-button').disabled = true;
-        alert("You can now spin the wheel every 12 hours!");
-        closeShop();
-    } else {
-        alert("Not enough coins for this upgrade!");
-    }
-};
-
+ 
     window.resetGame = function () {
         coins = 100;
         luckyClovers = 0;
