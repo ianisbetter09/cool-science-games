@@ -155,7 +155,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     let coins = 100;
     let luckyClovers = 0;
-  
 
     const riskBtn = document.getElementById('risk-button');
     const resetBtn = document.getElementById('reset-button');
@@ -192,8 +191,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-   
+    // Function to open the shop
+    window.openShop = function () {
+        document.getElementById('shop-modal').style.display = 'block';
+        document.getElementById('shop-overlay').style.display = 'block';
+    };
 
+    // Function to close the shop
     window.closeShop = function () {
         document.getElementById('shop-modal').style.display = 'none';
         document.getElementById('shop-overlay').style.display = 'none';
@@ -218,6 +222,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const cloverPrice = 200 + luckyClovers * 50;
         document.getElementById('clover-price').textContent = cloverPrice;
     }
+
+    window.resetGame = function () {
+        coins = 100;
+        luckyClovers = 0;
+        coinCountEl.textContent = `Coins: ${coins}`;
+        cloverCountEl.textContent = `Lucky Clovers Owned: ${luckyClovers}`;
+        resultEl.textContent = '';
+        riskBtn.disabled = false;
+        resetBtn.style.display = 'none';
+        updateCloverPrice();
+    };
+});
+
 
  
 
