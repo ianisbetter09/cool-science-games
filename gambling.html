@@ -300,6 +300,18 @@
             renderStockMarket();
         }
 
+        // Random stock price fluctuation
+        function fluctuateStockPrices() {
+            stocks.forEach((stock) => {
+                const fluctuation = (Math.random() * 20 - 10); // Change price by -10 to +10
+                stock.price = Math.max(1, stock.price + Math.floor(fluctuation)); // Ensure price is never below 1
+            });
+            renderStockMarket();
+        }
+
+        // Start stock price fluctuation every 5 seconds
+        setInterval(fluctuateStockPrices, 5000);
+
         renderStockMarket();
     });
     </script>
