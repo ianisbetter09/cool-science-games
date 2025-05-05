@@ -208,13 +208,13 @@ function gameLoop() {
   if (isUpPressed) {
     dino.velocity = -3;  // Move up at a slower speed
   } else if (isDownPressed) {
-    dino.velocity = 0;  // Move down at a slower speed
+    dino.velocity = 0.000001;  // Move down at a slower speed
   } else {
     // Apply gravity: slow the movement when no keys are pressed
     if (dino.velocity < 0) {
-      dino.velocity += 0.0;  // Slow upward movement to simulate gravity
+      dino.velocity += 0.0000001;  // Slow upward movement to simulate gravity
     } else if (dino.velocity > 0) {
-      dino.velocity -= 0.0;  // Slow downward movement to simulate gravity
+      dino.velocity -= 0.0000001;  // Slow downward movement to simulate gravity
     }
   }
 
