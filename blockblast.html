@@ -35,7 +35,7 @@
       background-color: gray;
       cursor: pointer;
       border-radius: 4px;
-      transition: transform 0.1s ease;
+      transition: transform 0.2s ease, opacity 0.2s ease;
     }
 
     .block:hover {
@@ -46,6 +46,12 @@
     .green { background-color: #2ecc71; }
     .blue { background-color: #3498db; }
     .yellow { background-color: #f1c40f; }
+
+    .hidden {
+      opacity: 0;
+      transform: scale(0);
+      pointer-events: none;
+    }
 
     #game-over {
       margin-top: 20px;
@@ -113,17 +119,9 @@
       const connected = findConnectedBlocks(row, col, targetColor);
 
       if (connected.length >= 2) {
-        for (const [r, c] of connected) {
-          grid[r][c] = null;
-        }
         score += connected.length * 10;
         updateScore();
-        collapseBlocks();
-        updateDisplay();
-
-        if (!hasMoves()) {
-          gameOverDisplay.style.display = "block";
-        }
+        animateAndRemoveBlocks(connected);
       }
     }
 
@@ -139,62 +137,9 @@
       visited[key] = true;
 
       let result = [[row, col]];
-      const directions = [[1,0], [-1,0], [0,1], [0,-1]];
-      for (const [dr, dc] of directions) {
-        result = result.concat(findConnectedBlocks(row + dr, col + dc, color, visited));
-      }
-      return result;
-    }
+      const directions = [
+        [1, 0], [-1, 0], [0, 1], [0, -1], // cardinal directions
+        [1, 1], [1, -1], [-1, 1], [-1, -1] // corners (diagonals)
+      ];
 
-    function collapseBlocks() {
-      for (let col = 0; col < cols; col++) {
-        let column = [];
-        for (let row = rows - 1; row >= 0; row--) {
-          if (grid[row][col] !== null) {
-            column.push(grid[row][col]);
-          }
-        }
-        for (let row = rows - 1; row >= 0; row--) {
-          grid[row][col] = column[rows - 1 - row] || null;
-        }
-      }
-    }
-
-    function updateDisplay() {
-      const blocks = document.querySelectorAll(".block");
-      blocks.forEach(block => {
-        const row = parseInt(block.dataset.row);
-        const col = parseInt(block.dataset.col);
-        const color = grid[row][col];
-        block.className = "block";
-        if (color) {
-          block.classList.add(color);
-          block.style.visibility = "visible";
-        } else {
-          block.style.visibility = "hidden";
-        }
-      });
-    }
-
-    function updateScore() {
-      scoreDisplay.textContent = "Score: " + score;
-    }
-
-    function hasMoves() {
-      for (let row = 0; row < rows; row++) {
-        for (let col = 0; col < cols; col++) {
-          const color = grid[row][col];
-          if (!color) continue;
-
-          const connected = findConnectedBlocks(row, col, color, {});
-          if (connected.length >= 2) return true;
-        }
-      }
-      return false;
-    }
-
-    // Start game on load
-    createGrid();
-  </script>
-</body>
-</html>
+      for (const [dr, d]()
