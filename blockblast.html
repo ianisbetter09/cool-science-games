@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Block Blast Clone</title>
+  <title>Block Blast Clone with Hammer</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -21,12 +21,16 @@
       margin-bottom: 15px;
     }
 
+    #container {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+    }
+
     #game {
       display: grid;
       grid-template-columns: repeat(10, 40px);
       grid-gap: 2px;
-      justify-content: center;
-      margin: 0 auto;
     }
 
     .block {
@@ -53,12 +57,46 @@
       padding: 8px 15px;
       font-size: 16px;
     }
+
+    #tools {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #hammer {
+      width: 50px;
+      height: 50px;
+      background: url('https://img.icons8.com/emoji/48/hammer-emoji.png') no-repeat center center;
+      background-size: contain;
+      cursor: pointer;
+      border: 2px solid #444;
+      border-radius: 8px;
+    }
+
+    #hammer.used {
+      opacity: 0.3;
+      pointer-events: none;
+    }
+
+    #hammer-label {
+      font-size: 14px;
+    }
   </style>
 </head>
 <body>
   <h1>Block Blast Clone</h1>
   <div id="score">Score: 0</div>
-  <div id="game"></div>
+
+  <div id="container">
+    <div id="game"></div>
+    <div id="tools">
+      <div id="hammer" title="One-time hammer tool"></div>
+      <div id="hammer-label">Hammer</div>
+    </div>
+  </div>
+
   <div id="game-over" style="display:none;">Game Over!</div>
   <button onclick="restartGame()">Restart Game</button>
 
@@ -66,14 +104,21 @@
     const game = document.getElementById("game");
     const scoreDisplay = document.getElementById("score");
     const gameOverDisplay = document.getElementById("game-over");
+    const hammerButton = document.getElementById("hammer");
+
     const rows = 10;
     const cols = 10;
     const colors = ["red", "green", "blue", "yellow"];
     let grid = [];
     let score = 0;
+    let hammerActive = false;
+    let hammerUsed = false;
 
     function restartGame() {
       score = 0;
+      hammerActive = false;
+      hammerUsed = false;
+      hammerButton.classList.remove("used");
       updateScore();
       gameOverDisplay.style.display = "none";
       createGrid();
@@ -99,27 +144,43 @@
       }
     }
 
+    hammerButton.addEventListener("click", () => {
+      if (!hammerUsed) {
+        hammerActive = true;
+        hammerButton.style.borderColor = "#00aaff";
+      }
+    });
+
     function handleClick(e) {
       const row = parseInt(e.target.dataset.row);
       const col = parseInt(e.target.dataset.col);
       const targetColor = grid[row][col];
       if (!targetColor) return;
 
-      const connected = findConnectedBlocks(row, col, targetColor);
+      if (hammerActive) {
+        // Use hammer
+        grid[row][col] = null;
+        hammerActive = false;
+        hammerUsed = true;
+        hammerButton.classList.add("used");
+        hammerButton.style.borderColor = "#444";
+        updateScore(); // no points for hammer use
+        collapseBlocks();
+        updateDisplay();
+        if (!hasMoves()) gameOverDisplay.style.display = "block";
+        return;
+      }
 
+      const connected = findConnectedBlocks(row, col, targetColor);
       if (connected.length >= 2) {
         for (const [r, c] of connected) {
           grid[r][c] = null;
         }
-
         score += connected.length * 10;
         updateScore();
         collapseBlocks();
         updateDisplay();
-
-        if (!hasMoves()) {
-          gameOverDisplay.style.display = "block";
-        }
+        if (!hasMoves()) gameOverDisplay.style.display = "block";
       }
     }
 
@@ -137,7 +198,7 @@
       let result = [[row, col]];
       const directions = [
         [1, 0], [-1, 0], [0, 1], [0, -1],
-        [1, 1], [1, -1], [-1, 1], [-1, -1] // include corners
+        [1, 1], [1, -1], [-1, 1], [-1, -1]
       ];
 
       for (const [dr, dc] of directions) {
