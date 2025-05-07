@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Block Blast Clone with Hammer</title>
+  <title>Block Blast Clone with Hammer & Move</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -83,6 +83,26 @@
     #hammer-label {
       font-size: 14px;
     }
+
+    #glove {
+      width: 50px;
+      height: 50px;
+      background: url('https://img.icons8.com/emoji/48/glove-emoji.png') no-repeat center center;
+      background-size: contain;
+      cursor: pointer;
+      border: 2px solid #444;
+      border-radius: 8px;
+    }
+
+    #glove.used {
+      opacity: 0.3;
+      pointer-events: none;
+    }
+
+    #glove-label {
+      font-size: 14px;
+    }
+
   </style>
 </head>
 <body>
@@ -94,6 +114,8 @@
     <div id="tools">
       <div id="hammer" title="One-time hammer tool"></div>
       <div id="hammer-label">Hammer</div>
+      <div id="glove" title="One-time move block tool"></div>
+      <div id="glove-label">Move</div>
     </div>
   </div>
 
@@ -105,6 +127,7 @@
     const scoreDisplay = document.getElementById("score");
     const gameOverDisplay = document.getElementById("game-over");
     const hammerButton = document.getElementById("hammer");
+    const gloveButton = document.getElementById("glove");
 
     const rows = 10;
     const cols = 10;
@@ -113,12 +136,17 @@
     let score = 0;
     let hammerActive = false;
     let hammerUsed = false;
+    let moveActive = false;
+    let moveBlock = null;
 
     function restartGame() {
       score = 0;
       hammerActive = false;
       hammerUsed = false;
+      moveActive = false;
+      moveBlock = null;
       hammerButton.classList.remove("used");
+      gloveButton.classList.remove("used");
       updateScore();
       gameOverDisplay.style.display = "none";
       createGrid();
@@ -151,6 +179,13 @@
       }
     });
 
+    gloveButton.addEventListener("click", () => {
+      if (!moveActive && !moveBlock) {
+        moveActive = true;
+        gloveButton.style.borderColor = "#00aaff";
+      }
+    });
+
     function handleClick(e) {
       const row = parseInt(e.target.dataset.row);
       const col = parseInt(e.target.dataset.col);
@@ -171,41 +206,34 @@
         return;
       }
 
-      const connected = findConnectedBlocks(row, col, targetColor);
-      if (connected.length >= 2) {
-        for (const [r, c] of connected) {
-          grid[r][c] = null;
-        }
-        score += connected.length * 10;
-        updateScore();
-        collapseBlocks();
+      if (moveActive && !moveBlock) {
+        // First click - select block to move
+        moveBlock = { row, col };
+        e.target.style.border = "2px solid #00aaff";  // Highlight selected block
+        return;
+      }
+
+      if (moveActive && moveBlock) {
+        // Second click - move block
+        const fromRow = moveBlock.row;
+        const fromCol = moveBlock.col;
+        const fromBlock = document.querySelector(`[data-row="${fromRow}"][data-col="${fromCol}"]`);
+        fromBlock.style.border = "none"; // Remove highlight
+
+        // Swap the colors of the blocks
+        const tempColor = grid[fromRow][fromCol];
+        grid[fromRow][fromCol] = grid[row][col];
+        grid[row][col] = tempColor;
+
+        moveActive = false;
+        gloveButton.classList.add("used");
+        gloveButton.style.borderColor = "#444";
+        moveBlock = null;
+
         updateDisplay();
+        updateScore(); // no points for move
         if (!hasMoves()) gameOverDisplay.style.display = "block";
       }
-    }
-
-    function findConnectedBlocks(row, col, color, visited = {}) {
-      const key = `${row},${col}`;
-      if (
-        row < 0 || row >= rows ||
-        col < 0 || col >= cols ||
-        grid[row][col] !== color ||
-        visited[key]
-      ) return [];
-
-      visited[key] = true;
-
-      let result = [[row, col]];
-      const directions = [
-        [1, 0], [-1, 0], [0, 1], [0, -1],
-        [1, 1], [1, -1], [-1, 1], [-1, -1]
-      ];
-
-      for (const [dr, dc] of directions) {
-        result = result.concat(findConnectedBlocks(row + dr, col + dc, color, visited));
-      }
-
-      return result;
     }
 
     function collapseBlocks() {
@@ -252,6 +280,30 @@
         }
       }
       return false;
+    }
+
+    function findConnectedBlocks(row, col, color, visited = {}) {
+      const key = `${row},${col}`;
+      if (
+        row < 0 || row >= rows ||
+        col < 0 || col >= cols ||
+        grid[row][col] !== color ||
+        visited[key]
+      ) return [];
+
+      visited[key] = true;
+
+      let result = [[row, col]];
+      const directions = [
+        [1, 0], [-1, 0], [0, 1], [0, -1],
+        [1, 1], [1, -1], [-1, 1], [-1, -1]
+      ];
+
+      for (const [dr, dc] of directions) {
+        result = result.concat(findConnectedBlocks(row + dr, col + dc, color, visited));
+      }
+
+      return result;
     }
 
     createGrid();
