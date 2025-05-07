@@ -233,7 +233,45 @@
         updateDisplay();
         updateScore(); // no points for move
         if (!hasMoves()) gameOverDisplay.style.display = "block";
+        return;
       }
+
+      // Break blocks if no ability is active
+      const connected = findConnectedBlocks(row, col, targetColor);
+      if (connected.length >= 2) {
+        for (const [r, c] of connected) {
+          grid[r][c] = null;
+        }
+        score += connected.length * 10;
+        updateScore();
+        collapseBlocks();
+        updateDisplay();
+        if (!hasMoves()) gameOverDisplay.style.display = "block";
+      }
+    }
+
+    function findConnectedBlocks(row, col, color, visited = {}) {
+      const key = `${row},${col}`;
+      if (
+        row < 0 || row >= rows ||
+        col < 0 || col >= cols ||
+        grid[row][col] !== color ||
+        visited[key]
+      ) return [];
+
+      visited[key] = true;
+
+      let result = [[row, col]];
+      const directions = [
+        [1, 0], [-1, 0], [0, 1], [0, -1],
+        [1, 1], [1, -1], [-1, 1], [-1, -1]
+      ];
+
+      for (const [dr, dc] of directions) {
+        result = result.concat(findConnectedBlocks(row + dr, col + dc, color, visited));
+      }
+
+      return result;
     }
 
     function collapseBlocks() {
@@ -280,30 +318,6 @@
         }
       }
       return false;
-    }
-
-    function findConnectedBlocks(row, col, color, visited = {}) {
-      const key = `${row},${col}`;
-      if (
-        row < 0 || row >= rows ||
-        col < 0 || col >= cols ||
-        grid[row][col] !== color ||
-        visited[key]
-      ) return [];
-
-      visited[key] = true;
-
-      let result = [[row, col]];
-      const directions = [
-        [1, 0], [-1, 0], [0, 1], [0, -1],
-        [1, 1], [1, -1], [-1, 1], [-1, -1]
-      ];
-
-      for (const [dr, dc] of directions) {
-        result = result.concat(findConnectedBlocks(row + dr, col + dc, color, visited));
-      }
-
-      return result;
     }
 
     createGrid();
