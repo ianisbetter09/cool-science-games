@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Simple Chess AI</title>
+  <meta charset="UTF-8" />
+  <title>Simple Chess with AI</title>
   <style>
     #board {
       width: 400px;
@@ -14,75 +14,74 @@
     }
   </style>
 
-  <!-- Chessboard.js CDN -->
-  <link rel="stylesheet" href="https://unpkg.com/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
-  <script src="https://unpkg.com/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
-
-  <!-- Chess.js CDN -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.13.4/chess.min.js"></script>
+  <!-- Include Chessboard.js -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chessboardjs@1.0.0/dist/chessboard.min.css" />
 </head>
 <body>
 
-<div id="board"></div>
-<div id="status"></div>
+  <div id="board"></div>
+  <div id="status"></div>
 
-<script>
-  const boardElement = document.getElementById("board");
-  const statusElement = document.getElementById("status");
+  <!-- Chessboard.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chessboardjs@1.0.0/dist/chessboard.min.js"></script>
 
-  const game = new Chess();
+  <!-- Chess.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.12.0/chess.min.js"></script>
 
-  const board = Chessboard(boardElement, {
-    draggable: true,
-    position: 'start',
-    onDrop: onDrop,
-    onSnapEnd: () => board.position(game.fen()),
-  });
-
-  function onDrop(source, target) {
-    const move = game.move({
-      from: source,
-      to: target,
-      promotion: 'q' // Always promote to a queen for simplicity
+  <script>
+    const board = Chessboard('board', {
+      draggable: true,
+      position: 'start',
+      onDrop: onDrop,
+      onSnapEnd: () => board.position(game.fen())
     });
 
-    if (move === null) return 'snapback';
+    const game = new Chess();
+    const statusElement = document.getElementById('status');
 
-    window.setTimeout(makeAIMove, 250);
-    updateStatus();
-  }
+    function onDrop(source, target) {
+      const move = game.move({
+        from: source,
+        to: target,
+        promotion: 'q' // promote to queen
+      });
 
-  function makeAIMove() {
-    const possibleMoves = game.moves();
-    if (game.game_over()) return;
+      if (move === null) return 'snapback';
 
-    const move = possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
-    game.move(move);
-    board.position(game.fen());
-    updateStatus();
-  }
-
-  function updateStatus() {
-    let status = '';
-    let moveColor = game.turn() === 'b' ? 'Black' : 'White';
-
-    if (game.in_checkmate()) {
-      status = `Game over, ${moveColor} is in checkmate.`;
-    } else if (game.in_draw()) {
-      status = 'Game over, drawn position.';
-    } else {
-      status = `${moveColor} to move`;
-
-      if (game.in_check()) {
-        status += ` - ${moveColor} is in check`;
-      }
+      updateStatus();
+      window.setTimeout(makeAIMove, 250);
     }
 
-    statusElement.innerHTML = status;
-  }
+    function makeAIMove() {
+      if (game.game_over()) return;
 
-  updateStatus();
-</script>
+      const moves = game.moves();
+      const move = moves[Math.floor(Math.random() * moves.length)];
+      game.move(move);
+      board.position(game.fen());
+      updateStatus();
+    }
+
+    function updateStatus() {
+      let status = '';
+      const moveColor = game.turn() === 'b' ? 'Black' : 'White';
+
+      if (game.in_checkmate()) {
+        status = `Game over, ${moveColor} is in checkmate.`;
+      } else if (game.in_draw()) {
+        status = 'Game over, drawn position.';
+      } else {
+        status = `${moveColor} to move`;
+        if (game.in_check()) {
+          status += ` - ${moveColor} is in check`;
+        }
+      }
+
+      statusElement.innerText = status;
+    }
+
+    updateStatus();
+  </script>
 
 </body>
 </html>
