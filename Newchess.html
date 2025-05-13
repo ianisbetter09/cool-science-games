@@ -1,26 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Simple Chess with AI</title>
+  <meta charset="UTF-8">
+  <title>Chess Game with AI</title>
   <style>
+    body {
+      background-color: #f0f0f0;
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+
     #board {
       width: 400px;
-      margin: 20px auto;
+      margin: 30px auto;
     }
+
     #status {
-      text-align: center;
       font-size: 18px;
+      margin-top: 10px;
     }
   </style>
 
-  <!-- Include Chessboard.js -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chessboardjs@1.0.0/dist/chessboard.min.css" />
+  <!-- Chessboard.js CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chessboardjs@1.0.0/dist/chessboard.min.css">
 </head>
 <body>
 
+  <h1>Chess vs AI</h1>
   <div id="board"></div>
-  <div id="status"></div>
+  <div id="status">Loading...</div>
 
   <!-- Chessboard.js -->
   <script src="https://cdn.jsdelivr.net/npm/chessboardjs@1.0.0/dist/chessboard.min.js"></script>
@@ -29,27 +37,33 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.12.0/chess.min.js"></script>
 
   <script>
+    const game = new Chess();
+
     const board = Chessboard('board', {
       draggable: true,
       position: 'start',
+      pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png',
       onDrop: onDrop,
-      onSnapEnd: () => board.position(game.fen())
+      onSnapEnd: () => board.position(game.fen()),
+      moveSpeed: 'fast',
+      appearSpeed: 'fast',
+      orientation: 'white',
+      showNotation: true
     });
 
-    const game = new Chess();
-    const statusElement = document.getElementById('status');
+    const statusEl = document.getElementById('status');
 
     function onDrop(source, target) {
       const move = game.move({
         from: source,
         to: target,
-        promotion: 'q' // promote to queen
+        promotion: 'q'
       });
 
       if (move === null) return 'snapback';
 
       updateStatus();
-      window.setTimeout(makeAIMove, 250);
+      setTimeout(makeAIMove, 400);
     }
 
     function makeAIMove() {
@@ -71,17 +85,16 @@
       } else if (game.in_draw()) {
         status = 'Game over, drawn position.';
       } else {
-        status = `${moveColor} to move`;
+        status = `${moveColor} to move.`;
         if (game.in_check()) {
-          status += ` - ${moveColor} is in check`;
+          status += ` ${moveColor} is in check.`;
         }
       }
 
-      statusElement.innerText = status;
+      statusEl.textContent = status;
     }
 
     updateStatus();
   </script>
-
 </body>
 </html>
