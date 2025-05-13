@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Block Blast Clone with Hammer & Move</title>
+  <title>Block Blast Clone with Tools</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -65,44 +65,33 @@
       gap: 10px;
     }
 
-    #hammer {
+    #hammer, #glove {
       width: 50px;
       height: 50px;
-      background: url('https://img.icons8.com/emoji/48/hammer-emoji.png') no-repeat center center;
       background-size: contain;
-      cursor: pointer;
+      background-repeat: no-repeat;
+      background-position: center;
       border: 2px solid #444;
       border-radius: 8px;
+      cursor: pointer;
     }
 
-    #hammer.used {
-      opacity: 0.3;
-      pointer-events: none;
-    }
-
-    #hammer-label {
-      font-size: 14px;
+    #hammer {
+      background-image: url('https://img.icons8.com/emoji/48/hammer-emoji.png');
     }
 
     #glove {
-      width: 50px;
-      height: 50px;
-      background: url('https://img.icons8.com/emoji/48/glove-emoji.png') no-repeat center center;
-      background-size: contain;
-      cursor: pointer;
-      border: 2px solid #444;
-      border-radius: 8px;
+      background-image: url('https://img.icons8.com/emoji/48/glove-emoji.png');
     }
 
-    #glove.used {
+    .used {
       opacity: 0.3;
       pointer-events: none;
     }
 
-    #glove-label {
+    #hammer-label, #glove-label {
       font-size: 14px;
     }
-
   </style>
 </head>
 <body>
@@ -146,7 +135,9 @@
       moveActive = false;
       moveBlock = null;
       hammerButton.classList.remove("used");
+      hammerButton.style.borderColor = "#444";
       gloveButton.classList.remove("used");
+      gloveButton.style.borderColor = "#444";
       updateScore();
       gameOverDisplay.style.display = "none";
       createGrid();
@@ -193,34 +184,30 @@
       if (!targetColor) return;
 
       if (hammerActive) {
-        // Use hammer
         grid[row][col] = null;
         hammerActive = false;
         hammerUsed = true;
         hammerButton.classList.add("used");
         hammerButton.style.borderColor = "#444";
-        updateScore(); // no points for hammer use
+        updateScore();
         collapseBlocks();
         updateDisplay();
-        if (!hasMoves()) gameOverDisplay.style.display = "block";
+        if (!hasMoves()) handleNoMovesLeft();
         return;
       }
 
       if (moveActive && !moveBlock) {
-        // First click - select block to move
         moveBlock = { row, col };
-        e.target.style.border = "2px solid #00aaff";  // Highlight selected block
+        e.target.style.border = "2px solid #00aaff";
         return;
       }
 
       if (moveActive && moveBlock) {
-        // Second click - move block
         const fromRow = moveBlock.row;
         const fromCol = moveBlock.col;
         const fromBlock = document.querySelector(`[data-row="${fromRow}"][data-col="${fromCol}"]`);
-        fromBlock.style.border = "none"; // Remove highlight
+        fromBlock.style.border = "none";
 
-        // Swap the colors of the blocks
         const tempColor = grid[fromRow][fromCol];
         grid[fromRow][fromCol] = grid[row][col];
         grid[row][col] = tempColor;
@@ -231,12 +218,11 @@
         moveBlock = null;
 
         updateDisplay();
-        updateScore(); // no points for move
-        if (!hasMoves()) gameOverDisplay.style.display = "block";
+        updateScore();
+        if (!hasMoves()) handleNoMovesLeft();
         return;
       }
 
-      // Break blocks if no ability is active
       const connected = findConnectedBlocks(row, col, targetColor);
       if (connected.length >= 2) {
         for (const [r, c] of connected) {
@@ -246,7 +232,7 @@
         updateScore();
         collapseBlocks();
         updateDisplay();
-        if (!hasMoves()) gameOverDisplay.style.display = "block";
+        if (!hasMoves()) handleNoMovesLeft();
       }
     }
 
@@ -320,6 +306,34 @@
       return false;
     }
 
+    function resetPowerups() {
+      hammerActive = false;
+      hammerUsed = false;
+      moveActive = false;
+      moveBlock = null;
+
+      hammerButton.classList.remove("used");
+      hammerButton.style.borderColor = "#444";
+
+      gloveButton.classList.remove("used");
+      gloveButton.style.borderColor = "#444";
+    }
+
+    function showRefreshMessage() {
+      gameOverDisplay.style.display = "block";
+      gameOverDisplay.textContent = "No moves left – refreshing blocks!";
+      setTimeout(() => {
+        gameOverDisplay.style.display = "none";
+      }, 1500);
+    }
+
+    function handleNoMovesLeft() {
+      showRefreshMessage();
+      resetPowerups();
+      createGrid();
+    }
+
+    // Start game
     createGrid();
   </script>
 </body>
