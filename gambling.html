@@ -234,7 +234,7 @@
         riskBtn.addEventListener('click', () => {
             const riskAmount = Math.floor(Math.random() * 41) + 10;
             let winChance = 0.5 + (luckyClovers * 0.05);
-            if (winChance > 0.95) winChance = 0.95;
+            if (winChance > 1.00) winChance = 1.00;
 
             const outcome = Math.random();
 
