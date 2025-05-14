@@ -205,21 +205,26 @@ function gameLoop() {
   }
 
   // === Vertical Movement (based on key presses) ===
-  if (isUpPressed) {
-    dino.velocity = -2.4;  // Move up at a slower speed
-  } else if (isDownPressed) {
-    dino.velocity = 2.4;  // Move down at a slower speed
-  } else {
-    // Apply gravity: slow the movement when no keys are pressed
-    if (dino.velocity < 0) {
-      dino.velocity += 0.0000001;  // Slow upward movement to simulate gravity
-    } else if (dino.velocity > 0) {
-      dino.velocity -= 0.0000001;  // Slow downward movement to simulate gravity
-    }
-  }
+ // === Apply acceleration ===
+const acceleration = 0.2;
+const maxVelocity = 2.4;
 
-  // Update vertical position based on velocity
-  dino.y += dino.velocity;
+if (isUpPressed) {
+  dino.velocity -= acceleration;
+} else if (isDownPressed) {
+  dino.velocity += acceleration;
+} else {
+  // Slowly reduce velocity when no key is pressed
+  dino.velocity *= 0.9;
+}
+
+// Clamp velocity
+if (dino.velocity > maxVelocity) dino.velocity = maxVelocity;
+if (dino.velocity < -maxVelocity) dino.velocity = -maxVelocity;
+
+// Update position
+dino.y += dino.velocity;
+
 
   // === Constrain ship within canvas bounds ===
   if (dino.y < 0) dino.y = 0;  // Prevent moving above the top of the canvas
