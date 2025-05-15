@@ -215,7 +215,7 @@ if (isUpPressed) {
   dino.velocity += acceleration;
 } else {
   // Slowly reduce velocity when no key is pressed
-  dino.velocity *= 1.6;
+  dino.velocity *= .99999;
 }
 
 // Clamp velocity
