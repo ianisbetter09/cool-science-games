@@ -157,7 +157,7 @@ Inspired us to build up the land that we love!
 
             // Ensure happiness doesn't exceed 100%
             if (happiness > 100) happiness = 100;
-            if (wealth < 0) wealth = 0;
+            if (happiness < 0) happiness = 0;
             showEvent("Redistributed wealth! Happiness increased.");
         } else {
             showEvent("You don't have enough wealth to redistribute!");
