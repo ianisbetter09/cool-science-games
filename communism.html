@@ -169,6 +169,7 @@ Inspired us to build up the land that we love!
     document.getElementById('boostButton').addEventListener('click', function() {
         if (wealth > 100) {
             let efficiencyBoost = 5; // Boost government efficiency by 5%
+            happiness -= 5
             efficiency += efficiencyBoost;
             wealth -= 100; // Spend wealth to increase efficiency
             if (efficiency > 100) efficiency = 100;
