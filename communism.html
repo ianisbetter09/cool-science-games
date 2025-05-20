@@ -173,7 +173,7 @@ Inspired us to build up the land that we love!
             efficiency += efficiencyBoost;
             wealth -= 100; // Spend wealth to increase efficiency
             if (efficiency > 100) efficiency = 100;
-
+            if (happiness < 0) happiness = 0;
             showEvent("Boosted government efficiency!");
         } else {
             showEvent("Not enough wealth to boost efficiency!");
