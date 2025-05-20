@@ -120,10 +120,7 @@
       clearInterval(gameInterval);
       if (score > highScore) {
         highScore = score;
-        alert(`New High Score! You scored ${score} points!`);
-      } else {
-        alert(`Game Over! You scored ${score} points.`);
-      }
+        
       playAgainBtn.style.display = 'inline-block';
     }
 
