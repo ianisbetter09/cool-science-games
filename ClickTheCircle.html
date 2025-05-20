@@ -9,6 +9,7 @@
       margin: 0;
       padding: 0;
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
       height: 100vh;
@@ -16,17 +17,36 @@
       color: #fff;
       font-family: Arial, sans-serif;
     }
+
     canvas {
       border: 2px solid #fff;
+    }
+
+    #playAgainBtn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 18px;
+      background-color: #fff;
+      color: #000;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      display: none;
+    }
+
+    #playAgainBtn:hover {
+      background-color: #ddd;
     }
   </style>
 </head>
 <body>
   <canvas id="gameCanvas"></canvas>
+  <button id="playAgainBtn">Play Again</button>
 
   <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
+    const playAgainBtn = document.getElementById('playAgainBtn');
 
     // Game settings
     canvas.width = 600;
@@ -35,13 +55,13 @@
     let highScore = 0;
     let timeRemaining = 30;
     let circleSize = 30;
-    let circleTimeout = 2;
+    let circleTimeout = 1;
     let circleAppearTime = 0;
     let gameInterval;
 
     const circle = {
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
+      x: 0,
+      y: 0,
       radius: circleSize,
       color: 'red',
     };
@@ -73,7 +93,6 @@
         return;
       }
 
-      // Check if circle timeout passed
       if (circleAppearTime + circleTimeout <= 30 - timeRemaining) {
         newCircle();
       }
@@ -93,7 +112,7 @@
       if (distance < circle.radius) {
         score++;
         newCircle();
-        circleTimeout = Math.max(0.5, circleTimeout - 0.05); // Optional: faster with time
+        circleTimeout = Math.max(0.2, circleTimeout - 0.1);
       }
     });
 
@@ -105,21 +124,23 @@
       } else {
         alert(`Game Over! You scored ${score} points.`);
       }
-      restartGame();
+      playAgainBtn.style.display = 'inline-block';
     }
 
     function startGame() {
       score = 0;
       timeRemaining = 30;
-      circleTimeout = 2;
+      circleTimeout = 1;
       newCircle();
+      playAgainBtn.style.display = 'none';
       gameInterval = setInterval(gameLoop, 1000 / 60);
     }
 
-    function restartGame() {
+    playAgainBtn.addEventListener('click', () => {
       startGame();
-    }
+    });
 
+    // Start on page load
     startGame();
   </script>
 </body>
