@@ -82,10 +82,6 @@ canvas.addEventListener('click', (e) => {
   }
 });
 
-function spawnEnemy() {
-  enemies.push({ x: 0, y: 100, hp: enemyHP, maxHp: enemyHP });
-}
-
 function drawPath() {
   ctx.strokeStyle = 'black';
   ctx.lineWidth = 4;
@@ -187,6 +183,32 @@ function updateUI() {
 }
 
 let lastTime = 0;
+
+let enemiesToSpawn = 0;
+let spawning = false;
+
+function spawnEnemy() {
+  enemies.push({ x: 0, y: 100, hp: enemyHP, maxHp: enemyHP });
+  enemiesToSpawn--;
+  if (enemiesToSpawn > 0) {
+    setTimeout(spawnEnemy, enemySpawnRate - level * 100);
+  } else {
+    spawning = false;
+  }
+}
+
+function startWave() {
+  if (spawning) return; // Don't start if already spawning
+  if (enemies.length === 0) {
+    enemiesToSpawn = 5 + level * 2;
+    spawning = true;
+    spawnEnemy();
+    level++;
+    enemyHP += 10;
+    updateUI();
+  }
+}
+
 function gameLoop(time) {
   let delta = time - lastTime;
   lastTime = time;
@@ -205,22 +227,17 @@ function gameLoop(time) {
     window.location.reload();
   }
 
-  requestAnimationFrame(gameLoop);
-}
-
-function startLevel() {
-  for (let i = 0; i < 5 + level * 2; i++) {
-    setTimeout(spawnEnemy, i * (enemySpawnRate - level * 100));
+  if (enemies.length === 0 && !spawning) {
+    startWave();
   }
-  enemyHP += 10;
-  level++;
-  updateUI();
-  setTimeout(startLevel, 10000); // Next level in 10s
+
+  requestAnimationFrame(gameLoop);
 }
 
 updateUI();
 gameLoop(0);
-startLevel();
+startWave();
 </script>
+
 </body>
 </html>
