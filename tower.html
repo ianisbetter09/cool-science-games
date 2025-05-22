@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Tower Defense</title>
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      font-family: sans-serif;
+    }
+    #game {
+      background: #eee;
+      width: 800px;
+      height: 600px;
+      display: block;
+      border: 2px solid #000;
+    }
+    #shop {
+      width: 200px;
+      padding: 10px;
+      background: #ccc;
+      border-left: 2px solid #000;
+    }
+    .tower-btn {
+      display: block;
+      margin-bottom: 10px;
+      padding: 10px;
+      background: #444;
+      color: #fff;
+      text-align: center;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+<canvas id="game" width="800" height="600"></canvas>
+<div id="shop">
+  <h3>Shop</h3>
+  <div class="tower-btn" onclick="selectTower('basic')">Basic Tower - $100</div>
+  <div class="tower-btn" onclick="selectTower('strong')">Strong Tower - $200</div>
+  <hr>
+  <p><strong>Money:</strong> $<span id="money">300</span></p>
+  <p><strong>Level:</strong> <span id="level">1</span></p>
+  <p><strong>Health:</strong> <span id="health">100</span></p>
+</div>
+
+<script>
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+
+let towers = [];
+let enemies = [];
+let bullets = [];
+let money = 300;
+let health = 100;
+let level = 1;
+let enemyHP = 50;
+let enemySpawnRate = 2000;
+let selectedTower = null;
+
+const towerTypes = {
+  basic: { cost: 100, range: 100, damage: 10, fireRate: 1000 },
+  strong: { cost: 200, range: 150, damage: 25, fireRate: 1500 }
+};
+
+function selectTower(type) {
+  selectedTower = type;
+}
+
+canvas.addEventListener('click', (e) => {
+  if (!selectedTower) return;
+  const tower = towerTypes[selectedTower];
+  if (money >= tower.cost) {
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    towers.push({...tower, x, y, lastShot: 0});
+    money -= tower.cost;
+    selectedTower = null;
+    updateUI();
+  }
+});
+
+function spawnEnemy() {
+  enemies.push({ x: 0, y: 100, hp: enemyHP, maxHp: enemyHP });
+}
+
+function drawPath() {
+  ctx.strokeStyle = 'black';
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(0, 100);
+  ctx.lineTo(800, 100);
+  ctx.stroke();
+}
+
+function drawEnemies() {
+  for (let e of enemies) {
+    ctx.fillStyle = 'red';
+    ctx.fillRect(e.x - 10, e.y - 10, 20, 20);
+
+    // Health bar
+    ctx.fillStyle = 'green';
+    const healthWidth = 20 * (e.hp / e.maxHp);
+    ctx.fillRect(e.x - 10, e.y - 15, healthWidth, 3);
+  }
+}
+
+function drawTowers() {
+  ctx.fillStyle = 'blue';
+  for (let t of towers) {
+    ctx.beginPath();
+    ctx.arc(t.x, t.y, 10, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function drawBullets() {
+  ctx.fillStyle = 'black';
+  for (let b of bullets) {
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, 4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function updateEnemies() {
+  for (let i = enemies.length - 1; i >= 0; i--) {
+    let e = enemies[i];
+    e.x += 0.5 + level * 0.1;
+    if (e.x > 800) {
+      enemies.splice(i, 1);
+      health -= 10;
+      updateUI();
+    }
+  }
+}
+
+function updateBullets(delta) {
+  for (let i = bullets.length - 1; i >= 0; i--) {
+    let b = bullets[i];
+    b.x += b.dx * delta;
+    b.y += b.dy * delta;
+
+    // Hit detection
+    for (let j = enemies.length - 1; j >= 0; j--) {
+      let e = enemies[j];
+      let dist = Math.hypot(b.x - e.x, b.y - e.y);
+      if (dist < 10) {
+        e.hp -= b.damage;
+        bullets.splice(i, 1);
+        if (e.hp <= 0) {
+          enemies.splice(j, 1);
+          money += 20;
+          updateUI();
+        }
+        break;
+      }
+    }
+  }
+}
+
+function shootBullets(time) {
+  for (let t of towers) {
+    if (time - t.lastShot > t.fireRate) {
+      let target = enemies.find(e => Math.hypot(t.x - e.x, t.y - e.y) < t.range);
+      if (target) {
+        let angle = Math.atan2(target.y - t.y, target.x - t.x);
+        bullets.push({
+          x: t.x,
+          y: t.y,
+          dx: Math.cos(angle) * 0.3,
+          dy: Math.sin(angle) * 0.3,
+          damage: t.damage
+        });
+        t.lastShot = time;
+      }
+    }
+  }
+}
+
+function updateUI() {
+  document.getElementById('money').innerText = money;
+  document.getElementById('health').innerText = health;
+  document.getElementById('level').innerText = level;
+}
+
+let lastTime = 0;
+function gameLoop(time) {
+  let delta = time - lastTime;
+  lastTime = time;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawPath();
+  drawEnemies();
+  drawTowers();
+  drawBullets();
+  updateEnemies();
+  updateBullets(delta);
+  shootBullets(time);
+
+  if (health <= 0) {
+    alert("Game Over!");
+    window.location.reload();
+  }
+
+  requestAnimationFrame(gameLoop);
+}
+
+function startLevel() {
+  for (let i = 0; i < 5 + level * 2; i++) {
+    setTimeout(spawnEnemy, i * (enemySpawnRate - level * 100));
+  }
+  enemyHP += 10;
+  level++;
+  updateUI();
+  setTimeout(startLevel, 10000); // Next level in 10s
+}
+
+updateUI();
+gameLoop(0);
+startLevel();
+</script>
+</body>
+</html>
