@@ -191,44 +191,54 @@ function updateEnemies() {
 function updateBullets(delta) {
   for (let i = bullets.length - 1; i >= 0; i--) {
     let b = bullets[i];
-    b.x += b.dx * delta;
-    b.y += b.dy * delta;
-
-    for (let j = enemies.length - 1; j >= 0; j--) {
-      let e = enemies[j];
-      let dist = Math.hypot(b.x - e.x, b.y - e.y);
-      if (dist < 10) {
-        e.hp -= b.damage;
-        bullets.splice(i, 1);
-        if (e.hp <= 0) {
-          enemies.splice(j, 1);
-          money += 20;
-          updateUI();
-        }
-        break;
-      }
+    if (!b.target || !enemies.includes(b.target)) {
+      // Target is dead or gone, remove bullet
+      bullets.splice(i, 1);
+      continue;
     }
+    
+    // Calculate direction toward current target position
+    let dx = b.target.x - b.x;
+    let dy = b.target.y - b.y;
+    let dist = Math.hypot(dx, dy);
+    
+    if (dist < 5) {
+      // Hit the target
+      b.target.hp -= b.damage;
+      if (b.target.hp <= 0) {
+        enemies.splice(enemies.indexOf(b.target), 1);
+        money += 20;
+        updateUI();
+      }
+      bullets.splice(i, 1);
+      continue;
+    }
+    
+    // Normalize direction and move bullet toward target
+    b.x += (dx / dist) * b.speed * delta;
+    b.y += (dy / dist) * b.speed * delta;
   }
 }
+
 
 function shootBullets(time) {
   for (let t of towers) {
     if (time - t.lastShot > t.fireRate) {
       let target = enemies.find(e => Math.hypot(t.x - e.x, t.y - e.y) < t.range);
       if (target) {
-        let angle = Math.atan2(target.y - t.y, target.x - t.x);
         bullets.push({
           x: t.x,
           y: t.y,
-          dx: Math.cos(angle) * 0.3,
-          dy: Math.sin(angle) * 0.3,
-          damage: t.damage
+          speed: 0.5,
+          damage: t.damage,
+          target: target
         });
         t.lastShot = time;
       }
     }
   }
 }
+
 
 function updateUI() {
   document.getElementById('money').innerText = money;
