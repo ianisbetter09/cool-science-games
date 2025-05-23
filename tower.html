@@ -131,13 +131,27 @@ function drawEnemies() {
 }
 
 function drawTowers() {
-  ctx.fillStyle = 'blue';
   for (let t of towers) {
+    if (t === undefined) continue;
     ctx.beginPath();
+    switch(t.cost) {
+      case 100: // basic
+        ctx.fillStyle = 'blue';
+        break;
+      case 200: // strong
+        ctx.fillStyle = 'green';
+        break;
+      case 500: // very strong
+        ctx.fillStyle = 'red';
+        break;
+      default:
+        ctx.fillStyle = 'gray';
+    }
     ctx.arc(t.x, t.y, 10, 0, Math.PI * 2);
     ctx.fill();
   }
 }
+
 
 function drawBullets() {
   ctx.fillStyle = 'black';
