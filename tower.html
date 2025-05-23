@@ -70,6 +70,18 @@ let lastTime = 0;
 let enemiesToSpawn = 0;
 let spawning = false;
 
+
+  let waypoints = [];
+function generatePath() {
+  waypoints = [];
+  let x = 0;
+  for (let i = 0; i < 6; i++) {
+    x += Math.random() * 120 + 100;
+    let y = Math.random() * 400 + 100;
+    waypoints.push({ x: Math.min(x, 780), y });
+  }
+}
+
 const towerTypes = {
   basic: { cost: 100, range: 100, damage: 10, fireRate: 1000 },
   strong: { cost: 200, range: 150, damage: 25, fireRate: 1500 },
@@ -99,10 +111,13 @@ function drawPath() {
   ctx.strokeStyle = 'black';
   ctx.lineWidth = 4;
   ctx.beginPath();
-  ctx.moveTo(0, 100);
-  ctx.lineTo(800, 100);
+  ctx.moveTo(waypoints[0].x, waypoints[0].y);
+  for (let wp of waypoints.slice(1)) {
+    ctx.lineTo(wp.x, wp.y);
+  }
   ctx.stroke();
 }
+
 
 function drawEnemies() {
   for (let e of enemies) {
@@ -135,15 +150,29 @@ function drawBullets() {
 
 function updateEnemies() {
   for (let i = enemies.length - 1; i >= 0; i--) {
-    let e = enemies[i];
-    e.x += 0.5 + level * 0.1;
-    if (e.x > 800) {
+    const e = enemies[i];
+    const target = waypoints[e.targetIndex];
+    if (!target) {
       enemies.splice(i, 1);
       health -= 10;
       updateUI();
+      continue;
+    }
+
+    const dx = target.x - e.x;
+    const dy = target.y - e.y;
+    const dist = Math.hypot(dx, dy);
+
+    if (dist < 1) {
+      e.targetIndex++;
+    } else {
+      const speed = 0.5 + level * 0.1;
+      e.x += (dx / dist) * speed;
+      e.y += (dy / dist) * speed;
     }
   }
 }
+
 
 function updateBullets(delta) {
   for (let i = bullets.length - 1; i >= 0; i--) {
@@ -200,7 +229,13 @@ function updateUI() {
 }
 
 function spawnEnemy() {
-  enemies.push({ x: 0, y: 100, hp: enemyHP, maxHp: enemyHP });
+  enemies.push({
+    x: waypoints[0].x,
+    y: waypoints[0].y,
+    hp: enemyHP,
+    maxHp: enemyHP,
+    targetIndex: 1
+  });
   enemiesToSpawn--;
   if (enemiesToSpawn > 0) {
     setTimeout(spawnEnemy, enemySpawnRate - level * 100);
@@ -208,6 +243,7 @@ function spawnEnemy() {
     spawning = false;
   }
 }
+
 
 function startWave() {
   if (spawning) return;
