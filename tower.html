@@ -31,6 +31,10 @@
       text-align: center;
       cursor: pointer;
     }
+    .locked {
+      background: #888;
+      cursor: not-allowed;
+    }
   </style>
 </head>
 <body>
@@ -39,10 +43,13 @@
   <h3>Shop</h3>
   <div class="tower-btn" onclick="selectTower('basic')">Basic Tower - $100</div>
   <div class="tower-btn" onclick="selectTower('strong')">Strong Tower - $200</div>
+  <div class="tower-btn locked" id="vstrong-btn" onclick="selectTower('verystrong')">Very Strong Tower - $500</div>
   <hr>
   <p><strong>Money:</strong> $<span id="money">300</span></p>
   <p><strong>Level:</strong> <span id="level">1</span></p>
   <p><strong>Health:</strong> <span id="health">100</span></p>
+  <p><strong>Status:</strong> <span id="status">Running</span></p>
+  <small>Press [Space] to Pause/Resume</small>
 </div>
 
 <script>
@@ -58,13 +65,19 @@ let level = 1;
 let enemyHP = 50;
 let enemySpawnRate = 2000;
 let selectedTower = null;
+let paused = false;
+let lastTime = 0;
+let enemiesToSpawn = 0;
+let spawning = false;
 
 const towerTypes = {
   basic: { cost: 100, range: 100, damage: 10, fireRate: 1000 },
-  strong: { cost: 200, range: 150, damage: 25, fireRate: 1500 }
+  strong: { cost: 200, range: 150, damage: 25, fireRate: 1500 },
+  verystrong: { cost: 500, range: 200, damage: 50, fireRate: 2000 }
 };
 
 function selectTower(type) {
+  if (type === 'verystrong' && level < 10) return; // lock until level 10
   selectedTower = type;
 }
 
@@ -96,7 +109,6 @@ function drawEnemies() {
     ctx.fillStyle = 'red';
     ctx.fillRect(e.x - 10, e.y - 10, 20, 20);
 
-    // Health bar
     ctx.fillStyle = 'green';
     const healthWidth = 20 * (e.hp / e.maxHp);
     ctx.fillRect(e.x - 10, e.y - 15, healthWidth, 3);
@@ -139,7 +151,6 @@ function updateBullets(delta) {
     b.x += b.dx * delta;
     b.y += b.dy * delta;
 
-    // Hit detection
     for (let j = enemies.length - 1; j >= 0; j--) {
       let e = enemies[j];
       let dist = Math.hypot(b.x - e.x, b.y - e.y);
@@ -180,12 +191,13 @@ function updateUI() {
   document.getElementById('money').innerText = money;
   document.getElementById('health').innerText = health;
   document.getElementById('level').innerText = level;
+  document.getElementById('status').innerText = paused ? "Paused" : "Running";
+
+  if (level >= 10) {
+    const btn = document.getElementById('vstrong-btn');
+    btn.classList.remove('locked');
+  }
 }
-
-let lastTime = 0;
-
-let enemiesToSpawn = 0;
-let spawning = false;
 
 function spawnEnemy() {
   enemies.push({ x: 0, y: 100, hp: enemyHP, maxHp: enemyHP });
@@ -198,7 +210,7 @@ function spawnEnemy() {
 }
 
 function startWave() {
-  if (spawning) return; // Don't start if already spawning
+  if (spawning) return;
   if (enemies.length === 0) {
     enemiesToSpawn = 5 + level * 2;
     spawning = true;
@@ -210,6 +222,11 @@ function startWave() {
 }
 
 function gameLoop(time) {
+  if (paused) {
+    requestAnimationFrame(gameLoop);
+    return;
+  }
+
   let delta = time - lastTime;
   lastTime = time;
 
@@ -234,10 +251,17 @@ function gameLoop(time) {
   requestAnimationFrame(gameLoop);
 }
 
+// Spacebar toggles pause
+window.addEventListener('keydown', (e) => {
+  if (e.code === 'Space') {
+    paused = !paused;
+    updateUI();
+  }
+});
+
 updateUI();
 gameLoop(0);
 startWave();
 </script>
-
 </body>
 </html>
