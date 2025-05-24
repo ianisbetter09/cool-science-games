@@ -8,15 +8,12 @@ body {
 
 #box {
   position: absolute;
-  width: 53px;
+  width: 50px;
   height: 50px;
-  top: 0;
-  left: 100px;
-  background-image: url('box');
-  background-size: cover;
-  background-repeat: no-repeat;
+  bottom: 51px;
+  right: 100px;
+  background-color:rgb(184, 134, 73);
 }
-
 
 #ground {
   width: 100%;
@@ -24,5 +21,19 @@ body {
   background-color: green;
   position: absolute;
   bottom: 50px;
-  left: 0;
+  right: 0;
 }
+
+#levelBox{
+  width: 100px;
+  height: 200px;
+  background-color: blue;
+  position: absolute;
+  bottom: 100px;
+  right: 0;
+}
+
+
+
+
+
