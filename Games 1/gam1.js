@@ -1,5 +1,6 @@
 const box = document.getElementById('box');
 const ground = document.getElementById('ground');
+const levelBox = document.getElementById('levelBox');
 
 let y = 0;                  // vertical position
 let x = 100;                // horizontal position (start)
@@ -9,7 +10,25 @@ const jumpStrength = 25;
 let isJumping = false;
 const moveSpeed = 10;        // pixels per frame for smooth movement
 
+let level = 1;
+
 const keysPressed = new Set();
+
+function startLevel(n) {
+  console.log(`Starting Level ${n}`);
+  x = 100;
+  y = 0;
+  velocityY = 0;
+  isJumping = false;
+
+  // Optional: change background or style for each level
+  document.body.style.backgroundColor = n % 2 === 0 ? '#eef' : '#ffe';
+}
+
+function completeLevel() {
+  level++;
+  startLevel(level);
+}
 
 function update() {
   const groundTop = ground.getBoundingClientRect().top;
@@ -44,6 +63,7 @@ function update() {
   box.style.left = x + 'px';
 
   requestAnimationFrame(update);
+  nextLevel();
 }
 
 function jump() {
@@ -64,5 +84,22 @@ window.addEventListener('keyup', (event) => {
   keysPressed.delete(event.key);
 });
 
+function nextLevel() {
+  const boxRect = box.getBoundingClientRect();
+  const levelBoxRect = levelBox.getBoundingClientRect();
+
+  const isTouching =
+    boxRect.right > levelBoxRect.left &&
+    boxRect.left < levelBoxRect.right &&
+    boxRect.bottom > levelBoxRect.top &&
+    boxRect.top < levelBoxRect.bottom;
+
+  if (isTouching) {
+    completeLevel();
+  }
+}
+
+
 // Start the loop
+startLevel(level);
 update();
