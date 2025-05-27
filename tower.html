@@ -17,24 +17,37 @@
       border: 2px solid #000;
     }
     #shop {
-      width: 200px;
-      padding: 10px;
-      background: #ccc;
-      border-left: 2px solid #000;
+    width: 280px; /* Was 200px */
+    padding: 15px;
+    background: #ccc;
+    border-left: 2px solid #000;
+    overflow-y: auto; /* Scroll if it overflows vertically */
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
     }
+
     .tower-btn {
-      display: block;
-      margin-bottom: 10px;
-      padding: 10px;
-      background: #444;
-      color: #fff;
-      text-align: center;
-      cursor: pointer;
-    }
-    .locked {
-      background: #888;
-      cursor: not-allowed;
-    }
+  display: block;
+  padding: 10px;
+  background: #444;
+  color: #fff;
+  text-align: center;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.tower-btn:hover:not(.locked) {
+  background: #666;
+}
+
+.locked {
+  background: #888;
+  cursor: not-allowed;
+}
+
   </style>
 </head>
 <body>
