@@ -120,15 +120,21 @@ function drawPath() {
 
 
 function drawEnemies() {
+  ctx.font = "12px sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "bottom";
+
   for (let e of enemies) {
+    // Draw enemy
     ctx.fillStyle = 'red';
     ctx.fillRect(e.x - 10, e.y - 10, 20, 20);
 
-    ctx.fillStyle = 'green';
-    const healthWidth = 20 * (e.hp / e.maxHp);
-    ctx.fillRect(e.x - 10, e.y - 15, healthWidth, 3);
+    // Draw numeric health above enemy
+    ctx.fillStyle = 'black';
+    ctx.fillText(`${e.hp}/${e.maxHp}`, e.x, e.y - 15);
   }
 }
+
 
 function drawTowers() {
   for (let t of towers) {
