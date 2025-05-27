@@ -17,37 +17,46 @@
       border: 2px solid #000;
     }
     #shop {
-    width: 280px; /* Was 200px */
-    padding: 15px;
-    background: #ccc;
-    border-left: 2px solid #000;
-    overflow-y: auto; /* Scroll if it overflows vertically */
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+      width: 280px;
+      padding: 15px;
+      background: #ccc;
+      border-left: 2px solid #000;
+      overflow-y: auto;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
-
     .tower-btn {
-  display: block;
-  padding: 10px;
-  background: #444;
-  color: #fff;
-  text-align: center;
-  cursor: pointer;
-  border-radius: 4px;
-  transition: background 0.2s;
-}
-
-.tower-btn:hover:not(.locked) {
-  background: #666;
-}
-
-.locked {
-  background: #888;
-  cursor: not-allowed;
-}
-
+      display: block;
+      padding: 10px;
+      background: #444;
+      color: #fff;
+      text-align: center;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: background 0.2s;
+    }
+    .tower-btn:hover:not(.locked) {
+      background: #666;
+    }
+    .locked {
+      background: #888;
+      cursor: not-allowed;
+    }
+    #waveCountdown {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 32px;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 8px;
+      display: none;
+      z-index: 10;
+    }
   </style>
 </head>
 <body>
@@ -63,31 +72,13 @@
   <p><strong>Health:</strong> <span id="health">100</span></p>
   <p><strong>Status:</strong> <span id="status">Running</span></p>
   <small>Press [Space] to Pause/Resume</small>
-
   <hr>
   <h4>Upgrades</h4>
   <div class="tower-btn" onclick="upgradeFireRate()">Fire Rate +10% ($1500) <span id="fireRateLvl">(0/3)</span></div>
   <div class="tower-btn" onclick="upgradeDamage()">Damage +10% ($1500) <span id="damageLvl">(0/3)</span></div>
-  <div id="waveCountdown" style="
-  position: absolute;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 32px;
-  background: rgba(0, 0, 0, 0.7);
-  color: white;
-  padding: 10px 20px;
-  border-radius: 8px;
-  display: none;
-  z-index: 10;
-">
-  Wave starting in 3...
 </div>
 
-
-  
-
-</div>
+<div id="waveCountdown">Wave starting in 3...</div>
 
 <script>
 const canvas = document.getElementById('game');
@@ -109,8 +100,7 @@ let spawning = false;
 let fireRateUpgrades = 0;
 let damageUpgrades = 0;
 
-
-  let waypoints = [];
+let waypoints = [];
 function generatePath() {
   waypoints = [];
   let x = 0;
@@ -120,16 +110,12 @@ function generatePath() {
     waypoints.push({ x: Math.min(x, 780), y });
   }
 }
+
 function upgradeFireRate() {
   if (fireRateUpgrades >= 3 || money < 1500) return;
   fireRateUpgrades++;
   money -= 1500;
-
-  // Apply fire rate upgrade to all towers
-  for (let t of towers) {
-    t.fireRate *= 0.9; // 10% faster
-  }
-
+  for (let t of towers) t.fireRate *= 0.9;
   updateUI();
 }
 
@@ -137,12 +123,7 @@ function upgradeDamage() {
   if (damageUpgrades >= 3 || money < 1500) return;
   damageUpgrades++;
   money -= 1500;
-
-  // Apply damage upgrade to all towers
-  for (let t of towers) {
-    t.damage *= 1.1; // 10% more damage
-  }
-
+  for (let t of towers) t.damage *= 1.1;
   updateUI();
 }
 
@@ -153,7 +134,7 @@ const towerTypes = {
 };
 
 function selectTower(type) {
-  if (type === 'verystrong' && level < 10) return; // lock until level 10
+  if (type === 'verystrong' && level < 10) return;
   selectedTower = type;
 }
 
@@ -182,46 +163,26 @@ function drawPath() {
   ctx.stroke();
 }
 
-
 function drawEnemies() {
   ctx.font = "12px sans-serif";
   ctx.textAlign = "center";
   ctx.textBaseline = "bottom";
-
   for (let e of enemies) {
-    // Draw enemy
     ctx.fillStyle = 'red';
     ctx.fillRect(e.x - 10, e.y - 10, 20, 20);
-
-    // Draw numeric health above enemy
     ctx.fillStyle = 'black';
     ctx.fillText(`${e.hp}/${e.maxHp}`, e.x, e.y - 15);
   }
 }
 
-
 function drawTowers() {
   for (let t of towers) {
-    if (t === undefined) continue;
     ctx.beginPath();
-    switch(t.cost) {
-      case 100: // basic
-        ctx.fillStyle = 'blue';
-        break;
-      case 200: // strong
-        ctx.fillStyle = 'green';
-        break;
-      case 500: // very strong
-        ctx.fillStyle = 'red';
-        break;
-      default:
-        ctx.fillStyle = 'gray';
-    }
+    ctx.fillStyle = t.cost === 100 ? 'blue' : t.cost === 200 ? 'green' : 'red';
     ctx.arc(t.x, t.y, 10, 0, Math.PI * 2);
     ctx.fill();
   }
 }
-
 
 function drawBullets() {
   ctx.fillStyle = 'black';
@@ -246,7 +207,6 @@ function updateEnemies() {
     const dx = target.x - e.x;
     const dy = target.y - e.y;
     const dist = Math.hypot(dx, dy);
-
     if (dist < 1) {
       e.targetIndex++;
     } else {
@@ -257,46 +217,32 @@ function updateEnemies() {
   }
 }
 
-
 function updateBullets(delta) {
   for (let i = bullets.length - 1; i >= 0; i--) {
     let b = bullets[i];
     if (!b.target || !enemies.includes(b.target)) {
-      // Target is dead or gone, remove bullet
       bullets.splice(i, 1);
       continue;
     }
-    
-    // Calculate direction toward current target position
+
     let dx = b.target.x - b.x;
     let dy = b.target.y - b.y;
     let dist = Math.hypot(dx, dy);
-    
     if (dist < 5) {
-      // Hit the target
       b.target.hp -= b.damage;
-if (b.target.hp <= 0) {
-  enemies.splice(enemies.indexOf(b.target), 1);
-
-  if (b.target.maxHp >= 150) {
-    money += 30;
-  } else {
-    money += 20;
-  }
-
-  updateUI();
-}
-
+      if (b.target.hp <= 0) {
+        enemies.splice(enemies.indexOf(b.target), 1);
+        money += b.target.maxHp >= 150 ? 30 : 20;
+        updateUI();
+      }
       bullets.splice(i, 1);
       continue;
     }
-    
-    // Normalize direction and move bullet toward target
+
     b.x += (dx / dist) * b.speed * delta;
     b.y += (dy / dist) * b.speed * delta;
   }
 }
-
 
 function shootBullets(time) {
   for (let t of towers) {
@@ -316,22 +262,15 @@ function shootBullets(time) {
   }
 }
 
-
 function updateUI() {
   document.getElementById('money').innerText = money;
   document.getElementById('health').innerText = health;
   document.getElementById('level').innerText = level;
   document.getElementById('status').innerText = paused ? "Paused" : "Running";
-
   document.getElementById('fireRateLvl').innerText = `(${fireRateUpgrades}/3)`;
   document.getElementById('damageLvl').innerText = `(${damageUpgrades}/3)`;
-
-  if (level >= 10) {
-    const btn = document.getElementById('vstrong-btn');
-    btn.classList.remove('locked');
-  }
+  if (level >= 10) document.getElementById('vstrong-btn').classList.remove('locked');
 }
-
 
 function spawnEnemy() {
   enemies.push({
@@ -343,24 +282,12 @@ function spawnEnemy() {
   });
   enemiesToSpawn--;
   if (enemiesToSpawn > 0) {
-    setTimeout(spawnEnemy, enemySpawnRate - level * 100);
+    setTimeout(spawnEnemy, Math.max(200, enemySpawnRate - level * 100));
   } else {
     spawning = false;
   }
 }
 
-
-function startWave() {
-  if (spawning) return;
-  if (enemies.length === 0) {
-    enemiesToSpawn = 5 + level * 2;
-    spawning = true;
-    spawnEnemy();
-    level++;
-    enemyHP += 10;
-    updateUI();
-  }
-}
 function startWave() {
   if (spawning || enemies.length > 0) return;
 
@@ -369,9 +296,7 @@ function startWave() {
   countdownEl.style.display = 'block';
   countdownEl.innerText = `Wave ${level} starting in ${countdown}...`;
 
- 
-}
- const countdownInterval = setInterval(() => {
+  const countdownInterval = setInterval(() => {
     countdown--;
     if (countdown > 0) {
       countdownEl.innerText = `Wave ${level} starting in ${countdown}...`;
@@ -379,7 +304,6 @@ function startWave() {
       clearInterval(countdownInterval);
       countdownEl.style.display = 'none';
 
-      // Start spawning enemies
       enemiesToSpawn = 5 + level * 2;
       spawning = true;
       spawnEnemy();
@@ -388,11 +312,10 @@ function startWave() {
       updateUI();
     }
   }, 1000);
+}
+
 function gameLoop(time) {
-  if (paused) {
-    requestAnimationFrame(gameLoop);
-    return;
-  }
+  if (paused) return requestAnimationFrame(gameLoop);
 
   let delta = time - lastTime;
   lastTime = time;
@@ -411,14 +334,11 @@ function gameLoop(time) {
     window.location.reload();
   }
 
-  if (enemies.length === 0 && !spawning) {
-    startWave();
-  }
+  if (enemies.length === 0 && !spawning) startWave();
 
   requestAnimationFrame(gameLoop);
 }
 
-// Spacebar toggles pause
 window.addEventListener('keydown', (e) => {
   if (e.code === 'Space') {
     paused = !paused;
@@ -427,7 +347,7 @@ window.addEventListener('keydown', (e) => {
 });
 
 updateUI();
-generatePath();  
+generatePath();
 gameLoop(0);
 startWave();
 </script>
