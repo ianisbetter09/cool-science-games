@@ -211,11 +211,18 @@ function updateBullets(delta) {
     if (dist < 5) {
       // Hit the target
       b.target.hp -= b.damage;
-      if (b.target.hp <= 0) {
-        enemies.splice(enemies.indexOf(b.target), 1);
-        money += 20;
-        updateUI();
-      }
+if (b.target.hp <= 0) {
+  enemies.splice(enemies.indexOf(b.target), 1);
+
+  if (b.target.maxHp >= 150) {
+    money += 30;
+  } else {
+    money += 20;
+  }
+
+  updateUI();
+}
+
       bullets.splice(i, 1);
       continue;
     }
