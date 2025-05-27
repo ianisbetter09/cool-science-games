@@ -50,6 +50,14 @@
   <p><strong>Health:</strong> <span id="health">100</span></p>
   <p><strong>Status:</strong> <span id="status">Running</span></p>
   <small>Press [Space] to Pause/Resume</small>
+
+  <hr>
+  <h4>Upgrades</h4>
+  <div class="tower-btn" onclick="upgradeFireRate()">Fire Rate +10% ($1500) <span id="fireRateLvl">(0/3)</span></div>
+  <div class="tower-btn" onclick="upgradeDamage()">Damage +10% ($1500) <span id="damageLvl">(0/3)</span></div>
+
+  
+
 </div>
 
 <script>
@@ -69,6 +77,8 @@ let paused = false;
 let lastTime = 0;
 let enemiesToSpawn = 0;
 let spawning = false;
+let fireRateUpgrades = 0;
+let damageUpgrades = 0;
 
 
   let waypoints = [];
@@ -80,6 +90,31 @@ function generatePath() {
     let y = Math.random() * 400 + 100;
     waypoints.push({ x: Math.min(x, 780), y });
   }
+}
+function upgradeFireRate() {
+  if (fireRateUpgrades >= 3 || money < 1500) return;
+  fireRateUpgrades++;
+  money -= 1500;
+
+  // Apply fire rate upgrade to all towers
+  for (let t of towers) {
+    t.fireRate *= 0.9; // 10% faster
+  }
+
+  updateUI();
+}
+
+function upgradeDamage() {
+  if (damageUpgrades >= 3 || money < 1500) return;
+  damageUpgrades++;
+  money -= 1500;
+
+  // Apply damage upgrade to all towers
+  for (let t of towers) {
+    t.damage *= 1.1; // 10% more damage
+  }
+
+  updateUI();
 }
 
 const towerTypes = {
@@ -259,11 +294,15 @@ function updateUI() {
   document.getElementById('level').innerText = level;
   document.getElementById('status').innerText = paused ? "Paused" : "Running";
 
+  document.getElementById('fireRateLvl').innerText = `(${fireRateUpgrades}/3)`;
+  document.getElementById('damageLvl').innerText = `(${damageUpgrades}/3)`;
+
   if (level >= 10) {
     const btn = document.getElementById('vstrong-btn');
     btn.classList.remove('locked');
   }
 }
+
 
 function spawnEnemy() {
   enemies.push({
