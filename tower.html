@@ -288,9 +288,12 @@ function spawnEnemy() {
   }
 }
 
-function startWave() {
-  if (spawning || enemies.length > 0) return;
+let waveStarting = false; // NEW: prevents multiple countdowns
 
+function startWave() {
+  if (spawning || enemies.length > 0 || waveStarting) return;
+
+  waveStarting = true;
   let countdown = 3;
   const countdownEl = document.getElementById('waveCountdown');
   countdownEl.style.display = 'block';
@@ -304,15 +307,18 @@ function startWave() {
       clearInterval(countdownInterval);
       countdownEl.style.display = 'none';
 
+      // Now it's safe to start the wave
       enemiesToSpawn = 5 + level * 2;
       spawning = true;
       spawnEnemy();
       level++;
       enemyHP += 10;
+      waveStarting = false; // allow next countdown
       updateUI();
     }
   }, 1000);
 }
+
 
 function gameLoop(time) {
   if (paused) return requestAnimationFrame(gameLoop);
