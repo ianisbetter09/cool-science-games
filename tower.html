@@ -101,6 +101,7 @@ let fireRateUpgrades = 0;
 let damageUpgrades = 0;
 let waveStarting = false;
 
+  
 let waypoints = [];
 function generatePath() {
   waypoints = [];
@@ -324,7 +325,7 @@ function startWave() {
 function gameLoop(time) {
   if (paused) return requestAnimationFrame(gameLoop);
 
-  let delta = Math.min(time - lastTime, 100); // cap to 100ms (0.1s)
+  let delta = time - lastTime;
   lastTime = time;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -347,26 +348,12 @@ function gameLoop(time) {
   requestAnimationFrame(gameLoop);
 }
 
- window.addEventListener('keydown', (e) => {
+window.addEventListener('keydown', (e) => {
   if (e.code === 'Space') {
     paused = !paused;
-
-    if (!paused) {
-      lastTime = performance.now(); // reset timing to avoid big delta
-    }
-
     updateUI();
   }
 });
-document.addEventListener("visibilitychange", () => {
-  if (document.hidden) {
-    paused = true;
-  } else {
-    lastTime = performance.now(); // avoid huge delta
-    updateUI();
-  }
-});
-
 
 updateUI();
 generatePath();
