@@ -99,6 +99,7 @@ let enemiesToSpawn = 0;
 let spawning = false;
 let fireRateUpgrades = 0;
 let damageUpgrades = 0;
+let waveStarting = false;
 
 let waypoints = [];
 function generatePath() {
@@ -323,7 +324,7 @@ function startWave() {
 function gameLoop(time) {
   if (paused) return requestAnimationFrame(gameLoop);
 
-  let delta = time - lastTime;
+  let delta = Math.min(time - lastTime, 100); // cap to 100ms (0.1s)
   lastTime = time;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -340,17 +341,32 @@ function gameLoop(time) {
     window.location.reload();
   }
 
-  if (enemies.length === 0 && !spawning) startWave();
+  if (enemies.length === 0 && !spawning && !waveStarting) startWave();
+
 
   requestAnimationFrame(gameLoop);
 }
 
-window.addEventListener('keydown', (e) => {
+ window.addEventListener('keydown', (e) => {
   if (e.code === 'Space') {
     paused = !paused;
+
+    if (!paused) {
+      lastTime = performance.now(); // reset timing to avoid big delta
+    }
+
     updateUI();
   }
 });
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) {
+    paused = true;
+  } else {
+    lastTime = performance.now(); // avoid huge delta
+    updateUI();
+  }
+});
+
 
 updateUI();
 generatePath();
