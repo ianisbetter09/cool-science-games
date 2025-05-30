@@ -326,6 +326,7 @@ function gameLoop(time) {
   if (paused) return;
 
   let delta = time - lastTime;
+  delta = Math.min(delta, 100); // Prevent massive jumps after pause/tab switch
   lastTime = time;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -349,13 +350,6 @@ function gameLoop(time) {
   if (enemies.length === 0 && !spawning && !waveStarting) startWave();
 }
 
-window.addEventListener('keydown', (e) => {
-  if (e.code === 'Space') {
-    paused = !paused;
-    updateUI();
-    if (!paused) gameLoop(performance.now());
-  }
-});
 
 updateUI();
 generatePath();
