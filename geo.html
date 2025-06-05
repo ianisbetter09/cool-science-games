@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>World Geography Game</title>
+  <style>
+    body {
+      text-align: center;
+      font-family: Arial, sans-serif;
+    }
+
+    #map-container {
+      position: relative;
+      display: inline-block;
+    }
+
+    #world-map {
+      width: 800px;
+      border: 2px solid #333;
+    }
+
+    #prompt {
+      margin: 20px;
+      font-size: 24px;
+    }
+
+    #feedback {
+      font-size: 20px;
+      margin-top: 10px;
+    }
+
+    .marker {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background-color: red;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+    }
+  </style>
+</head>
+<body>
+
+  <h1>World Geography Game</h1>
+  <div id="prompt">Click where you think: <strong id="country-name"></strong></div>
+
+  <div id="map-container">
+    <img id="world-map" src="https://upload.wikimedia.org/wikipedia/commons/8/80/World_map_-_low_resolution.svg" alt="World Map">
+    <div id="marker" class="marker" style="display:none;"></div>
+  </div>
+
+  <div id="feedback"></div>
+
+  <script>
+    const countries = {
+      "United States": { x: 155, y: 120 },
+      "Brazil": { x: 245, y: 260 },
+      "India": { x: 510, y: 190 },
+      "Australia": { x: 655, y: 310 },
+      "Russia": { x: 450, y: 80 }
+    };
+
+    const countryList = Object.keys(countries);
+    let currentCountry = "";
+
+    const promptEl = document.getElementById("country-name");
+    const feedbackEl = document.getElementById("feedback");
+    const map = document.getElementById("world-map");
+    const marker = document.getElementById("marker");
+
+    function newRound() {
+      feedbackEl.textContent = "";
+      marker.style.display = "none";
+      currentCountry = countryList[Math.floor(Math.random() * countryList.length)];
+      promptEl.textContent = currentCountry;
+    }
+
+    function handleMapClick(event) {
+      const rect = map.getBoundingClientRect();
+      const clickX = event.clientX - rect.left;
+      const clickY = event.clientY - rect.top;
+
+      const correct = countries[currentCountry];
+      const distance = Math.sqrt(Math.pow(clickX - correct.x, 2) + Math.pow(clickY - correct.y, 2));
+
+      marker.style.left = clickX + "px";
+      marker.style.top = clickY + "px";
+      marker.style.display = "block";
+
+      if (distance < 30) {
+        feedbackEl.textContent = "✅ Correct!";
+      } else {
+        feedbackEl.textContent = `❌ Wrong! Try again. Distance: ${Math.round(distance)}px`;
+      }
+    }
+
+    map.addEventListener("click", handleMapClick);
+
+    newRound();
+  </script>
+
+</body>
+</html>
