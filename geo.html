@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Interactive Geography Game</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Interactive Geography Game - All Countries</title>
   <style>
     body { font-family: Arial, sans-serif; text-align: center; }
     #map { width: 80%; max-width: 900px; margin: 20px auto; }
@@ -15,70 +15,69 @@
 </head>
 <body>
 
-  <h1>Interactive Geography Game</h1>
-  <div id="prompt">Click on: <strong id="country-name">Brazil</strong></div>
-  <div id="map">
-    <!-- SVG map will be inserted here -->
-  </div>
+  <h1>Interactive Geography Game - All Countries</h1>
+  <div id="prompt">Click on: <strong id="country-name"></strong></div>
+  <div id="map"></div>
   <div id="feedback"></div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.4/d3.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.4/d3.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
-<script>
-  const width = 900, height = 500;
-  const projection = d3.geoMercator().scale(140).translate([width / 2, height / 1.5]);
-  const path = d3.geoPath().projection(projection);
-  const svg = d3.select("#map").append("svg").attr("width", width).attr("height", height);
+  <script>
+    const width = 900, height = 500;
+    const projection = d3.geoMercator().scale(140).translate([width / 2, height / 1.5]);
+    const path = d3.geoPath().projection(projection);
+    const svg = d3.select("#map").append("svg").attr("width", width).attr("height", height);
 
-  const countryCodeMap = {
-    "Brazil": "076",
-    "Canada": "124",
-    "China": "156",
-    "Russia": "643",
-    "Australia": "036",
-    "India": "356"
-  };
+    let countriesData = [];
+    let countryIdToName = {};
+    let currentPrompt = null;
 
-  let currentPrompt = "";
+    function newRound() {
+      const countryNames = countriesData.map(c => c.name);
+      currentPrompt = countryNames[Math.floor(Math.random() * countryNames.length)];
+      document.getElementById("country-name").textContent = currentPrompt;
+      document.getElementById("feedback").textContent = "";
+    }
 
-  function newRound() {
-    const countryNames = Object.keys(countryCodeMap);
-    currentPrompt = countryNames[Math.floor(Math.random() * countryNames.length)];
-    document.getElementById("country-name").textContent = currentPrompt;
-    document.getElementById("feedback").textContent = "";
-  }
+    d3.json("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json").then(world => {
+      const countries = topojson.feature(world, world.objects.countries).features;
 
-  d3.json("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json").then(world => {
-    const countries = topojson.feature(world, world.objects.countries).features;
-
-    svg.append("g")
-      .selectAll("path")
-      .data(countries)
-      .enter().append("path")
-      .attr("d", path)
-      .attr("fill", "#ccc")
-      .attr("stroke", "#333")
-      .on("click", function(event, d) {
-        const countryId = d.id;
-        const promptCode = countryCodeMap[currentPrompt];
-        const feedback = document.getElementById("feedback");
-
-        if (countryId === promptCode) {
-          feedback.textContent = `✅ Correct! That is ${currentPrompt}.`;
-          feedback.style.color = "green";
-          newRound();
-        } else {
-          feedback.textContent = `❌ Incorrect. Try again.`;
-          feedback.style.color = "red";
-        }
+      // Build map from country numeric id to name
+      countries.forEach(c => {
+        countryIdToName[c.id] = c.properties && c.properties.name ? c.properties.name : `Country ${c.id}`;
       });
 
-    newRound(); // start the game
-  });
-</script>
+      // Save data with name for easy picking
+      countriesData = countries.map(c => ({
+        id: c.id,
+        name: countryIdToName[c.id],
+      }));
 
+      // Draw the map
+      svg.append("g")
+        .selectAll("path")
+        .data(countries)
+        .enter().append("path")
+        .attr("d", path)
+        .attr("fill", "#ccc")
+        .attr("stroke", "#333")
+        .on("click", function(event, d) {
+          const clickedId = d.id;
+          const clickedName = countryIdToName[clickedId];
+          const feedback = document.getElementById("feedback");
 
+          if (clickedName === currentPrompt) {
+            feedback.textContent = `✅ Correct! That is ${currentPrompt}.`;
+            feedback.style.color = "green";
+            newRound(); // instantly next country
+          } else {
+            feedback.textContent = `❌ Incorrect. You clicked ${clickedName}. Try again.`;
+            feedback.style.color = "red";
+          }
+        });
+
+      newRound(); // start the game
+    });
+  </script>
 </body>
 </html>
