@@ -68,7 +68,7 @@
         if (countryId === promptCode) {
           feedback.textContent = `✅ Correct! That is ${currentPrompt}.`;
           feedback.style.color = "green";
-          setTimeout(newRound, 150);
+          newRound();
         } else {
           feedback.textContent = `❌ Incorrect. Try again.`;
           feedback.style.color = "red";
