@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Interactive Geography Game - All Countries</title>
+  <title>Interactive Geography Game - Selected Countries</title>
   <style>
     body { font-family: Arial, sans-serif; text-align: center; }
     #map { width: 80%; max-width: 900px; margin: 20px auto; }
@@ -15,7 +15,7 @@
 </head>
 <body>
 
-  <h1>Interactive Geography Game - All Countries</h1>
+  <h1>Interactive Geography Game - Selected Countries</h1>
   <div id="prompt">Click on: <strong id="country-name"></strong></div>
   <div id="map"></div>
   <div id="feedback"></div>
@@ -32,6 +32,20 @@
     let countryIdToName = {};
     let currentPrompt = null;
 
+    const allowedCountries = new Set([
+      // Central America
+      "Costa Rica", "Cuba", "Guatemala", "Nicaragua", "Panama",
+      // South America (all countries)
+      "Argentina", "Bolivia", "Brazil", "Chile", "Colombia", "Ecuador", "Guyana", "Paraguay", "Peru", "Suriname", "Uruguay", "Venezuela",
+      // Europe
+      "Bosnia and Herzegovina", "Finland", "France", "Germany", "Greece", "Iceland", "Italy", "Norway", "Spain", "Sweden", "Switzerland", "United Kingdom",
+      // Asia
+      "Afghanistan", "China", "India", "Israel", "Iran", "Iraq", "Japan", "Mongolia", "North Korea", "Oman", "Pakistan", "Philippines",
+      "Saudi Arabia", "South Korea", "Sri Lanka", "Syria", "Turkey", "United Arab Emirates", "Vietnam", "Yemen",
+      // Africa
+      "Algeria", "Democratic Republic of the Congo", "Egypt", "Ethiopia", "Libya", "Madagascar", "Niger", "Nigeria", "South Africa", "Sudan"
+    ]);
+
     function newRound() {
       const countryNames = countriesData.map(c => c.name);
       currentPrompt = countryNames[Math.floor(Math.random() * countryNames.length)];
@@ -47,11 +61,13 @@
         countryIdToName[c.id] = c.properties && c.properties.name ? c.properties.name : `Country ${c.id}`;
       });
 
-      // Save data with name for easy picking
-      countriesData = countries.map(c => ({
-        id: c.id,
-        name: countryIdToName[c.id],
-      }));
+      // Filter countriesData
+      countriesData = countries
+        .map(c => ({
+          id: c.id,
+          name: countryIdToName[c.id],
+        }))
+        .filter(c => allowedCountries.has(c.name));
 
       // Draw the map
       svg.append("g")
@@ -59,12 +75,18 @@
         .data(countries)
         .enter().append("path")
         .attr("d", path)
-        .attr("fill", "#ccc")
+        .attr("fill", d => allowedCountries.has(countryIdToName[d.id]) ? "#ccc" : "#eee")
         .attr("stroke", "#333")
         .on("click", function(event, d) {
           const clickedId = d.id;
           const clickedName = countryIdToName[clickedId];
           const feedback = document.getElementById("feedback");
+
+          if (!allowedCountries.has(clickedName)) {
+            feedback.textContent = `❌ ${clickedName} is not in the quiz. Try again.`;
+            feedback.style.color = "gray";
+            return;
+          }
 
           if (clickedName === currentPrompt) {
             feedback.textContent = `✅ Correct! That is ${currentPrompt}.`;
