@@ -91,6 +91,7 @@ function update() {
     const boxWidth = box.offsetWidth;
     const boxBottom = y + boxHeight;
     const boxRight = x + boxWidth;
+    const boxLeft = x
 
     // ==== PLATFORM TOP COLLISION ====
     if (
@@ -108,6 +109,17 @@ function update() {
     // ==== PLATFORM SIDE COLLISION ====
     // Only block from sides if not on top or falling onto it
     const isAbovePlatform = boxBottom <= platformTop;
+    if (
+      velocityY >= 0 && // falling down
+      boxBottom <= platformTop + 5 && // not inside platform already
+      boxBottom + velocityY >= platformTop && // will intersect from above
+      boxRight > platformLeft &&
+      x < platformRight
+    ) {
+      y = platformTop - boxHeight;
+      velocityY = 0;
+      isJumping = false;
+    }
 
 
     // ==== GROUND COLLISION ====
@@ -225,3 +237,4 @@ window.onload = function () {
   startLevel(level);
 
 }
+
