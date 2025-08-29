@@ -109,27 +109,6 @@ function update() {
     // Only block from sides if not on top or falling onto it
     const isAbovePlatform = boxBottom <= platformTop;
 
-    if (!isAbovePlatform) {
-      // Right side of platform
-      if (
-        boxRight > platformLeft &&
-        x < platformLeft &&
-        boxBottom > platformTop &&
-        y < platformBottom
-      ) {
-        x = platformLeft - boxWidth - 10;
-      }
-
-      // Left side of platform
-      if (
-        x < platformRight &&
-        boxRight > platformRight &&
-        boxBottom > platformTop &&
-        y < platformBottom
-      ) {
-        x = platformRight + 10;
-      }
-    }
 
     // ==== GROUND COLLISION ====
     if (y + boxHeight > groundTop) {
@@ -244,4 +223,5 @@ window.addEventListener('keyup', (event) => {
 
 window.onload = function () {
   startLevel(level);
+
 }
