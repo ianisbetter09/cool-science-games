@@ -18,7 +18,7 @@
   height: 50px;
   background-color: rgb(61, 48, 4);
   position: absolute;
-  bottom: 50px;
+  bottom: 0px;
   right: 0;
 }
 
@@ -211,3 +211,4 @@
   bottom: 110px;
   right: 0;
 }
+
