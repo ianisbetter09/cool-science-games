@@ -15,7 +15,7 @@
 
 #level1 .ground .dirt{
   width: 100%;
-  height: 50px;
+  height: 100px;
   background-color: rgb(61, 48, 4);
   position: absolute;
   bottom: 0px;
@@ -211,4 +211,5 @@
   bottom: 110px;
   right: 0;
 }
+
 
