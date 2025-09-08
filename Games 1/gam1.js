@@ -66,7 +66,7 @@ function completeLevel() {
 
 
 function update() {
-  if (level == 2){
+  if (level == 2 || 3){
     if (!box || !levelBox || !ground || !platform) {
       updateRunning = false;
       return;
@@ -237,4 +237,5 @@ window.onload = function () {
   startLevel(level);
 
 }
+
 
