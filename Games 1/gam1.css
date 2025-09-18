@@ -84,7 +84,7 @@
   bottom: 0px;
   right: 0;
 }
-#level3 .ground .platform {
+#level3 .ground .1platform {
   width: 100px;
   height: 50px;
   background-color: blue;
@@ -93,7 +93,7 @@
   right: 50%;
 }
 
-#level3 .ground .platform {
+#level3 .ground .2platform {
   width: 100px;
   height: 50px;
   background-color: blue;
@@ -228,6 +228,7 @@
   bottom: 110px;
   right: 0;
 }
+
 
 
 
