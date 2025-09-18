@@ -37,7 +37,8 @@ function startLevel(n) {
   // Get ground/platforms/target
   ground = currentLevel.querySelector('.grass');
   levelBox = currentLevel.querySelector('.levelBox');
-  platform = currentLevel.querySelector('.platform');
+  1platform = currentLevel.querySelector('.1platform');
+  2platform = currentLevel.querySelector('.2platform');
 
   // Reset position
   x = 100;
@@ -67,7 +68,7 @@ function completeLevel() {
 
 function update() {
   if (level == 2 || level == 3){
-    if (!box || !levelBox || !ground || !platform) {
+    if (!box || !levelBox || !ground || !1platform || !2platform) {
       updateRunning = false;
       return;
     }
@@ -237,6 +238,7 @@ window.onload = function () {
   startLevel(level);
 
 }
+
 
 
 
