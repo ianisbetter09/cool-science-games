@@ -95,11 +95,11 @@
 
 #level3 .ground .platform {
   width: 100px;
-  height: 100px;
+  height: 50px;
   background-color: blue;
   position: absolute;
-  bottom: 110px;
-  right: 50% + 100px;
+  bottom: 160px;
+  right: 75%;
 }
 
 #level3 .ground .grass{
@@ -228,6 +228,7 @@
   bottom: 110px;
   right: 0;
 }
+
 
 
 
