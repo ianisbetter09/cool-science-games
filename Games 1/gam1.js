@@ -35,7 +35,7 @@ function startLevel(n) {
   currentLevel.style.display = 'block';
 
   // Get ground/platforms/target
-  ground = currentLevel.querySelector('.grass');
+  ground = currentLevel.querySelector('.grass', '.dirt');
   levelBox = currentLevel.querySelector('.levelBox');
   platform = currentLevel.querySelector('.oneplatform');
 
@@ -237,6 +237,7 @@ window.onload = function () {
   startLevel(level);
 
 }
+
 
 
 
