@@ -84,22 +84,13 @@
   bottom: 0px;
   right: 0;
 }
-#level3 .ground .1platform {
+#level3 .ground .oneplatform {
   width: 100px;
   height: 50px;
   background-color: blue;
   position: absolute;
   bottom: 110px;
   right: 50%;
-}
-
-#level3 .ground .2platform {
-  width: 100px;
-  height: 50px;
-  background-color: blue;
-  position: absolute;
-  bottom: 160px;
-  right: 75%;
 }
 
 #level3 .ground .grass{
@@ -228,6 +219,7 @@
   bottom: 110px;
   right: 0;
 }
+
 
 
 
