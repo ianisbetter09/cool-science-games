@@ -58,7 +58,7 @@
   right: 0;
 }
 
-#level2 .ground .platform {
+#level2 .ground .oneplatform {
   width: 100px;
   height: 50px;
   background-color: blue;
@@ -219,6 +219,7 @@
   bottom: 110px;
   right: 0;
 }
+
 
 
 
