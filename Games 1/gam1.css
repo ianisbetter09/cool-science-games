@@ -4,7 +4,7 @@
   height: 100px;
   bottom: 250px;
   left: 100px;
-  background-image: url('gift-box.png');
+  background-color: gold;
 }
 
 #level {
@@ -219,6 +219,7 @@
   bottom: 110px;
   right: 0;
 }
+
 
 
 
