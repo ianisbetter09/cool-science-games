@@ -4,7 +4,7 @@
   height: 100px;
   bottom: 250px;
   left: 100px;
-  background-color: gold;
+  background-image: url('OIP.PNG');
 }
 
 #level {
@@ -219,6 +219,7 @@
   bottom: 110px;
   right: 0;
 }
+
 
 
 
