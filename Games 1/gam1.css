@@ -1,3 +1,11 @@
+#back{
+  position: absolute;
+  width: 50px;
+  height: 25px;
+  top: 10px:
+  left: 15px:
+  background-color: green;
+
 #player{
   position: absolute;
   width: 100px;
@@ -219,6 +227,7 @@
   bottom: 110px;
   right: 0;
 }
+
 
 
 
