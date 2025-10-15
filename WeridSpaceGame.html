@@ -51,13 +51,14 @@
     }
   </style>
 </head>
-<body>
-  
-  <div id="scoreDisplayContainer">
-    <div id="scoreDisplay">Score: 0</div>
-    <div id="highScoreDisplay">High Score: 0</div>
-  </div>
-  <div id="pauseInstructions">Press Esc to pause, use up and down arrow keys to move, push enter for fullscreen  :l</div>
+<body> 
+  <canvas id="gameCanvas" width="800" height="400">
+    <div id="scoreDisplayContainer">
+      <div id="scoreDisplay">Score: 0</div>
+      <div id="highScoreDisplay">High Score: 0</div>
+    </div>
+  </canvas>
+  <div id="pauseInstructions">Press Esc to pause, use up and down arrow keys to move, push enter for fullscreen.</div>
 
   <script>
     const canvas = document.getElementById("gameCanvas");
