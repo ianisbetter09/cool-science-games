@@ -58,10 +58,8 @@
       <div id="scoreDisplay">Score: 0</div>
       <div id="highScoreDisplay">High Score: 0</div>
     </div>
-  </canvas>
-  <div id="pauseInstructions">Press Esc to pause, use up and down arrow keys to move, push enter for fullscreen.</div>
 
-  <script>
+    <script>
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
     let animationFrameId = null;
@@ -254,6 +252,8 @@ window.addEventListener("keyup", (event) => {
 shipPng.onload = () => {
   gameLoop();  // Start the game loop
 };
+
+    </canvas>
   </script>
 </body>
 </html>
