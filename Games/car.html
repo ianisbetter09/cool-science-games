@@ -1,0 +1,384 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>3D Car game</title>
+  <link rel="icon" type="image/png" href="pngs/logo8.png">  <style>
+    body { margin: 0; overflow: hidden; font-family: Arial, sans-serif; }
+    canvas { display: block; }
+    
+    #shopButton {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 18px;
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #shopUI {
+      display: none;
+      position: absolute;
+      top: 50px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 300px;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 20px;
+      border-radius: 8px;
+    }
+    .shop-item {
+      margin-bottom: 10px;
+    }
+    .shop-item button {
+      background-color: #ff9800;
+      padding: 5px 10px;
+      border: none;
+      cursor: pointer;
+    }
+    .shop-item button:disabled {
+      background-color: #ccc;
+    }
+  </style>
+</head>
+<body>
+
+
+<button id="shopButton">Controls</button>
+<div id="timer" style="position:absolute;top:60px;left:10px;font-size:24px;color:white;background:rgba(0,0,0,0.5);padding:10px 15px;border-radius:8px;">Time: <span id="timeElapsed">0.0s</span></div>
+
+
+<div id="shopUI">
+  <h3>Controls</h3>
+  <div class="shop-item">
+    <span>Up arrow to move, reload 3 times to start new race, side arrow keys to move.</span>
+    
+  </div>
+  
+  <button id="closeShopBtn">Close</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+
+<script>
+  // Scene setup
+  let startTime = Date.now();
+  let timerText = document.createElement("div");
+  let finishedCars = [];
+  let raceFinished = false;
+  let carVelocity = new THREE.Vector3(0, 0, 0);
+  let gravity = -0.05;
+  let verticalSpeed = 0;
+  let isFalling = false;
+
+
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x87ceeb); // Sky blue
+
+  const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+  camera.position.set(0, 5, 10);
+  camera.lookAt(0, 0, 0);
+
+  const renderer = new THREE.WebGLRenderer();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  document.body.appendChild(renderer.domElement);
+
+  // Lighting
+  const light = new THREE.DirectionalLight(0xffffff, 1);
+  light.position.set(10, 20, 10);
+  scene.add(light);
+
+  // Road setup
+  const roadSegments = [];
+  const roadSegmentLength = 20;
+  const roadWidth = 10;
+  const roadSpeed = 0.4;
+
+  for (let i = 0; i < 5; i++) {
+    const roadGeometry = new THREE.PlaneGeometry(roadWidth, roadSegmentLength);
+    const roadMaterial = new THREE.MeshStandardMaterial({ color: 0x333333 });
+    const road = new THREE.Mesh(roadGeometry, roadMaterial);
+    road.rotation.x = -Math.PI / 2;
+    road.position.z = -i * roadSegmentLength;
+    scene.add(road);
+    roadSegments.push(road);
+  }
+
+  // Dashes
+  const dashes = [];
+  const dashCount = 20;
+  const dashSpacing = 5;
+
+  for (let i = 0; i < dashCount; i++) {
+    const dashGeometry = new THREE.BoxGeometry(0.3, 0.01, 1.5);
+    const dashMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
+    const dash = new THREE.Mesh(dashGeometry, dashMaterial);
+    dash.position.set(0, 0.01, -i * dashSpacing);
+    scene.add(dash);
+    dashes.push(dash);
+  }
+
+  // Car
+  const carGeometry = new THREE.BoxGeometry(1, 1, 2);
+  const carMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+  const car = new THREE.Mesh(carGeometry, carMaterial);
+  car.position.y = 0.5;
+  scene.add(car);
+
+  // Movement
+  let moveLeft = false;
+  let moveRight = false;
+  const carSpeed = 0.2;
+const opponentCars = [];
+const carColors = [0x00ff00, 0x0000ff, 0xffff00, 0xff00ff];
+
+for (let i = 0; i < 4; i++) {
+  const oppGeometry = new THREE.BoxGeometry(1, 1, 2);
+  const oppMaterial = new THREE.MeshStandardMaterial({ color: carColors[i] });
+  const oppCar = new THREE.Mesh(oppGeometry, oppMaterial);
+  oppCar.position.set((i - 2) * 2, 0.5, -5);
+
+const speed = 0.07 + Math.random() * 0.06; 
+
+  scene.add(oppCar);
+  opponentCars.push({ mesh: oppCar, speed, finished: false });
+}
+
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft') moveLeft = true;
+    if (e.key === 'ArrowRight') moveRight = true;
+  });
+  document.addEventListener('keyup', (e) => {
+    if (e.key === 'ArrowLeft') moveLeft = false;
+    if (e.key === 'ArrowRight') moveRight = false;
+  });
+let moveForward = false;
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'ArrowUp') moveForward = true;
+});
+document.addEventListener('keyup', (e) => {
+  if (e.code === 'ArrowUp') moveForward = false;
+});
+
+
+const finishLineZ = -200;
+const finishGeometry = new THREE.PlaneGeometry(roadWidth, 1);
+const finishMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff, side: THREE.DoubleSide });
+const finishLine = new THREE.Mesh(finishGeometry, finishMaterial);
+finishLine.rotation.x = -Math.PI / 2;
+finishLine.position.z = finishLineZ;
+scene.add(finishLine);
+
+  
+
+  // Spikes
+
+
+function updateTimer() {
+  if (raceFinished) return;
+  const now = Date.now();
+  const elapsed = ((now - startTime) / 1000).toFixed(1);
+  document.getElementById("timeElapsed").textContent = `${elapsed}s`;
+}
+
+  
+
+
+
+
+  // UI Buttons
+  const shopButton = document.getElementById('shopButton');
+  const shopUI = document.getElementById('shopUI');
+  const closeShopBtn = document.getElementById('closeShopBtn');
+
+  shopButton.addEventListener('click', () => {
+    shopUI.style.display = 'block';
+  });
+
+  closeShopBtn.addEventListener('click', () => {
+    shopUI.style.display = 'none';
+  });
+
+
+      
+function getOrdinal(n) {
+  const s = ["th", "st", "nd", "rd"], v = n % 100;
+  return s[(v - 20) % 10] || s[v] || s[0];
+}
+
+function animate() {
+  requestAnimationFrame(animate);
+
+  updateTimer();
+
+  // Handle player movement
+if (!isFalling) {
+  if (moveLeft) car.position.x -= carSpeed;
+  if (moveRight) car.position.x += carSpeed;
+
+  // Check if car is off the road
+  if (car.position.x < -roadWidth / 2 || car.position.x > roadWidth / 2) {
+    isFalling = true;
+  }
+}
+
+  if (moveForward && !raceFinished) car.position.z -= 0.2;
+
+  // Camera follow
+  camera.position.lerp(
+    new THREE.Vector3(car.position.x, car.position.y + 5, car.position.z + 10),
+    0.1
+  );
+  camera.lookAt(car.position);
+
+  // Scroll road segments to simulate environment
+  roadSegments.forEach(road => {
+    if (road.position.z - car.position.z > 30) {
+      road.position.z -= roadSegmentLength * roadSegments.length;
+    }
+  });
+
+  // Opponent movement (bonus snippet)
+opponentCars.forEach(op => {
+  if (!op.finished) {
+    // Basic forward movement
+    op.mesh.position.z -= op.speed;
+
+    // Aggressive ramming logic
+    const distanceZ = car.position.z - op.mesh.position.z;
+
+    if (distanceZ < 10 && distanceZ > -20) {
+      const deltaX = car.position.x - op.mesh.position.x;
+
+      // Move toward player's X if within ramming range
+      if (Math.abs(deltaX) > 0.1) {
+        op.mesh.position.x += Math.sign(deltaX) * 0.05; // swerve toward player
+      }
+    } else {
+      // Slight random lane shifting (for realism)
+      op.mesh.position.x += Math.sin(Date.now() * 0.001 + op.mesh.position.z) * 0.01;
+    }
+
+    // Bounce if hit player
+    const dx = car.position.x - op.mesh.position.x;
+    const dz = car.position.z - op.mesh.position.z;
+    if (Math.abs(dx) < 1 && Math.abs(dz) < 2) {
+      const bounceForce = new THREE.Vector3(dx, 0, dz).normalize().multiplyScalar(0.3);
+      carVelocity.add(bounceForce);
+      op.mesh.position.add(bounceForce.clone().multiplyScalar(-0.2));
+    }
+if (car.position.z < op.mesh.position.z) {
+  op.speed += 0.001; // try to catch up if behind
+}
+
+    // Finish line check
+    if (op.mesh.position.z <= finishLineZ) {
+      op.finished = true;
+      finishedCars.push(op.mesh);
+    }
+  }
+});
+
+
+// Player collision with opponent cars
+// Player collision with opponent cars (with bounce)
+opponentCars.forEach(op => {
+  const dx = car.position.x - op.mesh.position.x;
+  const dz = car.position.z - op.mesh.position.z;
+
+  if (Math.abs(dx) < 1 && Math.abs(dz) < 2) {
+    // Compute simple bounce force away from the other car
+    const bounceForce = new THREE.Vector3(dx, 0, dz).normalize().multiplyScalar(0.3);
+    carVelocity.add(bounceForce);
+
+    // Optional: Slight push to the AI car too (for effect)
+    op.mesh.position.add(bounceForce.clone().multiplyScalar(-0.2));
+    
+  }
+  // AI to AI repulsion
+for (let i = 0; i < opponentCars.length; i++) {
+  for (let j = i + 1; j < opponentCars.length; j++) {
+    const carA = opponentCars[i].mesh;
+    const carB = opponentCars[j].mesh;
+
+    const dx = carA.position.x - carB.position.x;
+    const dz = carA.position.z - carB.position.z;
+    const distance = Math.sqrt(dx * dx + dz * dz);
+
+    if (distance < 1.8) { // adjust this for spacing
+      const overlap = 1.8 - distance;
+      const pushX = (dx / distance) * (overlap / 2);
+      const pushZ = (dz / distance) * (overlap / 2);
+
+      carA.position.x += pushX;
+      carA.position.z += pushZ;
+      carB.position.x -= pushX;
+      carB.position.z -= pushZ;
+    }
+  }
+}
+
+});
+
+// Apply velocity to the car
+car.position.add(carVelocity);
+
+// Gradually reduce the velocity (friction)
+carVelocity.multiplyScalar(0.6); // you can tweak this for more or less "slip"
+
+  // Player finish logic
+  if (!raceFinished && !finishedCars.includes(car) && car.position.z <= finishLineZ) {
+    finishedCars.push(car);
+    raceFinished = true;
+    const playerRank = finishedCars.indexOf(car) + 1;
+    const finalTime = ((Date.now() - startTime) / 1000).toFixed(2);
+    setTimeout(() => {
+      alert(`🏁 You finished ${playerRank}${getOrdinal(playerRank)}!\n⏱️ Time: ${finalTime}s`);
+    }, 100);
+  }
+if (isFalling) {
+  verticalSpeed += gravity;
+  car.position.y += verticalSpeed;
+
+  if (car.position.y < -10) {
+    raceFinished = true;
+    setTimeout(() => {
+      alert("💀 You fell off the road!\nTry to stay on next time.");
+      location.reload(); // reload the game
+    }, 100);
+  }
+}
+
+  // Scroll dashes
+  dashes.forEach(dash => {
+    if (dash.position.z - car.position.z > 10) {
+      dash.position.z -= dashSpacing * dashCount;
+    }
+  });
+
+  // Coin logic
+  
+  // Spikes logic
+
+
+  renderer.render(scene, camera);
+}
+
+
+  animate();
+
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Click the Circle Game</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #000;
+      color: #fff;
+      font-family: Arial, sans-serif;
+    }
+
+    canvas {
+      border: 2px solid #fff;
+    }
+
+    #playAgainBtn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 18px;
+      background-color: #fff;
+      color: #000;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      display: none;
+    }
+
+    #playAgainBtn:hover {
+      background-color: #ddd;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas"></canvas>
+  <button id="playAgainBtn">Play Again</button>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const playAgainBtn = document.getElementById('playAgainBtn');
+
+    // Game settings
+    canvas.width = 600;
+    canvas.height = 400;
+    let score = 0;
+    let highScore = 0;
+    let timeRemaining = 30;
+    let circleSize = 30;
+    let circleTimeout = 1;
+    let circleAppearTime = 0;
+    let gameInterval;
+
+    const circle = {
+      x: 0,
+      y: 0,
+      radius: circleSize,
+      color: 'red',
+    };
+
+    function drawCircle() {
+      ctx.beginPath();
+      ctx.arc(circle.x, circle.y, circle.radius, 0, Math.PI * 2);
+      ctx.fillStyle = circle.color;
+      ctx.fill();
+      ctx.closePath();
+    }
+
+    function displayInfo() {
+      ctx.font = '20px Arial';
+      ctx.fillStyle = 'white';
+      ctx.fillText('Score: ' + score, 10, 30);
+      ctx.fillText('High Score: ' + highScore, 10, 60);
+      ctx.fillText('Time: ' + Math.ceil(timeRemaining), canvas.width - 100, 30);
+    }
+
+    function gameLoop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawCircle();
+      displayInfo();
+
+      timeRemaining -= 1 / 60;
+      if (timeRemaining <= 0) {
+        endGame();
+        return;
+      }
+
+      if (circleAppearTime + circleTimeout <= 30 - timeRemaining) {
+        newCircle();
+      }
+    }
+
+    function newCircle() {
+      circle.x = Math.random() * (canvas.width - 2 * circle.radius) + circle.radius;
+      circle.y = Math.random() * (canvas.height - 2 * circle.radius) + circle.radius;
+      circleAppearTime = 30 - timeRemaining;
+    }
+
+    canvas.addEventListener('click', (event) => {
+      const distance = Math.sqrt(
+        Math.pow(event.offsetX - circle.x, 2) + Math.pow(event.offsetY - circle.y, 2)
+      );
+
+      if (distance < circle.radius) {
+        score++;
+        newCircle();
+        circleTimeout = Math.max(0.2, circleTimeout - 0.1);
+      }
+    });
+
+    function endGame() {
+      clearInterval(gameInterval);
+      if (score > highScore) {
+        highScore = score;
+    }
+      playAgainBtn.style.display = 'inline-block';
+    }
+
+    function startGame() {
+      score = 0;
+      timeRemaining = 30;
+      circleTimeout = 1;
+      newCircle();
+      playAgainBtn.style.display = 'none';
+      gameInterval = setInterval(gameLoop, 1000 / 60);
+    }
+
+    playAgainBtn.addEventListener('click', () => {
+      startGame();
+    });
+
+    // Start on page load
+    startGame();
+  </script>
+</body>
+</html>

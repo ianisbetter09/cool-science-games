@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Silent Shadows - Infinite Stealth Shooter</title>
+  <link rel="icon" type="image/png" href="pngs/logo8.png">
+  <style>
+    body { margin: 0; background: #111; overflow: hidden; }
+    canvas { display: block; margin: 0 auto; background: #222; }
+  </style>
+</head>
+<body>
+<canvas id="game" width="800" height="400"></canvas>
+<script>
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+
+const keys = {};
+window.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
+window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
+
+const GRAVITY = 0.5;
+const GROUND_LEVEL = 350;
+const NOISE_RADIUS = 150;
+let scrollX = 0;
+
+const player = {
+  x: 50,
+  y: GROUND_LEVEL - 50,
+  width: 30,
+  height: 50,
+  dx: 0,
+  dy: 0,
+  speed: 2,
+  onGround: false,
+  facing: 1,
+  crouching: false,
+  attackCooldown: 0,
+  weaponLevel: 1
+};
+
+const bullets = [];
+const enemies = [];
+const upgrades = [];
+
+function spawnEnemy(xOffset = 600) {
+  const x = player.x + xOffset + Math.random() * 400;
+  enemies.push(new Enemy(x, GROUND_LEVEL - 50));
+}
+
+function spawnUpgrade() {
+  const x = player.x + 800 + Math.random() * 600;
+  upgrades.push(new WeaponUpgrade(x, GROUND_LEVEL - 20));
+}
+
+class Enemy {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.width = 30;
+    this.height = 50;
+    this.dx = 1;
+    this.patrolRange = 100;
+    this.startX = x;
+    this.state = 'patrol';
+    this.alertX = null;
+    this.speed = 1;
+  }
+
+  update() {
+    if (this.state === 'patrol') {
+      this.x += this.dx * this.speed;
+      if (this.x > this.startX + this.patrolRange || this.x < this.startX) this.dx *= -1;
+      if (this.canSeePlayer()) {
+        this.state = 'alert';
+        this.alertX = player.x;
+      }
+    } else if (this.state === 'alert') {
+      const dist = this.alertX - this.x;
+      if (Math.abs(dist) > 5) {
+        this.dx = dist > 0 ? 1 : -1;
+        this.x += this.dx * this.speed * 1.5;
+      } else {
+        this.state = 'patrol';
+      }
+    }
+  }
+
+  canSeePlayer() {
+    const dist = Math.abs(this.x - player.x);
+    return dist < 120 && !player.crouching;
+  }
+
+  draw() {
+    ctx.fillStyle = this.state === 'alert' ? 'red' : 'white';
+    ctx.fillRect(this.x - scrollX, this.y, this.width, this.height);
+  }
+}
+
+class WeaponUpgrade {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.width = 20;
+    this.height = 20;
+  }
+
+  draw() {
+    ctx.fillStyle = 'gold';
+    ctx.fillRect(this.x - scrollX, this.y, this.width, this.height);
+  }
+
+  collect() {
+    if (
+      player.x < this.x + this.width &&
+      player.x + player.width > this.x &&
+      player.y < this.y + this.height &&
+      player.y + player.height > this.y
+    ) {
+      player.weaponLevel++;
+      this.x = -9999;
+    }
+  }
+}
+
+function shoot() {
+  if (player.attackCooldown <= 0) {
+    const spread = player.weaponLevel - 1;
+    for (let i = -spread; i <= spread; i++) {
+      bullets.push({
+        x: player.x + player.width / 2,
+        y: player.y + player.height / 2,
+        dx: (player.facing * 8) + i
+      });
+    }
+
+    enemies.forEach(enemy => {
+      const distance = Math.hypot(enemy.x - player.x, enemy.y - player.y);
+      if (distance < NOISE_RADIUS) {
+        enemy.state = 'alert';
+        enemy.alertX = player.x;
+      }
+    });
+
+    player.attackCooldown = 30;
+  }
+}
+
+function update() {
+  // Player movement
+  player.dx = 0;
+  if (keys['arrowleft'] || keys['a']) {
+    player.dx = -player.speed;
+    player.facing = -1;
+  }
+  if (keys['arrowright'] || keys['d']) {
+    player.dx = player.speed;
+    player.facing = 1;
+  }
+
+  if (keys[' ']) shoot();
+  if (keys['shift']) {
+    player.crouching = true;
+    player.height = 30;
+  } else {
+    player.crouching = false;
+    player.height = 50;
+  }
+
+  if ((keys['arrowup'] || keys['w']) && player.onGround) {
+    player.dy = -12;
+    player.onGround = false;
+  }
+
+  player.dy += GRAVITY;
+  player.y += player.dy;
+
+  if (player.y + player.height >= GROUND_LEVEL) {
+    player.y = GROUND_LEVEL - player.height;
+    player.dy = 0;
+    player.onGround = true;
+  }
+
+  player.x += player.dx;
+  scrollX = player.x - 100;
+
+  if (player.attackCooldown > 0) player.attackCooldown--;
+
+  // Bullets
+  bullets.forEach(b => b.x += b.dx);
+  for (let i = bullets.length - 1; i >= 0; i--) {
+    if (bullets[i].x < scrollX - 50 || bullets[i].x > scrollX + canvas.width + 50) {
+      bullets.splice(i, 1);
+    }
+  }
+
+  // Enemies
+  enemies.forEach(enemy => {
+    enemy.update();
+  });
+
+  // Upgrades
+  upgrades.forEach(upg => upg.collect());
+
+  // Spawn new stuff
+  if (Math.random() < 0.01) spawnEnemy();
+  if (Math.random() < 0.005) spawnUpgrade();
+}
+
+function draw() {
+  ctx.fillStyle = '#222';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Ground
+  ctx.fillStyle = '#333';
+  ctx.fillRect(0, GROUND_LEVEL, canvas.width, canvas.height - GROUND_LEVEL);
+
+  // Player
+  ctx.fillStyle = 'cyan';
+  ctx.fillRect(player.x - scrollX, player.y, player.width, player.height);
+
+  // Bullets
+  ctx.fillStyle = 'yellow';
+  bullets.forEach(b => ctx.fillRect(b.x - scrollX, b.y, 5, 2));
+
+  // Enemies
+  enemies.forEach(enemy => enemy.draw());
+
+  // Upgrades
+  upgrades.forEach(upg => upg.draw());
+
+  // UI
+  ctx.fillStyle = 'white';
+  ctx.fillText(`Weapon Level: ${player.weaponLevel}`, 10, 20);
+}
+
+function gameLoop() {
+  update();
+  draw();
+  requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
+</script>
+</body>
+</html>
