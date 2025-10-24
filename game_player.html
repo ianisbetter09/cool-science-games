@@ -34,6 +34,11 @@
 <body>
   <h1 class="back" href="index.html">Cool Science Games</h1>
 
+  <!-- You were missing this div -->
+  <div class="game-container" id="gameContainer">
+    <p>Loading your game...</p>
+  </div>
+
   <script>
     const params = new URLSearchParams(window.location.search);
     const game = params.get('game');
@@ -41,8 +46,9 @@
     if (game) {
       const iframe = document.createElement('iframe');
       iframe.src = 'Games/' + game;
-      document.getElementById('gameContainer').innerHTML = '';
-      document.getElementById('gameContainer').appendChild(iframe);
+      const container = document.getElementById('gameContainer');
+      container.innerHTML = '';
+      container.appendChild(iframe);
     } else {
       document.getElementById('gameContainer').innerHTML = '<p>No game selected.</p>';
     }
