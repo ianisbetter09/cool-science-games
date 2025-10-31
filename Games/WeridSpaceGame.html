@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Spaceship Game</title>
-  <link rel="icon" type="image/png" href="pngs/logo8.png">
+  <link rel="icon" type="image/png" src="pngs/logo8.png">
   <style>
     html, body {
       margin: 0;
@@ -85,7 +85,7 @@
     };
 
     const shipImg = new Image();
-    shipImg.src = "pngs/ship.png"; // Make sure this file exists
+    shipImg.src="pngs/ship.png"; // Make sure this file exists
 
     function togglePause() {
       paused = !paused;
