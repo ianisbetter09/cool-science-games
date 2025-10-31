@@ -52,7 +52,7 @@
     <div id="highScoreDisplay">High Score: 0</div>
   </div>
 
-  <div id="pauseInstructions">Press <b>Esc</b> to Pause | <b>Space</b> to Shoot</div>
+  <div id="pauseInstructions">Press <b>Esc</b> to Pause</div>
 
   <script>
     const canvas = document.getElementById("gameCanvas");
@@ -66,18 +66,16 @@
     window.addEventListener("resize", resizeCanvas);
     resizeCanvas();
 
-    // ===== GAME STATE =====
+    // === Game State ===
     let paused = false;
     let score = 0;
     let highScore = 0;
     let gameSpeed = 10;
     let obstacles = [];
-    let lasers = [];
     let isUpPressed = false;
     let isDownPressed = false;
-    let isSpacePressed = false;
 
-    // ===== SHIP =====
+    // === Ship Setup ===
     const ship = {
       x: 100,
       y: canvas.height / 2,
@@ -94,9 +92,9 @@
       if (!paused) gameLoop();
     }
 
-    // ===== DRAW FUNCTIONS =====
+    // === Draw Functions ===
     function drawShip() {
-      if (shipImg.complete) {
+      if (shipImg.complete && shipImg.naturalHeight !== 0) {
         ctx.drawImage(shipImg, ship.x, ship.y, ship.width, ship.height);
       } else {
         // fallback rectangle if image not loaded
@@ -110,12 +108,22 @@
       obstacles.forEach(o => ctx.fillRect(o.x, o.y, o.width, o.height));
     }
 
-    function drawLasers() {
-      ctx.fillStyle = "yellow";
-      lasers.forEach(l => ctx.fillRect(l.x, l.y, l.width, l.height));
+    function drawScore() {
+      document.getElementById("scoreDisplay").innerText = "Score: " + score;
+      document.getElementById("highScoreDisplay").innerText = "High Score: " + highScore;
     }
 
-    // ===== UPDATE FUNCTIONS =====
+    // === Obstacle Logic ===
+    function createObstacle() {
+      if (Math.random() < 0.03) { // Adjust spawn rate here
+        const height = 15;
+        const width = Math.random() * (80 - 30) + 30;
+        const obstacleY = Math.random() * (canvas.height - height);
+        const speed = gameSpeed + Math.random() * 3;
+        obstacles.push({ x: canvas.width, y: obstacleY, width, height, speed });
+      }
+    }
+
     function updateObstacles() {
       for (let i = obstacles.length - 1; i >= 0; i--) {
         obstacles[i].x -= obstacles[i].speed;
@@ -127,24 +135,7 @@
       }
     }
 
-    function createObstacle() {
-      if (Math.random() < 0.03) {
-        const height = 15;
-        const width = Math.random() * (80 - 30) + 30;
-        const obstacleY = Math.random() * (canvas.height - height);
-        const speed = gameSpeed + Math.random() * 3;
-        obstacles.push({ x: canvas.width, y: obstacleY, width, height, speed });
-      }
-    }
-
-    function updateLasers() {
-      for (let i = lasers.length - 1; i >= 0; i--) {
-        lasers[i].x += lasers[i].speed;
-        if (lasers[i].x > canvas.width) lasers.splice(i, 1);
-      }
-    }
-
-    // ===== COLLISIONS =====
+    // === Collision Detection ===
     function detectCollision() {
       for (let obstacle of obstacles) {
         if (
@@ -157,62 +148,27 @@
           return;
         }
       }
-
-      // Laser collision with obstacles
-      for (let i = obstacles.length - 1; i >= 0; i--) {
-        for (let j = lasers.length - 1; j >= 0; j--) {
-          if (
-            lasers[j].x + lasers[j].width > obstacles[i].x &&
-            lasers[j].x < obstacles[i].x + obstacles[i].width &&
-            lasers[j].y + lasers[j].height > obstacles[i].y &&
-            lasers[j].y < obstacles[i].y + obstacles[i].height
-          ) {
-            // hit detected
-            obstacles.splice(i, 1);
-            lasers.splice(j, 1);
-            score += 5;
-            return;
-          }
-        }
-      }
     }
 
-    // ===== SCORE & SPEED =====
-    function drawScore() {
-      document.getElementById("scoreDisplay").innerText = "Score: " + score;
-      document.getElementById("highScoreDisplay").innerText = "High Score: " + highScore;
-    }
-
-    function checkSpeedIncrease() {
-      if (score % 50 === 0 && score > 0) gameSpeed += 1;
-    }
-
+    // === Game Management ===
     function resetGame() {
       if (score > highScore) highScore = score;
       score = 0;
       obstacles = [];
-      lasers = [];
       gameSpeed = 10;
       ship.y = canvas.height / 2;
       ship.velocity = 0;
     }
 
-    // ===== LASER CREATION =====
-    function shootLaser() {
-      const laserWidth = 10;
-      const laserHeight = 3;
-      lasers.push({
-        x: ship.x + ship.width,
-        y: ship.y + ship.height / 2 - laserHeight / 2,
-        width: laserWidth,
-        height: laserHeight,
-        speed: 12
-      });
+    function checkSpeedIncrease() {
+      if (score % 50 === 0 && score > 0) {
+        gameSpeed += 1;
+      }
     }
 
     let hoverTime = 0;
 
-    // ===== MAIN GAME LOOP =====
+    // === Main Game Loop ===
     function gameLoop() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -228,21 +184,19 @@
 
       drawShip();
       drawObstacles();
-      drawLasers();
       drawScore();
 
       createObstacle();
       updateObstacles();
-      updateLasers();
       detectCollision();
 
-      // Hover
+      // Hover effect when idle
       if (!isUpPressed && !isDownPressed) {
         hoverTime += 0.05;
         ship.y += Math.sin(hoverTime) * 0.2;
       }
 
-      // Movement
+      // Ship movement
       const acceleration = 0.25;
       const maxVelocity = 4;
 
@@ -253,7 +207,7 @@
       ship.velocity = Math.max(Math.min(ship.velocity, maxVelocity), -maxVelocity);
       ship.y += ship.velocity;
 
-      // Bounds
+      // Boundaries
       if (ship.y < 0) ship.y = 0;
       if (ship.y + ship.height > canvas.height)
         ship.y = canvas.height - ship.height;
@@ -261,28 +215,19 @@
       requestAnimationFrame(gameLoop);
     }
 
-    // ===== CONTROLS =====
+    // === Controls ===
     window.addEventListener("keydown", e => {
       if (e.key === "Escape") togglePause();
       if (e.key === "ArrowUp") isUpPressed = true;
       if (e.key === "ArrowDown") isDownPressed = true;
-      if (e.key === " ") {
-        if (!isSpacePressed) {
-          shootLaser();
-          isSpacePressed = true;
-        }
-      }
     });
 
     window.addEventListener("keyup", e => {
       if (e.key === "ArrowUp") isUpPressed = false;
       if (e.key === "ArrowDown") isDownPressed = false;
-      if (e.key === " ") isSpacePressed = false;
     });
 
-    shipImg.onload = () => {
-      gameLoop();
-    };
+    shipImg.onload = gameLoop;
   </script>
 </body>
 </html>
