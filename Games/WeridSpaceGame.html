@@ -6,25 +6,27 @@
   <title>Spaceship Game</title>
   <link rel="icon" type="image/png" href="pngs/logo8.png">
   <style>
-    html, body {
+    body {
       margin: 0;
       padding: 0;
-      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
       background-color: black;
-      height: 100%;
-      width: 100%;
+      overflow: hidden;
     }
 
     canvas {
-      display: block;
       background-image: url("https://t4.ftcdn.net/jpg/02/43/75/73/360_F_243757367_gBpS6R5c8DB7pL5gw9gi9KXlzFfbdZOA.jpg");
       background-repeat: no-repeat;
       background-size: cover;
+      border: 2px solid #000;
+      display: block;
     }
 
-    /* Score container */
     #scoreDisplayContainer {
-      position: fixed;
+      position: absolute;
       top: 20px;
       left: 20px;
       color: white;
@@ -34,28 +36,26 @@
       z-index: 10;
     }
 
-    /* Pause instructions */
     #pauseInstructions {
-      position: fixed;
+      position: absolute;
       bottom: 20px;
       left: 20px;
       color: white;
       font-size: 18px;
       font-family: Arial, sans-serif;
       text-shadow: 1px 1px 2px black;
-      z-index: 10;
     }
   </style>
 </head>
 <body>
-  <canvas id="gameCanvas"></canvas>
+  <canvas id="gameCanvas" width="800" height="400"></canvas>
 
   <div id="scoreDisplayContainer">
     <div id="scoreDisplay">Score: 0</div>
     <div id="highScoreDisplay">High Score: 0</div>
   </div>
 
-  <div id="pauseInstructions">Press <b>Esc</b> to Pause | <b>Enter</b> for Fullscreen</div>
+  <div id="pauseInstructions">Press <b>Esc</b> to Pause</div>
 
   <script>
     const canvas = document.getElementById("gameCanvas");
@@ -69,7 +69,7 @@
     let isUpPressed = false;
     let isDownPressed = false;
 
-    const dino = {
+    const ship = {
       x: 80,
       y: 150,
       width: 50,
@@ -77,32 +77,16 @@
       velocity: 0
     };
 
-    const shipPng = new Image();
-    shipPng.src = "pngs/ship.png";
-
-    // === Resize canvas to always match window size ===
-    function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }
-    window.addEventListener("resize", resizeCanvas);
-    resizeCanvas();
+    const shipImg = new Image();
+    shipImg.src = "pngs/ship.png";
 
     function togglePause() {
       paused = !paused;
       if (!paused) gameLoop();
     }
 
-    function toggleFullscreen() {
-      if (!document.fullscreenElement) {
-        document.body.requestFullscreen().catch(err => alert(`Error: ${err.message}`));
-      } else {
-        document.exitFullscreen();
-      }
-    }
-
     function drawShip() {
-      ctx.drawImage(shipPng, dino.x, dino.y, dino.width, dino.height);
+      ctx.drawImage(shipImg, ship.x, ship.y, ship.width, ship.height);
     }
 
     function drawObstacles() {
@@ -146,10 +130,10 @@
     function detectCollision() {
       for (let obstacle of obstacles) {
         if (
-          dino.x + dino.width > obstacle.x &&
-          dino.x < obstacle.x + obstacle.width &&
-          dino.y + dino.height > obstacle.y &&
-          dino.y < obstacle.y + obstacle.height
+          ship.x + ship.width > obstacle.x &&
+          ship.x < obstacle.x + obstacle.width &&
+          ship.y + ship.height > obstacle.y &&
+          ship.y < obstacle.y + obstacle.height
         ) {
           resetGame();
           return;
@@ -162,8 +146,8 @@
       score = 0;
       obstacles = [];
       gameSpeed = 10;
-      dino.y = canvas.height / 2;
-      dino.velocity = 0;
+      ship.y = canvas.height / 2;
+      ship.velocity = 0;
     }
 
     let hoverTime = 0;
@@ -184,34 +168,33 @@
       drawShip();
       drawObstacles();
       drawScore();
-
       createObstacle();
       updateObstacles();
       detectCollision();
 
-      // Hover effect when idle
+      // Subtle hover
       if (!isUpPressed && !isDownPressed) {
         hoverTime += 0.05;
-        dino.y += Math.sin(hoverTime) * 0.2;
+        ship.y += Math.sin(hoverTime) * 0.2;
       }
 
       // Movement logic
       const acceleration = 0.25;
       const maxVelocity = 4;
 
-      if (isUpPressed) dino.velocity -= acceleration;
-      else if (isDownPressed) dino.velocity += acceleration;
-      else dino.velocity *= 0.85;
+      if (isUpPressed) ship.velocity -= acceleration;
+      else if (isDownPressed) ship.velocity += acceleration;
+      else ship.velocity *= 0.85;
 
-      if (dino.velocity > maxVelocity) dino.velocity = maxVelocity;
-      if (dino.velocity < -maxVelocity) dino.velocity = -maxVelocity;
+      if (ship.velocity > maxVelocity) ship.velocity = maxVelocity;
+      if (ship.velocity < -maxVelocity) ship.velocity = -maxVelocity;
 
-      dino.y += dino.velocity;
+      ship.y += ship.velocity;
 
-      // Boundaries
-      if (dino.y < 0) dino.y = 0;
-      if (dino.y + dino.height > canvas.height)
-        dino.y = canvas.height - dino.height;
+      // Keep within bounds
+      if (ship.y < 0) ship.y = 0;
+      if (ship.y + ship.height > canvas.height)
+        ship.y = canvas.height - ship.height;
 
       requestAnimationFrame(gameLoop);
     }
@@ -219,7 +202,6 @@
     // Controls
     window.addEventListener("keydown", e => {
       if (e.key === "Escape") togglePause();
-      if (e.key === "Enter") toggleFullscreen();
       if (e.key === "ArrowUp") isUpPressed = true;
       if (e.key === "ArrowDown") isDownPressed = true;
     });
@@ -229,7 +211,7 @@
       if (e.key === "ArrowDown") isDownPressed = false;
     });
 
-    shipPng.onload = gameLoop;
+    shipImg.onload = gameLoop;
   </script>
 </body>
 </html>
