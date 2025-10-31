@@ -6,27 +6,24 @@
   <title>Spaceship Game</title>
   <link rel="icon" type="image/png" href="pngs/logo8.png">
   <style>
-    body {
+    html, body {
       margin: 0;
       padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      background-color: black;
       overflow: hidden;
+      height: 100%;
+      width: 100%;
+      background-color: black;
     }
 
     canvas {
+      display: block;
       background-image: url("https://t4.ftcdn.net/jpg/02/43/75/73/360_F_243757367_gBpS6R5c8DB7pL5gw9gi9KXlzFfbdZOA.jpg");
       background-repeat: no-repeat;
       background-size: cover;
-      border: 2px solid #000;
-      display: block;
     }
 
     #scoreDisplayContainer {
-      position: absolute;
+      position: fixed;
       top: 20px;
       left: 20px;
       color: white;
@@ -37,7 +34,7 @@
     }
 
     #pauseInstructions {
-      position: absolute;
+      position: fixed;
       bottom: 20px;
       left: 20px;
       color: white;
@@ -48,7 +45,7 @@
   </style>
 </head>
 <body>
-  <canvas id="gameCanvas" width="800" height="400"></canvas>
+  <canvas id="gameCanvas"></canvas>
 
   <div id="scoreDisplayContainer">
     <div id="scoreDisplay">Score: 0</div>
@@ -60,6 +57,14 @@
   <script>
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
+
+    // Make canvas fill the entire window
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
 
     let paused = false;
     let score = 0;
@@ -178,7 +183,7 @@
         ship.y += Math.sin(hoverTime) * 0.2;
       }
 
-      // Movement logic
+      // Movement
       const acceleration = 0.25;
       const maxVelocity = 4;
 
@@ -186,12 +191,10 @@
       else if (isDownPressed) ship.velocity += acceleration;
       else ship.velocity *= 0.85;
 
-      if (ship.velocity > maxVelocity) ship.velocity = maxVelocity;
-      if (ship.velocity < -maxVelocity) ship.velocity = -maxVelocity;
-
+      ship.velocity = Math.max(Math.min(ship.velocity, maxVelocity), -maxVelocity);
       ship.y += ship.velocity;
 
-      // Keep within bounds
+      // Stay in bounds
       if (ship.y < 0) ship.y = 0;
       if (ship.y + ship.height > canvas.height)
         ship.y = canvas.height - ship.height;
