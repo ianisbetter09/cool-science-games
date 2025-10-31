@@ -12,7 +12,6 @@
       color: white;
       font-family: Arial, sans-serif;
       text-align: center;
-      overflow: hidden; /* Optional: prevents page scrolling altogether */
     }
     .game-container {
       margin: 30px auto;
@@ -46,13 +45,23 @@
     if (game) {
       const iframe = document.createElement('iframe');
       iframe.src = 'Games/' + game;
-      iframe.allow = 'gamepad *; fullscreen *'; // optional but helps with controls
+      iframe.allow = 'gamepad *; fullscreen *';
       const container = document.getElementById('gameContainer');
       container.innerHTML = '';
       container.appendChild(iframe);
 
-      // Prevent scrolling when arrow keys, space, etc. are pressed
+      // Only block scroll keys when iframe is focused
+      let gameFocused = false;
+
+      iframe.addEventListener('mouseenter', () => {
+        gameFocused = true;
+      });
+      iframe.addEventListener('mouseleave', () => {
+        gameFocused = false;
+      });
+
       window.addEventListener('keydown', (e) => {
+        if (!gameFocused) return; // only block when over the game
         const keysToBlock = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '];
         if (keysToBlock.includes(e.key)) {
           e.preventDefault();
