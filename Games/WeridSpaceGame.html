@@ -1,22 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Spaceship Game</title>
-  <link rel="icon" type="image/png" src="pngs/logo8.png">
+  <link rel="icon" type="image/png" href="pngs/logo8.png" />
   <style>
     html, body {
       margin: 0;
       padding: 0;
       overflow: hidden;
-      height: 100%;
       width: 100%;
+      height: 100%;
       background-color: black;
     }
 
     canvas {
       display: block;
+      width: 100%;
+      height: 100%;
       background-image: url("https://t4.ftcdn.net/jpg/02/43/75/73/360_F_243757367_gBpS6R5c8DB7pL5gw9gi9KXlzFfbdZOA.jpg");
       background-repeat: no-repeat;
       background-size: cover;
@@ -58,7 +60,6 @@
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
 
-    // Make canvas fill the entire window
     function resizeCanvas() {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
@@ -75,29 +76,40 @@
     let isUpPressed = false;
     let isDownPressed = false;
 
-    // === Ship Setup ===
+    // === Ship ===
     const ship = {
       x: 100,
       y: canvas.height / 2,
       width: 60,
       height: 45,
-      velocity: 0
+      velocity: 0,
     };
 
     const shipImg = new Image();
-    shipImg.src="pngs/ship.png"; // Make sure this file exists
+    shipImg.src = "pngs/ship.png";
 
+    // === Controls ===
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") togglePause();
+      if (e.key === "ArrowUp") isUpPressed = true;
+      if (e.key === "ArrowDown") isDownPressed = true;
+    });
+    window.addEventListener("keyup", (e) => {
+      if (e.key === "ArrowUp") isUpPressed = false;
+      if (e.key === "ArrowDown") isDownPressed = false;
+    });
+
+    // === Pause ===
     function togglePause() {
       paused = !paused;
       if (!paused) gameLoop();
     }
 
-    // === Draw Functions ===
+    // === Draw ===
     function drawShip() {
-      if (shipImg.complete && shipImg.naturalHeight !== 0) {
+      if (shipImg.complete && shipImg.naturalWidth > 0) {
         ctx.drawImage(shipImg, ship.x, ship.y, ship.width, ship.height);
       } else {
-        // fallback rectangle if image not loaded
         ctx.fillStyle = "white";
         ctx.fillRect(ship.x, ship.y, ship.width, ship.height);
       }
@@ -105,22 +117,25 @@
 
     function drawObstacles() {
       ctx.fillStyle = "red";
-      obstacles.forEach(o => ctx.fillRect(o.x, o.y, o.width, o.height));
+      for (let o of obstacles) {
+        ctx.fillRect(o.x, o.y, o.width, o.height);
+      }
     }
 
     function drawScore() {
-      document.getElementById("scoreDisplay").innerText = "Score: " + score;
-      document.getElementById("highScoreDisplay").innerText = "High Score: " + highScore;
+      document.getElementById("scoreDisplay").textContent = "Score: " + score;
+      document.getElementById("highScoreDisplay").textContent =
+        "High Score: " + highScore;
     }
 
     // === Obstacle Logic ===
     function createObstacle() {
-      if (Math.random() < 0.03) { // Adjust spawn rate here
-        const height = 15;
-        const width = Math.random() * (80 - 30) + 30;
-        const obstacleY = Math.random() * (canvas.height - height);
+      if (Math.random() < 0.025) {
+        const height = 20 + Math.random() * 20;
+        const width = 40 + Math.random() * 60;
+        const y = Math.random() * (canvas.height - height);
         const speed = gameSpeed + Math.random() * 3;
-        obstacles.push({ x: canvas.width, y: obstacleY, width, height, speed });
+        obstacles.push({ x: canvas.width, y, width, height, speed });
       }
     }
 
@@ -130,19 +145,19 @@
         if (obstacles[i].x + obstacles[i].width < 0) {
           obstacles.splice(i, 1);
           score++;
-          checkSpeedIncrease();
+          if (score % 50 === 0 && score > 0) gameSpeed += 1;
         }
       }
     }
 
-    // === Collision Detection ===
+    // === Collision ===
     function detectCollision() {
-      for (let obstacle of obstacles) {
+      for (let o of obstacles) {
         if (
-          ship.x + ship.width > obstacle.x &&
-          ship.x < obstacle.x + obstacle.width &&
-          ship.y + ship.height > obstacle.y &&
-          ship.y < obstacle.y + obstacle.height
+          ship.x < o.x + o.width &&
+          ship.x + ship.width > o.x &&
+          ship.y < o.y + o.height &&
+          ship.y + ship.height > o.y
         ) {
           resetGame();
           return;
@@ -150,30 +165,23 @@
       }
     }
 
-    // === Game Management ===
     function resetGame() {
       if (score > highScore) highScore = score;
       score = 0;
-      obstacles = [];
       gameSpeed = 10;
+      obstacles = [];
       ship.y = canvas.height / 2;
       ship.velocity = 0;
     }
 
-    function checkSpeedIncrease() {
-      if (score % 50 === 0 && score > 0) {
-        gameSpeed += 1;
-      }
-    }
-
+    // === Main Loop ===
     let hoverTime = 0;
 
-    // === Main Game Loop ===
     function gameLoop() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       if (paused) {
-        ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+        ctx.fillStyle = "rgba(0,0,0,0.6)";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = "white";
         ctx.font = "40px Arial";
@@ -190,24 +198,21 @@
       updateObstacles();
       detectCollision();
 
-      // Hover effect when idle
+      // Hover effect
       if (!isUpPressed && !isDownPressed) {
         hoverTime += 0.05;
         ship.y += Math.sin(hoverTime) * 0.2;
       }
 
-      // Ship movement
-      const acceleration = 0.25;
-      const maxVelocity = 4;
-
-      if (isUpPressed) ship.velocity -= acceleration;
-      else if (isDownPressed) ship.velocity += acceleration;
+      const accel = 0.25;
+      const maxV = 4;
+      if (isUpPressed) ship.velocity -= accel;
+      else if (isDownPressed) ship.velocity += accel;
       else ship.velocity *= 0.85;
 
-      ship.velocity = Math.max(Math.min(ship.velocity, maxVelocity), -maxVelocity);
+      ship.velocity = Math.max(Math.min(ship.velocity, maxV), -maxV);
       ship.y += ship.velocity;
 
-      // Boundaries
       if (ship.y < 0) ship.y = 0;
       if (ship.y + ship.height > canvas.height)
         ship.y = canvas.height - ship.height;
@@ -215,19 +220,7 @@
       requestAnimationFrame(gameLoop);
     }
 
-    // === Controls ===
-    window.addEventListener("keydown", e => {
-      if (e.key === "Escape") togglePause();
-      if (e.key === "ArrowUp") isUpPressed = true;
-      if (e.key === "ArrowDown") isDownPressed = true;
-    });
-
-    window.addEventListener("keyup", e => {
-      if (e.key === "ArrowUp") isUpPressed = false;
-      if (e.key === "ArrowDown") isDownPressed = false;
-    });
-
-    shipImg.onload = gameLoop;
+    shipImg.onload = () => gameLoop();
   </script>
 </body>
 </html>
