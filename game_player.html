@@ -12,6 +12,7 @@
       color: white;
       font-family: Arial, sans-serif;
       text-align: center;
+      overflow: hidden; /* Optional: prevents page scrolling altogether */
     }
     .game-container {
       margin: 30px auto;
@@ -27,14 +28,13 @@
       border: none;
       width: 80%;
       height: 80%;
-      border-radious: 0px;
+      border-radius: 0;
     }
   </style>
 </head>
 <body>
   <h1 class="back" href="index.html">Cool Science Games</h1>
 
-  <!-- You were missing this div -->
   <div class="game-container" id="gameContainer">
     <p>Loading your game...</p>
   </div>
@@ -46,9 +46,18 @@
     if (game) {
       const iframe = document.createElement('iframe');
       iframe.src = 'Games/' + game;
+      iframe.allow = 'gamepad *; fullscreen *'; // optional but helps with controls
       const container = document.getElementById('gameContainer');
       container.innerHTML = '';
       container.appendChild(iframe);
+
+      // Prevent scrolling when arrow keys, space, etc. are pressed
+      window.addEventListener('keydown', (e) => {
+        const keysToBlock = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '];
+        if (keysToBlock.includes(e.key)) {
+          e.preventDefault();
+        }
+      });
     } else {
       document.getElementById('gameContainer').innerHTML = '<p>No game selected.</p>';
     }
