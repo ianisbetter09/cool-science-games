@@ -116,8 +116,8 @@
   // === Load the car model ===
   let car;
   const loader = new THREE.GLTFLoader();
-  loader.load(
-    'https://raw.githubusercontent.com/ianisbetter09/cool-science-games/main/Games/low_ploy_city_car.glb',
+loader.load(
+  'https://raw.githubusercontent.com/ianisbetter09/cool-science-games/main/Games/low_ploy_city_car.glb',
     (gltf) => {
       car = gltf.scene;
       car.scale.set(1.5, 1.5, 1.5); // adjust size
