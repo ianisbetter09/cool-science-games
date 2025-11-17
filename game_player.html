@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cool Science Games</title>
   <link rel="icon" type="image/png" href="pngs/logo8.png">
+
   <style>
     body {
       margin: 0;
@@ -12,7 +13,13 @@
       color: white;
       font-family: Arial, sans-serif;
       text-align: center;
+      overflow-x: hidden;
     }
+
+    h1 {
+      margin-top: 20px;
+    }
+
     .game-container {
       margin: 30px auto;
       width: 67.5%;
@@ -22,12 +29,37 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      position: relative;
     }
+
     iframe {
       border: none;
       width: 80%;
       height: 80%;
-      border-radius: 0;
+    }
+
+    /* Fullscreen Button */
+    .fullscreen-btn {
+      position: absolute;
+      bottom: 15px;
+      right: 15px;
+      width: 40px;
+      height: 40px;
+      background: white;
+      border-radius: 8px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 22px;
+      color: black;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.2s;
+      z-index: 10;
+    }
+
+    .fullscreen-btn:hover {
+      background: #ddd;
     }
   </style>
 </head>
@@ -36,58 +68,75 @@
 
   <div class="game-container" id="gameContainer">
     <p>Loading your game...</p>
+    <div class="fullscreen-btn" id="fullscreenBtn">⛶</div>
   </div>
 
   <script>
-  const params = new URLSearchParams(window.location.search);
-  const game = params.get('game');
+    const params = new URLSearchParams(window.location.search);
+    const game = params.get('game');
 
-  if (game) {
-    const iframe = document.createElement('iframe');
-    iframe.src = 'Games/' + game;
-    iframe.allow = 'gamepad *; fullscreen *';
-    const container = document.getElementById('gameContainer');
-    container.innerHTML = '';
-    container.appendChild(iframe);
+    if (game) {
+      const iframe = document.createElement('iframe');
+      iframe.src = 'Games/' + game;
+      iframe.allow = 'gamepad *; fullscreen *';
 
-    let scrollingLocked = false;
+      const container = document.getElementById('gameContainer');
+      container.innerHTML = '';
+      container.appendChild(iframe);
 
-    // Lock scrolling
-    function lockScroll() {
-      if (scrollingLocked) return;
-      scrollingLocked = true;
-      document.body.style.overflow = 'hidden';
-    }
+      // Add fullscreen button back after clearing container
+      const fullscreenBtn = document.createElement('div');
+      fullscreenBtn.className = 'fullscreen-btn';
+      fullscreenBtn.id = 'fullscreenBtn';
+      fullscreenBtn.textContent = '⛶';
+      container.appendChild(fullscreenBtn);
 
-    // Unlock scrolling
-    function unlockScroll() {
-      scrollingLocked = false;
-      document.body.style.overflow = '';
-    }
+      // Handle page scroll locking
+      let scrollingLocked = false;
 
-    // When clicking inside the iframe → lock scrolling
-    iframe.addEventListener('load', () => {
-      iframe.contentWindow.addEventListener('focus', lockScroll);
-    });
-
-    // When clicking anywhere outside the iframe → unlock
-    document.addEventListener('click', (e) => {
-      if (!iframe.contains(e.target)) {
-        unlockScroll();
+      function lockScroll() {
+        if (!scrollingLocked) {
+          scrollingLocked = true;
+          document.body.style.overflow = 'hidden';
+        }
       }
-    });
 
-    // Also prevent scroll keys entirely when scrollingLocked=true
-    window.addEventListener('keydown', (e) => {
-      if (!scrollingLocked) return;
-      const keysToBlock = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' ', 'Space', 'PageUp', 'PageDown'];
-      if (keysToBlock.includes(e.key)) {
-        e.preventDefault();
+      function unlockScroll() {
+        scrollingLocked = false;
+        document.body.style.overflow = '';
       }
-    });
-  } else {
-    document.getElementById('gameContainer').innerHTML = '<p>No game selected.</p>';
-  }
-</script>
+
+      iframe.addEventListener('load', () => {
+        iframe.contentWindow.addEventListener('focus', lockScroll);
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!iframe.contains(e.target)) {
+          unlockScroll();
+        }
+      });
+
+      window.addEventListener('keydown', (e) => {
+        if (!scrollingLocked) return;
+        const keysToBlock = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' ', 'Space', 'PageUp', 'PageDown'];
+        if (keysToBlock.includes(e.key)) e.preventDefault();
+      });
+
+      // Fullscreen button logic
+      fullscreenBtn.addEventListener('click', () => {
+        if (iframe.requestFullscreen) {
+          iframe.requestFullscreen();
+        } else if (iframe.webkitRequestFullscreen) {
+          iframe.webkitRequestFullscreen();
+        } else if (iframe.msRequestFullscreen) {
+          iframe.msRequestFullscreen();
+        }
+      });
+
+    } else {
+      document.getElementById('gameContainer').innerHTML = '<p>No game selected.</p>';
+    }
+  </script>
+
 </body>
 </html>
