@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Gambling Game</title>
-  <link rel="icon" type="image/png" href="pngs/logo8.png">    <style>
-        /* Your existing styles */
+    <link rel="icon" type="image/png" href="pngs/logo8.png">
+    <style>
         body {
             font-family: Arial, sans-serif;
             text-align: center;
@@ -42,20 +42,17 @@
         .result {
             margin-top: 20px;
             font-size: 20px;
-            color: #e74c3c;
         }
-        .success {
-            color: #2ecc71;
-        }
-        .failure {
-            color: #e74c3c;
-        }
+        .success { color: #2ecc71; }
+        .failure { color: #e74c3c; }
+
         .shop-button {
             background-color: #f39c12;
         }
         .shop-button:hover {
             background-color: #e67e22;
         }
+
         .shop-modal {
             display: none;
             position: fixed;
@@ -77,6 +74,7 @@
             display: none;
             z-index: 999;
         }
+
         #reset-button {
             background-color: #e74c3c;
         }
@@ -84,7 +82,6 @@
             background-color: #c0392b;
         }
 
-        /* Stock Market Styles */
         .stock-market {
             margin-top: 40px;
         }
@@ -96,14 +93,6 @@
             display: inline-block;
             width: 180px;
             text-align: center;
-        }
-        .stock-name {
-            font-size: 20px;
-            font-weight: bold;
-        }
-        .stock-price {
-            font-size: 16px;
-            margin: 10px 0;
         }
         .buy-button {
             background-color: #2ecc71;
@@ -117,209 +106,212 @@
         .sell-button:hover {
             background-color: #c0392b;
         }
+
     </style>
 </head>
 <body>
+
     <div class="game-container">
         <h1>Gambling Game</h1>
         <p>Click "Risk It" to risk your coins and see if you win or lose more!</p>
+
         <div id="coin-count">Coins: 100</div>
         <button class="button" id="risk-button">Risk It!</button>
         <button class="button shop-button" onclick="openShop()">Open Shop</button>
+
         <p id="result" class="result"></p>
-        <button id="reset-button" class="button" onclick="resetGame()" style="display: none;">Reset Game</button>
+
+        <button id="reset-button" class="button" onclick="resetGame()" style="display:none;">Reset Game</button>
     </div>
 
-    <!-- Stock Market Section -->
+
+    <!-- STOCK MARKET -->
     <div class="stock-market">
         <h2>Stock Market</h2>
         <div id="stock-list"></div>
     </div>
 
-    <!-- Shop Modal -->
+
+    <!-- SHOP -->
     <div id="shop-overlay" class="shop-overlay" onclick="closeShop()"></div>
     <div id="shop-modal" class="shop-modal">
         <h2>Shop</h2>
-        <p>Buy a Lucky Clover for <span id="clover-price">200</span> coins. Each clover gives +5% increased chance to win!</p>
+        <p>Buy a Lucky Clover for <span id="clover-price">200</span> coins. (+5% win chance each)</p>
         <button onclick="buyLuckyClover()">Buy Lucky Clover</button>
         <p id="clover-count">Lucky Clovers Owned: 0</p>
         <hr>
         <button onclick="closeShop()">Close</button>
     </div>
 
-    <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        let coins = 100;
-        let luckyClovers = 0;
-        let stockPortfolio = {};
 
-        const riskBtn = document.getElementById('risk-button');
-        const resetBtn = document.getElementById('reset-button');
-        const resultEl = document.getElementById('result');
-        const coinCountEl = document.getElementById('coin-count');
-        const cloverCountEl = document.getElementById('clover-count');
-        const stockListEl = document.getElementById('stock-list');
+<script>
+document.addEventListener("DOMContentLoaded", () => {
 
-        // Stock data (15 stocks)
-        const stocks = [
-            { name: "TechCorp", price: 50 },
-            { name: "AutoWorks", price: 30 },
-            { name: "GreenEnergy", price: 80 },
-            { name: "BioMed", price: 120 },
-            { name: "FinGroup", price: 90 },
-            { name: "MegaStore", price: 60 },
-            { name: "SpaceXplore", price: 200 },
-            { name: "FarmFresh", price: 40 },
-            { name: "MedTech", price: 150 },
-            { name: "CyberSafe", price: 75 },
-            { name: "GoldMines", price: 170 },
-            { name: "RetailGiant", price: 55 },
-            { name: "EduTech", price: 120 },
-            { name: "Innovate", price: 200 },
-            { name: "AeroDynamics", price: 250 }
-        ];
+    let coins = 100;
+    let luckyClovers = 0;
+    let stockPortfolio = {};
 
-        // Function to render the stock market
-        function renderStockMarket() {
-            stockListEl.innerHTML = '';
-            stocks.forEach((stock, index) => {
-                const stockItem = document.createElement('div');
-                const stockOwned = stockPortfolio[stock.name] || 0; // Get number of stocks owned for this company
-                stockItem.classList.add('stock-item');
-                stockItem.innerHTML = `
-                    <div class="stock-name">${stock.name}</div>
-                    <div class="stock-price">Price: ${stock.price} Coins</div>
-                    <div class="stock-owned">Owned: ${stockOwned}</div>
-                    <button class="button buy-button" onclick="buyStock(${index})">Buy</button>
-                    <button class="button sell-button" onclick="sellStock(${index})">Sell</button>
-                `;
-                stockListEl.appendChild(stockItem);
-            });
-        }
+    const riskBtn = document.getElementById("risk-button");
+    const resetBtn = document.getElementById("reset-button");
+    const resultEl = document.getElementById("result");
+    const coinCountEl = document.getElementById("coin-count");
+    const cloverCountEl = document.getElementById("clover-count");
+    const stockListEl = document.getElementById("stock-list");
 
-        // Buy stock
-        window.buyStock = function (index) {
-            const stock = stocks[index];
-            if (coins >= stock.price) {
-                coins -= stock.price;
-                stockPortfolio[stock.name] = (stockPortfolio[stock.name] || 0) + 1;
-                coinCountEl.textContent = `Coins: ${coins}`;
-                renderStockMarket();
-               
-            } else {
-                alert("You don't have enough coins to buy this stock.");
-            }
-        };
 
-        // Sell stock
-        window.sellStock = function (index) {
-            const stock = stocks[index];
-            const stockCount = stockPortfolio[stock.name] || 0;
-            if (stockCount > 0) {
-                coins += stock.price;
-                stockPortfolio[stock.name] -= 1;
-                if (stockPortfolio[stock.name] === 0) {
-                    delete stockPortfolio[stock.name];
-                }
-                coinCountEl.textContent = `Coins: ${coins}`;
-                renderStockMarket();
-                alert(`You sold 1 share of ${stock.name}!`);
-            } else {
-                alert("You don't own any shares of this stock.");
-            }
-        };
+    const stocks = [
+        { name: "TechCorp", price: 50 },
+        { name: "AutoWorks", price: 30 },
+        { name: "GreenEnergy", price: 80 },
+        { name: "BioMed", price: 120 },
+        { name: "FinGroup", price: 90 },
+        { name: "MegaStore", price: 60 },
+        { name: "SpaceXplore", price: 200 },
+        { name: "FarmFresh", price: 40 },
+        { name: "MedTech", price: 150 },
+        { name: "CyberSafe", price: 75 },
+        { name: "GoldMines", price: 170 },
+        { name: "RetailGiant", price: 55 },
+        { name: "EduTech", price: 120 },
+        { name: "Innovate", price: 200 },
+        { name: "AeroDynamics", price: 250 }
+    ];
 
-        // Risk button functionality
-        riskBtn.addEventListener('click', () => {
-            const riskAmount = Math.floor(Math.random() * 41) + 10;
-            let winChance = 0.5 + (luckyClovers * 0.05);
-            if (winChance > 1.00) winChance = 1.00;
 
-            const outcome = Math.random();
+    // ---------------- STOCK MARKET ----------------
+    function renderStockMarket() {
+        stockListEl.innerHTML = "";
+        stocks.forEach((stock, index) => {
+            const owned = stockPortfolio[stock.name] || 0;
 
-            if (outcome < winChance) {
-                coins += riskAmount;
-                resultEl.innerHTML = `You won ${riskAmount} coins!`;
-                resultEl.classList.remove('failure');
-                resultEl.classList.add('success');
-            } else {
-                coins -= riskAmount;
-                resultEl.innerHTML = `You lost ${riskAmount} coins!`;
-                resultEl.classList.remove('success');
-                resultEl.classList.add('failure');
-            }
-
-            coinCountEl.innerText = `Coins: ${coins}`;
-
-            if (coins <= 0) {
-                resultEl.innerHTML = "Game Over! You ran out of coins.";
-                resultEl.classList.remove('success', 'failure');
-                riskBtn.disabled = true;
-                resetBtn.style.display = 'inline-block';
-            }
+            const item = document.createElement("div");
+            item.classList.add("stock-item");
+            item.innerHTML = `
+                <div class="stock-name">${stock.name}</div>
+                <div class="stock-price">Price: ${stock.price}</div>
+                <div class="stock-owned">Owned: ${owned}</div>
+                <button class="button buy-button" onclick="buyStock(${index})">Buy</button>
+                <button class="button sell-button" onclick="sellStock(${index})">Sell</button>
+            `;
+            stockListEl.appendChild(item);
         });
+    }
 
-        // Function to open the shop
-        window.openShop = function () {
-            document.getElementById('shop-modal').style.display = 'block';
-            document.getElementById('shop-overlay').style.display = 'block';
-        };
-
-        // Function to close the shop
-        window.closeShop = function () {
-            document.getElementById('shop-modal').style.display = 'none';
-            document.getElementById('shop-overlay').style.display = 'none';
-        };
-
-        window.buyLuckyClover = function () {
-            const cloverPrice = 200 + luckyClovers * 50;
-            if (coins >= cloverPrice) {
-                coins -= cloverPrice;
-                luckyClovers++;
-                coinCountEl.textContent = `Coins: ${coins}`;
-                cloverCountEl.textContent = `Lucky Clovers Owned: ${luckyClovers}`;
-                updateCloverPrice();
-                alert(`You bought a Lucky Clover!`);
-                closeShop();
-            } else {
-                alert('You do not have enough coins to buy a Lucky Clover.');
-            }
-        };
-
-        // Update the price of Lucky Clover in the shop
-        function updateCloverPrice() {
-            const cloverPrice = 200 + luckyClovers * 50;
-            document.getElementById('clover-price').textContent = cloverPrice;
+    window.buyStock = function(index) {
+        const stock = stocks[index];
+        if (coins >= stock.price) {
+            coins -= stock.price;
+            stockPortfolio[stock.name] = (stockPortfolio[stock.name] || 0) + 1;
+            coinCountEl.textContent = `Coins: ${coins}`;
+            renderStockMarket();
+        } else {
+            alert("Not enough coins.");
         }
+    };
 
-        // Reset game
-        function resetGame() {
-            coins = 100;
-            luckyClovers = 0;
-            stockPortfolio = {};
+    window.sellStock = function(index) {
+        const stock = stocks[index];
+        const count = stockPortfolio[stock.name] || 0;
+
+        if (count > 0) {
+            coins += stock.price;
+            stockPortfolio[stock.name] -= 1;
+            if (stockPortfolio[stock.name] === 0) delete stockPortfolio[stock.name];
+            coinCountEl.textContent = `Coins: ${coins}`;
+            renderStockMarket();
+        } else {
+            alert("You own none of this stock.");
+        }
+    };
+
+    function fluctuateStockPrices() {
+        stocks.forEach(stock => {
+            const change = Math.random() * 20 - 10;
+            stock.price = Math.max(1, stock.price + Math.floor(change));
+        });
+        renderStockMarket();
+    }
+
+    setInterval(fluctuateStockPrices, 30000);
+
+
+    // ---------------- SHOP FUNCTIONS ----------------
+    window.openShop = function() {
+        document.getElementById("shop-modal").style.display = "block";
+        document.getElementById("shop-overlay").style.display = "block";
+    };
+
+    window.closeShop = function() {
+        document.getElementById("shop-modal").style.display = "none";
+        document.getElementById("shop-overlay").style.display = "none";
+    };
+
+    window.buyLuckyClover = function() {
+        const price = 200 + luckyClovers * 50;
+
+        if (coins >= price) {
+            coins -= price;
+            luckyClovers++;
+
             coinCountEl.textContent = `Coins: ${coins}`;
             cloverCountEl.textContent = `Lucky Clovers Owned: ${luckyClovers}`;
-            resultEl.innerHTML = '';
-            resultEl.classList.remove('success', 'failure');
-            riskBtn.disabled = false;
-            resetBtn.style.display = 'none';
-            renderStockMarket();
+            document.getElementById("clover-price").textContent = 200 + luckyClovers * 50;
+
+            alert("You bought a Lucky Clover!");
+            closeShop();
+        } else {
+            alert("Not enough coins.");
+        }
+    };
+
+
+    // ---------------- RISK GAME ----------------
+    riskBtn.addEventListener("click", () => {
+        const risk = Math.floor(Math.random() * 41) + 10;
+        let winChance = 0.5 + luckyClovers * 0.05;
+        if (winChance > 1) winChance = 1;
+
+        if (Math.random() < winChance) {
+            coins += risk;
+            resultEl.textContent = `You won ${risk} coins!`;
+            resultEl.className = "result success";
+        } else {
+            coins -= risk;
+            resultEl.textContent = `You lost ${risk} coins!`;
+            resultEl.className = "result failure";
         }
 
-        // Random stock price fluctuation
-        function fluctuateStockPrices() {
-            stocks.forEach((stock) => {
-                const fluctuation = (Math.random() * 20 - 10); // Change price by -10 to +10
-                stock.price = Math.max(1, stock.price + Math.floor(fluctuation)); // Ensure price is never below 1
-            });
-            renderStockMarket();
-        }
+        coinCountEl.textContent = `Coins: ${coins}`;
 
-        // Start stock price fluctuation every 5 seconds
-        setInterval(fluctuateStockPrices, 30000);
+        if (coins <= 0) {
+            resultEl.textContent = "Game Over! You ran out of coins.";
+            riskBtn.disabled = true;
+            resetBtn.style.display = "inline-block";
+        }
+    });
+
+
+    // ---------------- RESET ----------------
+    window.resetGame = function() {
+        coins = 100;
+        luckyClovers = 0;
+        stockPortfolio = {};
+
+        coinCountEl.textContent = `Coins: ${coins}`;
+        cloverCountEl.textContent = `Lucky Clovers Owned: ${luckyClovers}`;
+        resultEl.textContent = "";
+        resultEl.className = "result";
+
+        riskBtn.disabled = false;
+        resetBtn.style.display = "none";
 
         renderStockMarket();
-    });
-    </script>
+    };
+
+
+    renderStockMarket();
+});
+</script>
+
 </body>
 </html>
