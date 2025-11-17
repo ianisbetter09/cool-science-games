@@ -39,37 +39,55 @@
   </div>
 
   <script>
-    const params = new URLSearchParams(window.location.search);
-    const game = params.get('game');
+  const params = new URLSearchParams(window.location.search);
+  const game = params.get('game');
 
-    if (game) {
-      const iframe = document.createElement('iframe');
-      iframe.src = 'Games/' + game;
-      iframe.allow = 'gamepad *; fullscreen *';
-      const container = document.getElementById('gameContainer');
-      container.innerHTML = '';
-      container.appendChild(iframe);
+  if (game) {
+    const iframe = document.createElement('iframe');
+    iframe.src = 'Games/' + game;
+    iframe.allow = 'gamepad *; fullscreen *';
+    const container = document.getElementById('gameContainer');
+    container.innerHTML = '';
+    container.appendChild(iframe);
 
-      // Only block scroll keys when iframe is focused
-      let gameFocused = false;
+    let scrollingLocked = false;
 
-      iframe.addEventListener('mouseenter', () => {
-        gameFocused = true;
-      });
-      iframe.addEventListener('mouseleave', () => {
-        gameFocused = false;
-      });
-
-      window.addEventListener('keydown', (e) => {
-        if (!gameFocused) return; // only block when over the game
-        const keysToBlock = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '];
-        if (keysToBlock.includes(e.key)) {
-          e.preventDefault();
-        }
-      });
-    } else {
-      document.getElementById('gameContainer').innerHTML = '<p>No game selected.</p>';
+    // Lock scrolling
+    function lockScroll() {
+      if (scrollingLocked) return;
+      scrollingLocked = true;
+      document.body.style.overflow = 'hidden';
     }
-  </script>
+
+    // Unlock scrolling
+    function unlockScroll() {
+      scrollingLocked = false;
+      document.body.style.overflow = '';
+    }
+
+    // When clicking inside the iframe → lock scrolling
+    iframe.addEventListener('load', () => {
+      iframe.contentWindow.addEventListener('focus', lockScroll);
+    });
+
+    // When clicking anywhere outside the iframe → unlock
+    document.addEventListener('click', (e) => {
+      if (!iframe.contains(e.target)) {
+        unlockScroll();
+      }
+    });
+
+    // Also prevent scroll keys entirely when scrollingLocked=true
+    window.addEventListener('keydown', (e) => {
+      if (!scrollingLocked) return;
+      const keysToBlock = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' ', 'Space', 'PageUp', 'PageDown'];
+      if (keysToBlock.includes(e.key)) {
+        e.preventDefault();
+      }
+    });
+  } else {
+    document.getElementById('gameContainer').innerHTML = '<p>No game selected.</p>';
+  }
+</script>
 </body>
 </html>
