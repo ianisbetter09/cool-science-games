@@ -1,52 +1,147 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>FoLpY BiRd</title>
-  <style>
+<title>fLoPpY bIrD</title>
+<style>
     body {
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      background-color: #add8e6;
-      color: #fff;
-      font-family: Arial, sans-serif;
+        background: #70c5ce;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
     }
-
     canvas {
-      border: 2px solid #fff;
+        background: #4ec0ca;
+        border: 2px solid #000;
     }
-
-    #playAgainBtn {
-      margin-top: 20px;
-      padding: 10px 20px;
-      font-size: 18px;
-      background-color: #add8e6;
-      color: #000;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      display: none;
-    }
-
-    #playAgainBtn:hover {
-      background-color: #ddd;
-    }
-  </style>
+</style>
 </head>
 <body>
-  <canvas id="gameCanvas"></canvas>
-  <button id="playAgainBtn">Play Again</button>
 
-  <script>
-   
+<canvas id="game" width="400" height="600"></canvas>
 
-    startGame();
-  </script>
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+// Bird
+let birdX = 50;
+let birdY = canvas.height / 2;
+let birdVelocity = 0;
+const gravity = 0.5;
+const jump = -8;
+const birdSize = 20;
+
+// Pipes
+let pipes = [];
+const pipeWidth = 60;
+const pipeGap = 140;
+const pipeSpeed = 2;
+
+// Score
+let score = 0;
+let gameOver = false;
+
+function resetGame() {
+    birdY = canvas.height/2;
+    birdVelocity = 0;
+    pipes = [];
+    score = 0;
+    gameOver = false;
+}
+
+function addPipe() {
+    const topHeight = Math.random() * (canvas.height - pipeGap - 100) + 20;
+    pipes.push({
+        x: canvas.width,
+        top: topHeight,
+        bottom: topHeight + pipeGap
+    });
+}
+
+function update() {
+    if (gameOver) return;
+
+    // Bird physics
+    birdVelocity += gravity;
+    birdY += birdVelocity;
+
+    // Add pipes
+    if (pipes.length === 0 || pipes[pipes.length - 1].x < canvas.width - 200) {
+        addPipe();
+    }
+
+    // Move pipes
+    pipes.forEach(p => p.x -= pipeSpeed);
+
+    // Collision detection
+    pipes.forEach(p => {
+        if (
+            birdX < p.x + pipeWidth &&
+            birdX + birdSize > p.x &&
+            (birdY < p.top || birdY + birdSize > p.bottom)
+        ) {
+            gameOver = true;
+        }
+
+        // Increase score when passing pipes
+        if (!p.passed && p.x + pipeWidth < birdX) {
+            p.passed = true;
+            score++;
+        }
+    });
+
+    // Ground / ceiling collision
+    if (birdY + birdSize > canvas.height || birdY < 0) {
+        gameOver = true;
+    }
+}
+
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw bird
+    ctx.fillStyle = "yellow";
+    ctx.fillRect(birdX, birdY, birdSize, birdSize);
+
+    // Draw pipes
+    ctx.fillStyle = "green";
+    pipes.forEach(p => {
+        ctx.fillRect(p.x, 0, pipeWidth, p.top);
+        ctx.fillRect(p.x, p.bottom, pipeWidth, canvas.height - p.bottom);
+    });
+
+    // Score
+    ctx.fillStyle = "black";
+    ctx.font = "24px Arial";
+    ctx.fillText("Score: " + score, 10, 30);
+
+    // Game over text
+    if (gameOver) {
+        ctx.fillStyle = "red";
+        ctx.font = "40px Arial";
+        ctx.fillText("GAME OVER", 80, canvas.height/2);
+        ctx.font = "20px Arial";
+        ctx.fillText("Press SPACE to restart", 100, canvas.height/2 + 40);
+    }
+}
+
+function gameLoop() {
+    update();
+    draw();
+    requestAnimationFrame(gameLoop);
+}
+
+document.addEventListener("keydown", e => {
+    if (e.code === "Space") {
+        if (gameOver) resetGame();
+        birdVelocity = jump;
+    }
+});
+
+gameLoop();
+</script>
+
 </body>
 </html>
