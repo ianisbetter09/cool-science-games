@@ -1,32 +1,52 @@
-
-
-<!doctype html>
-
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-
-  <title>Floppy Bird</title>
-
-  <meta name="description" content="The HTML5 Herald">
-  <meta name="author" content="SitePoint">
-
-        
-          <link rel="stylesheet" href="styles.css">
-        
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Click the Circle Game</title>
   <style>
-     {
-        background-color: rgb(173, 216, 230);
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #000;
+      color: #fff;
+      font-family: Arial, sans-serif;
     }
-    </style>
 
-  
+    canvas {
+      border: 2px solid #fff;
+    }
+
+    #playAgainBtn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 18px;
+      background-color: #add8e6;
+      color: #000;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      display: none;
+    }
+
+    #playAgainBtn:hover {
+      background-color: #ddd;
+    }
+  </style>
 </head>
-
 <body>
-  <script src="js/scripts.js">
-    
+  <canvas id="gameCanvas"></canvas>
+  <button id="playAgainBtn">Play Again</button>
+
+  <script>
+   
+
+    startGame();
   </script>
 </body>
 </html>
-
