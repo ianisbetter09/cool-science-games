@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>fLoPpy BiRd</title>
+<title>Flappy Bird</title>
 <style>
     body {
         background: #70c5ce;
@@ -39,21 +39,26 @@ const pipeWidth = 60;
 const pipeGap = 140;
 const pipeSpeed = 2;
 
-// Score
+// Score / Highscore
 let score = 0;
 let highscore = Number(localStorage.getItem("flappyHighscore")) || 0;
 
+// Game State
+let gameRunning = false;
 let gameOver = false;
 let countdown = 0;
-let gameRunning = false;
 
+// ------------------------------
+// RESET + COUNTDOWN
+// ------------------------------
 function startCountdown() {
     countdown = 3;
     gameRunning = false;
-    let interval = setInterval(() => {
+
+    let timer = setInterval(() => {
         countdown--;
         if (countdown <= 0) {
-            clearInterval(interval);
+            clearInterval(timer);
             gameRunning = true;
         }
     }, 1000);
@@ -68,6 +73,9 @@ function resetGame() {
     startCountdown();
 }
 
+// ------------------------------
+// PIPES
+// ------------------------------
 function addPipe() {
     const topHeight = Math.random() * (canvas.height - pipeGap - 100) + 20;
     pipes.push({
@@ -78,6 +86,9 @@ function addPipe() {
     });
 }
 
+// ------------------------------
+// UPDATE LOOP
+// ------------------------------
 function update() {
     if (!gameRunning || gameOver) return;
 
@@ -85,7 +96,7 @@ function update() {
     birdVelocity += gravity;
     birdY += birdVelocity;
 
-    // Add new pipes
+    // Add pipes
     if (pipes.length === 0 || pipes[pipes.length - 1].x < canvas.width - 200) {
         addPipe();
     }
@@ -93,37 +104,47 @@ function update() {
     // Move pipes
     pipes.forEach(p => p.x -= pipeSpeed);
 
-    // Collision detection & scoring
+    // Collision + Scoring
     pipes.forEach(p => {
+        // Collision
         if (
             birdX < p.x + pipeWidth &&
             birdX + birdSize > p.x &&
             (birdY < p.top || birdY + birdSize > p.bottom)
         ) {
-            gameOver = true;
+            endGame();
         }
 
-        // Score for passing pipes
+        // Score
         if (!p.passed && p.x + pipeWidth < birdX) {
             p.passed = true;
             score++;
         }
     });
 
-    // Ground / ceiling collision
+    // Ground / Ceiling
     if (birdY + birdSize > canvas.height || birdY < 0) {
-        gameOver = true;
-    }
-
-    // Update highscore
-    if (gameOver) {
-        if (score > highscore) {
-            highscore = score;
-            localStorage.setItem("flappyHighscore", highscore);
-        }
+        endGame();
     }
 }
 
+// ------------------------------
+// END GAME
+// ------------------------------
+function endGame() {
+    gameOver = true;
+    gameRunning = false;
+
+    // Highscore update
+    if (score > highscore) {
+        highscore = score;
+        localStorage.setItem("flappyHighscore", highscore);
+    }
+}
+
+// ------------------------------
+// DRAW LOOP
+// ------------------------------
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -138,49 +159,58 @@ function draw() {
         ctx.fillRect(p.x, p.bottom, pipeWidth, canvas.height - p.bottom);
     });
 
-    // Score
+    // Score + Highscore
     ctx.fillStyle = "black";
     ctx.font = "24px Arial";
     ctx.fillText("Score: " + score, 10, 30);
     ctx.fillText("Highscore: " + highscore, 10, 60);
 
     // Countdown
-    if (!gameRunning && countdown > 0) {
+    if (!gameRunning && !gameOver && countdown > 0) {
         ctx.fillStyle = "white";
         ctx.font = "70px Arial";
         ctx.fillText(countdown, canvas.width / 2 - 20, canvas.height / 2);
     }
 
-    // Game Over screen
+    // Game Over display
     if (gameOver) {
         ctx.fillStyle = "red";
         ctx.font = "40px Arial";
-        ctx.fillText("GAME OVER", 80, canvas.height/2);
+        ctx.fillText("GAME OVER", 80, canvas.height / 2 - 20);
         ctx.font = "20px Arial";
-        ctx.fillText("Press SPACE to restart", 100, canvas.height/2 + 40);
+        ctx.fillText("Press SPACE to restart", 110, canvas.height / 2 + 30);
     }
 }
 
+// ------------------------------
+// MAIN LOOP
+// ------------------------------
 function gameLoop() {
     update();
     draw();
     requestAnimationFrame(gameLoop);
 }
 
+// ------------------------------
+// INPUT
+// ------------------------------
 document.addEventListener("keydown", e => {
     if (e.code === "Space") {
+
         if (gameOver) {
-            resetGame();
+            resetGame();  
             return;
         }
+
         if (gameRunning) {
             birdVelocity = jump;
         }
     }
 });
 
-// Start with countdown
-startCountdown();
+// Start initial countdown
+resetGame();
+
 gameLoop();
 </script>
 
