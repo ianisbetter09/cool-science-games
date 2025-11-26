@@ -30,13 +30,13 @@ let birdX = 50;
 let birdY = canvas.height / 2;
 let birdVelocity = 0;
 const gravity = 0.5;
-const jump = -8;
+const jump = +8;
 const birdSize = 20;
 
 // Pipes
 let pipes = [];
 const pipeWidth = 60;
-const pipeGap = 140;
+const pipeGap = 160;
 const pipeSpeed = 2;
 
 // Score / Highscore
@@ -93,8 +93,8 @@ function update() {
     if (!gameRunning || gameOver) return;
 
     // Bird physics
-    birdVelocity += gravity;
-    birdY += birdVelocity;
+    birdVelocity -= gravity;
+    birdY -= birdVelocity;
 
     // Add pipes
     if (pipes.length === 0 || pipes[pipes.length - 1].x < canvas.width - 200) {
