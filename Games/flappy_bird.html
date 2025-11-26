@@ -31,14 +31,14 @@ let birdY = canvas.height / 2;
 let birdVelocity = 0;
 
 // INVERTED GRAVITY
-const gravity = -0.5;    // pulls UP
-const jump = 8;          // jump sends bird DOWN (positive Y)
+const gravity = -0.3;    // pulls UP
+const jump = 7;          // jump sends bird DOWN (positive Y)
 const birdSize = 20;
 
 // Pipes
 let pipes = [];
 const pipeWidth = 60;
-const pipeGap = 160;
+const pipeGap = 150;
 
 // INVERTED PIPE DIRECTION
 const pipeSpeed = 2; // moves to the RIGHT
@@ -100,7 +100,7 @@ function update() {
     if (!gameRunning || gameOver) return;
 
     // Bird physics (inverted)
-    birdVelocity += gravity;
+    birdVelocity += gravity/1.1;
     birdY += birdVelocity;
 
     // Add pipes
