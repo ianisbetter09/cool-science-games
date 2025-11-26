@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>fLoPpY bIrD</title>
+<title>fLoPpy BiRd</title>
 <style>
     body {
         background: #70c5ce;
@@ -28,8 +28,8 @@ const ctx = canvas.getContext("2d");
 // Bird
 let birdX = 50;
 let birdY = canvas.height / 2;
-let birdVelocity = .75;
-const gravity = 0.3;
+let birdVelocity = 0;
+const gravity = 0.5;
 const jump = -8;
 const birdSize = 20;
 
@@ -41,14 +41,31 @@ const pipeSpeed = 2;
 
 // Score
 let score = 0;
+let highscore = Number(localStorage.getItem("flappyHighscore")) || 0;
+
 let gameOver = false;
+let countdown = 0;
+let gameRunning = false;
+
+function startCountdown() {
+    countdown = 3;
+    gameRunning = false;
+    let interval = setInterval(() => {
+        countdown--;
+        if (countdown <= 0) {
+            clearInterval(interval);
+            gameRunning = true;
+        }
+    }, 1000);
+}
 
 function resetGame() {
-    birdY = canvas.height/2;
+    birdY = canvas.height / 2;
     birdVelocity = 0;
     pipes = [];
     score = 0;
     gameOver = false;
+    startCountdown();
 }
 
 function addPipe() {
@@ -56,18 +73,19 @@ function addPipe() {
     pipes.push({
         x: canvas.width,
         top: topHeight,
-        bottom: topHeight + pipeGap
+        bottom: topHeight + pipeGap,
+        passed: false
     });
 }
 
 function update() {
-    if (gameOver) return;
+    if (!gameRunning || gameOver) return;
 
     // Bird physics
     birdVelocity += gravity;
     birdY += birdVelocity;
 
-    // Add pipes
+    // Add new pipes
     if (pipes.length === 0 || pipes[pipes.length - 1].x < canvas.width - 200) {
         addPipe();
     }
@@ -75,7 +93,7 @@ function update() {
     // Move pipes
     pipes.forEach(p => p.x -= pipeSpeed);
 
-    // Collision detection
+    // Collision detection & scoring
     pipes.forEach(p => {
         if (
             birdX < p.x + pipeWidth &&
@@ -85,7 +103,7 @@ function update() {
             gameOver = true;
         }
 
-        // Increase score when passing pipes
+        // Score for passing pipes
         if (!p.passed && p.x + pipeWidth < birdX) {
             p.passed = true;
             score++;
@@ -96,16 +114,24 @@ function update() {
     if (birdY + birdSize > canvas.height || birdY < 0) {
         gameOver = true;
     }
+
+    // Update highscore
+    if (gameOver) {
+        if (score > highscore) {
+            highscore = score;
+            localStorage.setItem("flappyHighscore", highscore);
+        }
+    }
 }
 
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Draw bird
+    // Bird
     ctx.fillStyle = "yellow";
     ctx.fillRect(birdX, birdY, birdSize, birdSize);
 
-    // Draw pipes
+    // Pipes
     ctx.fillStyle = "green";
     pipes.forEach(p => {
         ctx.fillRect(p.x, 0, pipeWidth, p.top);
@@ -116,8 +142,16 @@ function draw() {
     ctx.fillStyle = "black";
     ctx.font = "24px Arial";
     ctx.fillText("Score: " + score, 10, 30);
+    ctx.fillText("Highscore: " + highscore, 10, 60);
 
-    // Game over text
+    // Countdown
+    if (!gameRunning && countdown > 0) {
+        ctx.fillStyle = "white";
+        ctx.font = "70px Arial";
+        ctx.fillText(countdown, canvas.width / 2 - 20, canvas.height / 2);
+    }
+
+    // Game Over screen
     if (gameOver) {
         ctx.fillStyle = "red";
         ctx.font = "40px Arial";
@@ -135,11 +169,18 @@ function gameLoop() {
 
 document.addEventListener("keydown", e => {
     if (e.code === "Space") {
-        if (gameOver) resetGame();
-        birdVelocity = jump;
+        if (gameOver) {
+            resetGame();
+            return;
+        }
+        if (gameRunning) {
+            birdVelocity = jump;
+        }
     }
 });
 
+// Start with countdown
+startCountdown();
 gameLoop();
 </script>
 
