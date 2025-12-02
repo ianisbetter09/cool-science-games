@@ -142,6 +142,7 @@ function update() {
 function endGame() {
     gameOver = true;
     gameRunning = false;
+    gamepaused = false;
 
     if (score > highscore) {
         highscore = score;
@@ -187,6 +188,15 @@ function draw() {
         ctx.font = "20px Arial";
         ctx.fillText("Press SPACE to restart", 110, canvas.height/2 + 30);
     }
+    //puased?
+     if (gamepuased) {
+        gameRunning = false;
+        ctx.fillStyle = "blue";
+        ctx.font = "40px Arial";
+        ctx.fillText("PAUSED", 80, canvas.height/2 - 20);
+        ctx.font = "20px Arial";
+        ctx.fillText("Press P to resume", 110, canvas.height/2 + 30);
+    }
 }
 
 // ------------------------------
@@ -209,8 +219,12 @@ document.addEventListener("keydown", e => {
             return;
         }
 
+
+    document.addEventListener("keydown", e => {
+    if (e.code === "p") {
+
         if (gameRunning) {
-            birdVelocity = jump; // inverted jump (down)
+            gamepaused = true; 
         }
     }
 });
