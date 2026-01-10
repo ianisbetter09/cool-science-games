@@ -19,17 +19,18 @@
     h1 { margin-top: 20px; }
     h1 a { color: white; text-decoration: none; }
 
-    /* The Game Player Area */
+    /* --- Game Player Section --- */
     .game-section {
       margin: 20px auto;
-      width: 70%;
+      width: 75%;
+      max-width: 900px;
     }
 
     .game-container {
       width: 100%;
-      height: 600px;
+      height: 550px;
       background: #222;
-      border-radius: 15px 15px 0 0; /* Rounded top only */
+      border-radius: 15px 15px 0 0;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -38,68 +39,75 @@
       overflow: hidden;
     }
 
-    iframe {
-      border: none;
-      width: 100%;
-      height: 100%;
-    }
+    iframe { border: none; width: 100%; height: 100%; }
 
-    /* Game Info Bar (The "Footer" for the game) */
+    /* --- Game Info Bar (Footer) --- */
     .game-info-bar {
       background: #1a1a1a;
       border: 2px solid #333;
       border-top: none;
-      border-radius: 0 0 15px 15px; /* Rounded bottom only */
+      border-radius: 0 0 15px 15px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       padding: 10px 20px;
-      color: #ccc;
+      margin-bottom: 40px;
     }
 
     .game-details { text-align: left; }
-    .game-details span { display: block; }
-    .game-title { font-weight: bold; color: white; font-size: 1.1em; }
-    .game-author { font-size: 0.85em; color: #888; }
+    .game-title { font-weight: bold; color: white; font-size: 1.1em; display: block; }
+    .game-author { font-size: 0.85em; color: #888; display: block; }
 
     .fullscreen-btn {
-      width: 40px;
-      height: 40px;
+      width: 35px;
+      height: 35px;
       background: #444;
-      border-radius: 8px;
+      border-radius: 6px;
       display: flex;
       justify-content: center;
       align-items: center;
-      font-size: 20px;
+      font-size: 18px;
       color: white;
+      cursor: pointer;
+    }
+
+    /* --- Vertical Game List Section --- */
+    .game-list-container {
+      width: 75%;
+      max-width: 900px;
+      margin: 0 auto 50px auto;
+      text-align: left;
+    }
+
+    .list-item {
+      display: flex;
+      align-items: center;
+      background: black; /* Set background to black */
+      border: 1px solid #222;
+      margin-bottom: 10px;
+      padding: 10px;
+      border-radius: 10px;
       cursor: pointer;
       transition: background 0.2s;
     }
 
-    .fullscreen-btn:hover { background: #666; }
-
-    /* Selection Area */
-    .more-games-section {
-      margin-top: 50px;
-      padding: 40px 20px;
+    .list-item:hover {
       background: #111;
+      border-color: #444;
     }
 
-    .grid {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 15px;
+    .list-item img {
+      width: 100px; /* Slightly smaller icons */
+      height: auto;
+      border-radius: 5px;
+      margin-right: 20px;
     }
 
-    .grid img {
-      width: 160px;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: transform 0.2s;
+    .list-item-title {
+      font-size: 1.2em;
+      font-weight: bold;
+      color: #ddd;
     }
-
-    .grid img:hover { transform: scale(1.1); }
   </style>
 </head>
 <body>
@@ -108,27 +116,50 @@
 
   <div class="game-section">
     <div class="game-container" id="gameContainer">
-      <p>Select a game below!</p>
+      <p>Click a game below to play!</p>
     </div>
 
     <div class="game-info-bar">
       <div class="game-details">
-        <span class="game-title" id="displayTitle">Game Title</span>
-        <span class="game-author" id="displayAuthor">By Your Name</span>
+        <span class="game-title" id="displayTitle">No Game Selected</span>
+        <span class="game-author" id="displayAuthor">Please select a game</span>
       </div>
       <div class="fullscreen-btn" id="fsBtn" title="Fullscreen">⛶</div>
     </div>
   </div>
 
-  <div class="more-games-section">
-    <h3>Choose Another Game</h3>
-    <div class="grid">
-      <img src="pngs/spaceship_game2.png" onclick="switchGame('WeridSpaceGame.html', 'Spaceship Game', 'Ian')">
-      <img src="pngs/3d_car.png" onclick="switchGame('car.html', '3D Car Game', 'Ian')">
-      <img src="pngs/Gambling.png" onclick="switchGame('gambling.html', 'Gambling Game', 'Ian')">
-      <img src="pngs/blockbreaker.png" onclick="switchGame('blockblast.html', 'Block Breaker', 'Ian')">
-      <img src="pngs/towerdefense.png" onclick="switchGame('tower', 'Tower Defense', 'Ian')">
+  <div class="game-list-container">
+    
+    <div class="list-item" onclick="switchGame('WeridSpaceGame.html', 'Spaceship Game', 'Ian')">
+      <img src="pngs/spaceship_game2.png" alt="Spaceship Game">
+      <div class="list-item-title">Spaceship Game</div>
     </div>
+
+    <div class="list-item" onclick="switchGame('car.html', '3D Car Game', 'Ian')">
+      <img src="pngs/3d_car.png" alt="3D Car Game">
+      <div class="list-item-title">3D Car Game</div>
+    </div>
+
+    <div class="list-item" onclick="switchGame('gambling.html', 'Gambling Game', 'Ian')">
+      <img src="pngs/Gambling.png" alt="Gambling Game">
+      <div class="list-item-title">Gambling Game</div>
+    </div>
+
+    <div class="list-item" onclick="switchGame('blockblast.html', 'Block Breaker', 'Ian')">
+      <img src="pngs/blockbreaker.png" alt="Block Breaker">
+      <div class="list-item-title">Block Breaker</div>
+    </div>
+
+    <div class="list-item" onclick="switchGame('tower', 'Tower Defense', 'Ian')">
+      <img src="pngs/towerdefense.png" alt="Tower Defense">
+      <div class="list-item-title">Tower Defense</div>
+    </div>
+
+    <div class="list-item" onclick="switchGame('Games 1/gam1.html', 'Platform Game (Beta)', 'Ian')">
+      <img src="pngs/platformgame.png" alt="Platform Game">
+      <div class="list-item-title">Platform Game (Beta)</div>
+    </div>
+
   </div>
 
   <script>
@@ -148,29 +179,28 @@
       titleDisp.innerText = title;
       authorDisp.innerText = "By " + author;
 
-      // Handle Fullscreen
       fsBtn.onclick = () => {
         if (iframe.requestFullscreen) iframe.requestFullscreen();
         else if (iframe.webkitRequestFullscreen) iframe.webkitRequestFullscreen();
       };
 
+      // Scroll to the top player area
       window.scrollTo({top: 0, behavior: 'smooth'});
     }
 
-    // --- FIX FOR SCROLLING ---
-    // This stops the page from moving when you use Arrow Keys or Space
+    // Scroll Lock for Arrow Keys/Space
     window.addEventListener("keydown", function(e) {
         if(["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].indexOf(e.code) > -1) {
             e.preventDefault();
         }
     }, false);
 
-    // Initial Load
+    // Initial Load Logic
     const params = new URLSearchParams(window.location.search);
     const g = params.get('game');
     if (g) {
-      // Map common files to titles (optional)
-      switchGame(g, g.replace('.html', ''), 'Ian');
+      // Logic to auto-fill title based on URL if needed
+      switchGame(g, "Playing Game...", "Ian");
     }
   </script>
 
