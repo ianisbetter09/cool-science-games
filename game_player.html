@@ -19,16 +19,17 @@
     h1 { margin-top: 20px; }
     h1 a { color: white; text-decoration: none; }
 
-    /* --- Game Player Section --- */
+    /* --- Auto-Sizing Game Section --- */
     .game-section {
       margin: 20px auto;
-      width: 75%;
-      max-width: 900px;
+      width: 90%; /* Uses more of the screen on mobile */
+      max-width: 1000px; /* Limits size on large monitors */
     }
 
     .game-container {
       width: 100%;
-      height: 550px;
+      /* Aspect Ratio 16:9 makes it auto-size height based on width */
+      aspect-ratio: 16 / 9; 
       background: #222;
       border-radius: 15px 15px 0 0;
       display: flex;
@@ -39,9 +40,13 @@
       overflow: hidden;
     }
 
-    iframe { border: none; width: 100%; height: 100%; }
+    iframe { 
+      border: none; 
+      width: 100%; 
+      height: 100%; 
+    }
 
-    /* --- Game Info Bar (Footer) --- */
+    /* --- Game Info Bar --- */
     .game-info-bar {
       background: #1a1a1a;
       border: 2px solid #333;
@@ -59,22 +64,24 @@
     .game-author { font-size: 0.85em; color: #888; display: block; }
 
     .fullscreen-btn {
-      width: 35px;
-      height: 35px;
+      width: 40px;
+      height: 40px;
       background: #444;
-      border-radius: 6px;
+      border-radius: 8px;
       display: flex;
       justify-content: center;
       align-items: center;
-      font-size: 18px;
+      font-size: 22px;
       color: white;
       cursor: pointer;
+      transition: background 0.2s;
     }
+    .fullscreen-btn:hover { background: #666; }
 
-    /* --- Vertical Game List Section --- */
+    /* --- Vertical List --- */
     .game-list-container {
-      width: 75%;
-      max-width: 900px;
+      width: 90%;
+      max-width: 1000px;
       margin: 0 auto 50px auto;
       text-align: left;
     }
@@ -82,32 +89,23 @@
     .list-item {
       display: flex;
       align-items: center;
-      background: black; /* Set background to black */
-      border: 1px solid #222;
-      margin-bottom: 10px;
-      padding: 10px;
-      border-radius: 10px;
+      background: black;
+      border-bottom: 1px solid #222;
+      padding: 12px;
       cursor: pointer;
-      transition: background 0.2s;
+      transition: background 0.3s;
     }
 
-    .list-item:hover {
-      background: #111;
-      border-color: #444;
-    }
+    .list-item:hover { background: #111; }
 
     .list-item img {
-      width: 100px; /* Slightly smaller icons */
+      width: 80px; /* Smaller icon */
       height: auto;
-      border-radius: 5px;
+      border-radius: 6px;
       margin-right: 20px;
     }
 
-    .list-item-title {
-      font-size: 1.2em;
-      font-weight: bold;
-      color: #ddd;
-    }
+    .list-item-title { font-size: 1.1em; color: #eee; }
   </style>
 </head>
 <body>
@@ -116,50 +114,39 @@
 
   <div class="game-section">
     <div class="game-container" id="gameContainer">
-      <p>Click a game below to play!</p>
+      <p>Select a game below to begin</p>
     </div>
 
     <div class="game-info-bar">
       <div class="game-details">
         <span class="game-title" id="displayTitle">No Game Selected</span>
-        <span class="game-author" id="displayAuthor">Please select a game</span>
+        <span class="game-author" id="displayAuthor">Choose a title below</span>
       </div>
       <div class="fullscreen-btn" id="fsBtn" title="Fullscreen">⛶</div>
     </div>
   </div>
 
   <div class="game-list-container">
-    
     <div class="list-item" onclick="switchGame('WeridSpaceGame.html', 'Spaceship Game', 'Ian')">
-      <img src="pngs/spaceship_game2.png" alt="Spaceship Game">
+      <img src="pngs/spaceship_game2.png">
       <div class="list-item-title">Spaceship Game</div>
     </div>
-
     <div class="list-item" onclick="switchGame('car.html', '3D Car Game', 'Ian')">
-      <img src="pngs/3d_car.png" alt="3D Car Game">
+      <img src="pngs/3d_car.png">
       <div class="list-item-title">3D Car Game</div>
     </div>
-
     <div class="list-item" onclick="switchGame('gambling.html', 'Gambling Game', 'Ian')">
-      <img src="pngs/Gambling.png" alt="Gambling Game">
+      <img src="pngs/Gambling.png">
       <div class="list-item-title">Gambling Game</div>
     </div>
-
     <div class="list-item" onclick="switchGame('blockblast.html', 'Block Breaker', 'Ian')">
-      <img src="pngs/blockbreaker.png" alt="Block Breaker">
+      <img src="pngs/blockbreaker.png">
       <div class="list-item-title">Block Breaker</div>
     </div>
-
     <div class="list-item" onclick="switchGame('tower', 'Tower Defense', 'Ian')">
-      <img src="pngs/towerdefense.png" alt="Tower Defense">
+      <img src="pngs/towerdefense.png">
       <div class="list-item-title">Tower Defense</div>
     </div>
-
-    <div class="list-item" onclick="switchGame('Games 1/gam1.html', 'Platform Game (Beta)', 'Ian')">
-      <img src="pngs/platformgame.png" alt="Platform Game">
-      <div class="list-item-title">Platform Game (Beta)</div>
-    </div>
-
   </div>
 
   <script>
@@ -172,36 +159,42 @@
       container.innerHTML = '';
       const iframe = document.createElement('iframe');
       iframe.src = 'Games/' + file;
-      iframe.id = "gameIframe";
-      iframe.allow = 'gamepad *; fullscreen *';
+      
+      // Added all necessary fullscreen permissions
+      iframe.setAttribute('allowfullscreen', '');
+      iframe.setAttribute('webkitallowfullscreen', '');
+      iframe.setAttribute('mozallowfullscreen', '');
+      iframe.allow = "autoplay; gamepad; fullscreen; focus-without-user-activation";
+      
       container.appendChild(iframe);
 
       titleDisp.innerText = title;
       authorDisp.innerText = "By " + author;
 
       fsBtn.onclick = () => {
-        if (iframe.requestFullscreen) iframe.requestFullscreen();
-        else if (iframe.webkitRequestFullscreen) iframe.webkitRequestFullscreen();
+        if (iframe.requestFullscreen) {
+            iframe.requestFullscreen();
+        } else if (iframe.webkitRequestFullscreen) {
+            iframe.webkitRequestFullscreen();
+        } else if (iframe.msRequestFullscreen) {
+            iframe.msRequestFullscreen();
+        }
       };
 
-      // Scroll to the top player area
       window.scrollTo({top: 0, behavior: 'smooth'});
     }
 
-    // Scroll Lock for Arrow Keys/Space
+    // Prevent Arrow Key Scrolling
     window.addEventListener("keydown", function(e) {
         if(["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].indexOf(e.code) > -1) {
             e.preventDefault();
         }
     }, false);
 
-    // Initial Load Logic
+    // Initial check for URL params
     const params = new URLSearchParams(window.location.search);
     const g = params.get('game');
-    if (g) {
-      // Logic to auto-fill title based on URL if needed
-      switchGame(g, "Playing Game...", "Ian");
-    }
+    if (g) switchGame(g, "Playing...", "Ian");
   </script>
 
 </body>
