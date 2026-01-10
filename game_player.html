@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cool Science Games</title>
+  <title>Cool Science Games - Player</title>
   <link rel="icon" type="image/png" href="pngs/logo8.png">
 
   <style>
@@ -14,31 +14,33 @@
       font-family: Arial, sans-serif;
       text-align: center;
       overflow-x: hidden;
+      scroll-behavior: smooth;
     }
 
-    h1 {
-      margin-top: 20px;
-    }
+    h1 { margin-top: 20px; }
+    h1 a { color: white; text-decoration: none; }
 
+    /* The Game Player Area */
     .game-container {
       margin: 30px auto;
-      width: 67.5%;
-      height: 800px;
+      width: 70%;
+      height: 600px;
       background: #222;
       border-radius: 15px;
       display: flex;
       justify-content: center;
       align-items: center;
       position: relative;
+      border: 2px solid #333;
     }
 
     iframe {
       border: none;
-      width: 80%;
-      height: 80%;
+      width: 100%;
+      height: 100%;
+      border-radius: 13px;
     }
 
-    /* Fullscreen Button */
     .fullscreen-btn {
       position: absolute;
       bottom: 15px;
@@ -53,88 +55,96 @@
       font-size: 22px;
       color: black;
       cursor: pointer;
-      user-select: none;
-      transition: background 0.2s;
       z-index: 10;
     }
 
-    .fullscreen-btn:hover {
-      background: #ddd;
+    /* The Selection Area at the Bottom */
+    .more-games-section {
+      margin-top: 50px;
+      padding: 40px 20px;
+      background: #111;
+      border-top: 1px solid #333;
+    }
+
+    .grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .grid a {
+      transition: transform 0.2s;
+      display: inline-block;
+    }
+
+    .grid a:hover {
+      transform: scale(1.1);
+    }
+
+    .grid img {
+      width: 180px;
+      border-radius: 10px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <h1 class="back" href="index.html">Cool Science Games</h1>
+
+  <h1><a href="index.html">Cool Science Games</a></h1>
 
   <div class="game-container" id="gameContainer">
     <p>Loading your game...</p>
     <div class="fullscreen-btn" id="fullscreenBtn">⛶</div>
   </div>
 
+  <div class="more-games-section">
+    <h3>Choose Another Game</h3>
+    <div class="grid">
+      <a href="javascript:void(0)" onclick="switchGame('WeridSpaceGame.html')"><img src="pngs/spaceship_game2.png" alt="Spaceship Game"></a>
+      <a href="javascript:void(0)" onclick="switchGame('car.html')"><img src="pngs/3d_car.png" alt="3D Car Game"></a>
+      <a href="javascript:void(0)" onclick="switchGame('gambling.html')"><img src="pngs/Gambling.png" alt="Gambling Game"></a>
+      <a href="javascript:void(0)" onclick="switchGame('blockblast.html')"><img src="pngs/blockbreaker.png" alt="Blocker Breaker"></a>
+      <a href="javascript:void(0)" onclick="switchGame('tower')"><img src="pngs/towerdefense.png" alt="Tower Defense"></a>
+      <a href="javascript:void(0)" onclick="switchGame('Games 1/gam1.html')"><img src="pngs/platformgame.png" alt="Platform Game"></a>
+    </div>
+  </div>
+
   <script>
-    const params = new URLSearchParams(window.location.search);
-    const game = params.get('game');
+    const container = document.getElementById('gameContainer');
 
-    if (game) {
+    // Function to load a game into the player
+    function switchGame(gameFile) {
+      container.innerHTML = ''; // Clear current game
+      
       const iframe = document.createElement('iframe');
-      iframe.src = 'Games/' + game;
+      iframe.src = 'Games/' + gameFile;
       iframe.allow = 'gamepad *; fullscreen *';
-
-      const container = document.getElementById('gameContainer');
-      container.innerHTML = '';
       container.appendChild(iframe);
 
-      // Add fullscreen button back after clearing container
-      const fullscreenBtn = document.createElement('div');
-      fullscreenBtn.className = 'fullscreen-btn';
-      fullscreenBtn.id = 'fullscreenBtn';
-      fullscreenBtn.textContent = '⛶';
-      container.appendChild(fullscreenBtn);
+      // Re-add fullscreen button
+      const btn = document.createElement('div');
+      btn.className = 'fullscreen-btn';
+      btn.textContent = '⛶';
+      btn.onclick = () => {
+        if (iframe.requestFullscreen) iframe.requestFullscreen();
+        else if (iframe.webkitRequestFullscreen) iframe.webkitRequestFullscreen();
+      };
+      container.appendChild(btn);
 
-      // Handle page scroll locking
-      let scrollingLocked = false;
+      // Scroll to top so they see the game
+      window.scrollTo({top: 0, behavior: 'smooth'});
+    }
 
-      function lockScroll() {
-        if (!scrollingLocked) {
-          scrollingLocked = true;
-          document.body.style.overflow = 'hidden';
-        }
-      }
-
-      function unlockScroll() {
-        scrollingLocked = false;
-        document.body.style.overflow = '';
-      }
-
-      iframe.addEventListener('load', () => {
-        iframe.contentWindow.addEventListener('focus', lockScroll);
-      });
-
-      document.addEventListener('click', (e) => {
-        if (!iframe.contains(e.target)) {
-          unlockScroll();
-        }
-      });
-
-      window.addEventListener('keydown', (e) => {
-        if (!scrollingLocked) return;
-        const keysToBlock = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' ', 'Space', 'PageUp', 'PageDown'];
-        if (keysToBlock.includes(e.key)) e.preventDefault();
-      });
-
-      // Fullscreen button logic
-      fullscreenBtn.addEventListener('click', () => {
-        if (iframe.requestFullscreen) {
-          iframe.requestFullscreen();
-        } else if (iframe.webkitRequestFullscreen) {
-          iframe.webkitRequestFullscreen();
-        } else if (iframe.msRequestFullscreen) {
-          iframe.msRequestFullscreen();
-        }
-      });
-
+    // Initial load from URL
+    const params = new URLSearchParams(window.location.search);
+    const game = params.get('game');
+    if (game) {
+      switchGame(game);
     } else {
-      document.getElementById('gameContainer').innerHTML = '<p>No game selected.</p>';
+      container.innerHTML = '<p>No game selected. Pick one below!</p>';
     }
   </script>
 
