@@ -14,56 +14,75 @@
       font-family: Arial, sans-serif;
       text-align: center;
       overflow-x: hidden;
-      scroll-behavior: smooth;
     }
 
     h1 { margin-top: 20px; }
     h1 a { color: white; text-decoration: none; }
 
     /* The Game Player Area */
-    .game-container {
-      margin: 30px auto;
+    .game-section {
+      margin: 20px auto;
       width: 70%;
+    }
+
+    .game-container {
+      width: 100%;
       height: 600px;
       background: #222;
-      border-radius: 15px;
+      border-radius: 15px 15px 0 0; /* Rounded top only */
       display: flex;
       justify-content: center;
       align-items: center;
       position: relative;
       border: 2px solid #333;
+      overflow: hidden;
     }
 
     iframe {
       border: none;
       width: 100%;
       height: 100%;
-      border-radius: 13px;
     }
 
+    /* Game Info Bar (The "Footer" for the game) */
+    .game-info-bar {
+      background: #1a1a1a;
+      border: 2px solid #333;
+      border-top: none;
+      border-radius: 0 0 15px 15px; /* Rounded bottom only */
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px;
+      color: #ccc;
+    }
+
+    .game-details { text-align: left; }
+    .game-details span { display: block; }
+    .game-title { font-weight: bold; color: white; font-size: 1.1em; }
+    .game-author { font-size: 0.85em; color: #888; }
+
     .fullscreen-btn {
-      position: absolute;
-      bottom: 15px;
-      right: 15px;
       width: 40px;
       height: 40px;
-      background: white;
+      background: #444;
       border-radius: 8px;
       display: flex;
       justify-content: center;
       align-items: center;
-      font-size: 22px;
-      color: black;
+      font-size: 20px;
+      color: white;
       cursor: pointer;
-      z-index: 10;
+      transition: background 0.2s;
     }
 
-    /* The Selection Area at the Bottom */
+    .fullscreen-btn:hover { background: #666; }
+
+    /* Selection Area */
     .more-games-section {
       margin-top: 50px;
       padding: 40px 20px;
       background: #111;
-      border-top: 1px solid #333;
     }
 
     .grid {
@@ -71,79 +90,87 @@
       flex-wrap: wrap;
       justify-content: center;
       gap: 15px;
-      max-width: 1000px;
-      margin: 0 auto;
-    }
-
-    .grid a {
-      transition: transform 0.2s;
-      display: inline-block;
-    }
-
-    .grid a:hover {
-      transform: scale(1.1);
     }
 
     .grid img {
-      width: 180px;
+      width: 160px;
       border-radius: 10px;
       cursor: pointer;
+      transition: transform 0.2s;
     }
+
+    .grid img:hover { transform: scale(1.1); }
   </style>
 </head>
 <body>
 
   <h1><a href="index.html">Cool Science Games</a></h1>
 
-  <div class="game-container" id="gameContainer">
-    <p>Loading your game...</p>
-    <div class="fullscreen-btn" id="fullscreenBtn">⛶</div>
+  <div class="game-section">
+    <div class="game-container" id="gameContainer">
+      <p>Select a game below!</p>
+    </div>
+
+    <div class="game-info-bar">
+      <div class="game-details">
+        <span class="game-title" id="displayTitle">Game Title</span>
+        <span class="game-author" id="displayAuthor">By Your Name</span>
+      </div>
+      <div class="fullscreen-btn" id="fsBtn" title="Fullscreen">⛶</div>
+    </div>
   </div>
 
   <div class="more-games-section">
-    <div>
-      <a href="javascript:void(0)" onclick="switchGame('WeridSpaceGame.html')"><img src="pngs/spaceship_game2.png" alt="Spaceship Game"></a>
-      <a href="javascript:void(0)" onclick="switchGame('car.html')"><img src="pngs/3d_car.png" alt="3D Car Game"></a>
-      <a href="javascript:void(0)" onclick="switchGame('gambling.html')"><img src="pngs/Gambling.png" alt="Gambling Game"></a>
-      <a href="javascript:void(0)" onclick="switchGame('blockblast.html')"><img src="pngs/blockbreaker.png" alt="Blocker Breaker"></a>
-      <a href="javascript:void(0)" onclick="switchGame('tower')"><img src="pngs/towerdefense.png" alt="Tower Defense"></a>
-      <a href="javascript:void(0)" onclick="switchGame('Games 1/gam1.html')"><img src="pngs/platformgame.png" alt="Platform Game"></a>
+    <h3>Choose Another Game</h3>
+    <div class="grid">
+      <img src="pngs/spaceship_game2.png" onclick="switchGame('WeridSpaceGame.html', 'Spaceship Game', 'Ian')">
+      <img src="pngs/3d_car.png" onclick="switchGame('car.html', '3D Car Game', 'Ian')">
+      <img src="pngs/Gambling.png" onclick="switchGame('gambling.html', 'Gambling Game', 'Ian')">
+      <img src="pngs/blockbreaker.png" onclick="switchGame('blockblast.html', 'Block Breaker', 'Ian')">
+      <img src="pngs/towerdefense.png" onclick="switchGame('tower', 'Tower Defense', 'Ian')">
     </div>
   </div>
 
   <script>
     const container = document.getElementById('gameContainer');
+    const titleDisp = document.getElementById('displayTitle');
+    const authorDisp = document.getElementById('displayAuthor');
+    const fsBtn = document.getElementById('fsBtn');
 
-    // Function to load a game into the player
-    function switchGame(gameFile) {
-      container.innerHTML = ''; // Clear current game
-      
+    function switchGame(file, title, author) {
+      container.innerHTML = '';
       const iframe = document.createElement('iframe');
-      iframe.src = 'Games/' + gameFile;
+      iframe.src = 'Games/' + file;
+      iframe.id = "gameIframe";
       iframe.allow = 'gamepad *; fullscreen *';
       container.appendChild(iframe);
 
-      // Re-add fullscreen button
-      const btn = document.createElement('div');
-      btn.className = 'fullscreen-btn';
-      btn.textContent = '⛶';
-      btn.onclick = () => {
+      titleDisp.innerText = title;
+      authorDisp.innerText = "By " + author;
+
+      // Handle Fullscreen
+      fsBtn.onclick = () => {
         if (iframe.requestFullscreen) iframe.requestFullscreen();
         else if (iframe.webkitRequestFullscreen) iframe.webkitRequestFullscreen();
       };
-      container.appendChild(btn);
 
-      // Scroll to top so they see the game
       window.scrollTo({top: 0, behavior: 'smooth'});
     }
 
-    // Initial load from URL
+    // --- FIX FOR SCROLLING ---
+    // This stops the page from moving when you use Arrow Keys or Space
+    window.addEventListener("keydown", function(e) {
+        if(["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].indexOf(e.code) > -1) {
+            e.preventDefault();
+        }
+    }, false);
+
+    // Initial Load
     const params = new URLSearchParams(window.location.search);
-    const game = params.get('game');
-    if (game) {
-      switchGame(game);
-    } else {
-      container.innerHTML = '<p>No game selected. Pick one below!</p>';
+    const g = params.get('game');
+    if (g) {
+      // Map common files to titles (optional)
+      switchGame(g, g.replace('.html', ''), 'Ian');
     }
   </script>
 
