@@ -148,54 +148,98 @@
       <div class="list-item-title">Tower Defense</div>
     </div>
   </div>
+<div class="game-list-container" id="gameList"></div>
 
-  <script>
-    const container = document.getElementById('gameContainer');
-    const titleDisp = document.getElementById('displayTitle');
-    const authorDisp = document.getElementById('displayAuthor');
-    const fsBtn = document.getElementById('fsBtn');
+<script>
+  // 1. Define your game library with tags
+  const games = [
+    { file: 'WeridSpaceGame.html', title: 'Spaceship Game', author: 'Ian', img: 'pngs/spaceship_game2.png', tags: ['space', 'action', 'arcade'] },
+    { file: 'car.html', title: '3D Car Game', author: 'Ian', img: 'pngs/3d_car.png', tags: ['3d', 'driving', 'simulation'] },
+    { file: 'gambling.html', title: 'Gambling Game', author: 'Ian', img: 'pngs/Gambling.png', tags: ['arcade', 'strategy', 'luck'] },
+    { file: 'blockblast.html', title: 'Block Breaker', author: 'Ian', img: 'pngs/blockbreaker.png', tags: ['arcade', 'puzzle'] },
+    { file: 'tower', title: 'Tower Defense', author: 'Ian', img: 'pngs/towerdefense.png', tags: ['strategy', '3d', 'action'] }
+  ];
 
-    function switchGame(file, title, author) {
-      container.innerHTML = '';
-      const iframe = document.createElement('iframe');
-      iframe.src = 'Games/' + file;
+  const container = document.getElementById('gameContainer');
+  const titleDisp = document.getElementById('displayTitle');
+  const authorDisp = document.getElementById('displayAuthor');
+  const fsBtn = document.getElementById('fsBtn');
+  const listContainer = document.getElementById('gameList');
+
+  // 2. Function to render the list
+  function renderList(currentGameFile = null) {
+    let listToDisplay = [...games];
+
+    if (currentGameFile) {
+      const current = games.find(g => g.file === currentGameFile);
       
-      // Added all necessary fullscreen permissions
-      iframe.setAttribute('allowfullscreen', '');
-      iframe.setAttribute('webkitallowfullscreen', '');
-      iframe.setAttribute('mozallowfullscreen', '');
-      iframe.allow = "autoplay; gamepad; fullscreen; focus-without-user-activation";
-      
-      container.appendChild(iframe);
+      // Sort by similarity
+      listToDisplay.sort((a, b) => {
+        if (a.file === currentGameFile) return -1; // Keep current at top or filter it out
+        if (b.file === currentGameFile) return 1;
 
-      titleDisp.innerText = title;
-      authorDisp.innerText = "By " + author;
-
-      fsBtn.onclick = () => {
-        if (iframe.requestFullscreen) {
-            iframe.requestFullscreen();
-        } else if (iframe.webkitRequestFullscreen) {
-            iframe.webkitRequestFullscreen();
-        } else if (iframe.msRequestFullscreen) {
-            iframe.msRequestFullscreen();
-        }
-      };
-
-      window.scrollTo({top: 0, behavior: 'smooth'});
+        const scoreA = a.tags.filter(tag => current.tags.includes(tag)).length;
+        const scoreB = b.tags.filter(tag => current.tags.includes(tag)).length;
+        return scoreB - scoreA; // Higher score comes first
+      });
     }
 
-    // Prevent Arrow Key Scrolling
-    window.addEventListener("keydown", function(e) {
-        if(["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].indexOf(e.code) > -1) {
-            e.preventDefault();
-        }
-    }, false);
+    listContainer.innerHTML = '';
+    listToDisplay.forEach(game => {
+      const item = document.createElement('div');
+      item.className = 'list-item';
+      // Highlight the currently playing game
+      if (game.file === currentGameFile) item.style.borderLeft = "4px solid #007bff";
+      
+      item.onclick = () => switchGame(game.file, game.title, game.author);
+      item.innerHTML = `
+        <img src="${game.img}">
+        <div class="list-item-title">${game.title}</div>
+      `;
+      listContainer.appendChild(item);
+    });
+  }
 
-    // Initial check for URL params
-    const params = new URLSearchParams(window.location.search);
-    const g = params.get('game');
-    if (g) switchGame(g, "Playing...", "Ian");
-  </script>
+  // 3. Updated switchGame
+  function switchGame(file, title, author) {
+    container.innerHTML = '';
+    const iframe = document.createElement('iframe');
+    iframe.src = 'Games/' + file;
+    iframe.setAttribute('allowfullscreen', '');
+    iframe.allow = "autoplay; gamepad; fullscreen; focus-without-user-activation";
+    
+    container.appendChild(iframe);
+    titleDisp.innerText = title;
+    authorDisp.innerText = "By " + author;
+
+    fsBtn.onclick = () => {
+      if (iframe.requestFullscreen) iframe.requestFullscreen();
+      else if (iframe.webkitRequestFullscreen) iframe.webkitRequestFullscreen();
+    };
+
+    // Re-sort the list based on the new game
+    renderList(file);
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  }
+
+  // Initial Load
+  const params = new URLSearchParams(window.location.search);
+  const g = params.get('game');
+  if (g) {
+    const found = games.find(game => game.file === g);
+    if (found) switchGame(found.file, found.title, found.author);
+    else renderList();
+  } else {
+    renderList();
+  }
+
+  // Prevent Arrow Key Scrolling
+  window.addEventListener("keydown", function(e) {
+    if(["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].indexOf(e.code) > -1) {
+      e.preventDefault();
+    }
+  }, false);
+</script>
 
 </body>
 </html>
